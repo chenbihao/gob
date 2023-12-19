@@ -1,21 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"html"
-	"log"
+	"gob/framework"
 	"net/http"
 )
 
 func main() {
-	// 创建一个Foo路由和处理函数
-	//http.Handle("/foo", fooHandler)
-
-	// 创建一个bar路由和处理函数
-	http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
-	})
-
-	// 监听8080端口
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	server := &http.Server{
+		// 自定义的请求核心处理函数
+		Handler: framework.NewCore(),
+		// 请求监听地址
+		Addr: ":8080",
+	}
+	server.ListenAndServe()
 }
