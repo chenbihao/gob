@@ -27,9 +27,9 @@ func FooControllerHandler(c *framework.Context) error {
 		}()
 
 		// 这里做具体的业务
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 
-		c.Json(200, "ok") // todo 这里如果同时超时，没上锁也会导致问题
+		c.Json(200, "ok")
 		finish <- struct{}{}
 	}()
 
@@ -45,7 +45,7 @@ func FooControllerHandler(c *framework.Context) error {
 		c.WriterMux().Lock()
 		defer c.WriterMux().Unlock()
 		c.Json(500, "time out")
-		c.SetHasTimeout()
+		c.SetHasTimeout() // 这里需要考虑到与业务输出没写保护的问题
 	}
 	return nil
 }
