@@ -16,7 +16,6 @@ import (
 type Context struct {
 	request        *http.Request
 	responseWriter http.ResponseWriter
-	ctx            context.Context
 
 	hasTimeout bool        // 是否超时标记位
 	writerMux  *sync.Mutex // 写保护机制
@@ -29,7 +28,6 @@ func NewContext(r *http.Request, w http.ResponseWriter) *Context {
 	return &Context{
 		request:        r,
 		responseWriter: w,
-		ctx:            r.Context(),
 		writerMux:      &sync.Mutex{},
 		index:          -1,
 	}

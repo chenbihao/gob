@@ -12,7 +12,7 @@ type Core struct {
 	middlewares []ControllerHandler // 从core这边设置的中间件
 }
 
-// 初始化Core结构
+// 初始化 Core 结构
 func NewCore() *Core {
 	// 初始化路由
 	router := map[string]*Tree{}
@@ -25,36 +25,36 @@ func NewCore() *Core {
 
 // === http method wrap
 
-// 匹配GET 方法, 增加路由规则
+// 匹配 GET 方法, 增加路由规则
 func (c *Core) Get(url string, handlers ...ControllerHandler) {
 	// 将core的middleware 和 handlers结合起来
 	allHandlers := append(c.middlewares, handlers...)
 	if err := c.router["GET"].AddRouter(url, allHandlers); err != nil {
-		log.Fatal("add router error: ", err)
+		log.Fatal("Get router error: ", err)
 	}
 }
 
-// 匹配POST 方法, 增加路由规则
+// 匹配 POST 方法, 增加路由规则
 func (c *Core) Post(url string, handlers ...ControllerHandler) {
 	allHandlers := append(c.middlewares, handlers...)
 	if err := c.router["POST"].AddRouter(url, allHandlers); err != nil {
-		log.Fatal("add router error: ", err)
+		log.Fatal("Post router error: ", err)
 	}
 }
 
-// 匹配PUT 方法, 增加路由规则
+// 匹配 PUT 方法, 增加路由规则
 func (c *Core) Put(url string, handlers ...ControllerHandler) {
 	allHandlers := append(c.middlewares, handlers...)
 	if err := c.router["PUT"].AddRouter(url, allHandlers); err != nil {
-		log.Fatal("add router error: ", err)
+		log.Fatal("Put router error: ", err)
 	}
 }
 
-// 匹配DELETE 方法, 增加路由规则
+// 匹配 DELETE 方法, 增加路由规则
 func (c *Core) Delete(url string, handlers ...ControllerHandler) {
 	allHandlers := append(c.middlewares, handlers...)
 	if err := c.router["DELETE"].AddRouter(url, allHandlers); err != nil {
-		log.Fatal("add router error: ", err)
+		log.Fatal("Delete router error: ", err)
 	}
 }
 

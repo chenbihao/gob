@@ -32,16 +32,6 @@ func NewGroup(core *Core, prefix string) *Group {
 	}
 }
 
-// 获取某个group的middleware
-// 这里就是获取除了Get/Post/Put/Delete之外设置的middleware
-func (g *Group) getMiddlewares() []ControllerHandler {
-	if g.parent == nil {
-		return g.middlewares
-	}
-
-	return append(g.parent.getMiddlewares(), g.middlewares...)
-}
-
 // 实现Get方法
 func (g *Group) Get(uri string, handlers ...ControllerHandler) {
 	uri = g.getAbsolutePrefix() + uri
@@ -83,6 +73,15 @@ func (g *Group) Group(uri string) IGroup {
 	cgroup := NewGroup(g.core, uri)
 	cgroup.parent = g
 	return cgroup
+}
+
+// 获取某个group的middleware
+// 这里就是获取除了Get/Post/Put/Delete之外设置的middleware
+func (g *Group) getMiddlewares() []ControllerHandler {
+	if g.parent == nil {
+		return g.middlewares
+	}
+	return append(g.parent.getMiddlewares(), g.middlewares...)
 }
 
 // 注册中间件

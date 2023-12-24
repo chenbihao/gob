@@ -1,33 +1,18 @@
 package main
 
-import "gob/framework"
+import (
+	"gob/framework"
+	"time"
+)
 
-func SubjectAddController(c *framework.Context) error {
-	c.Json(200, "ok, SubjectAddController")
+func UserLoginController(c *framework.Context) error {
+	c.Json(200, "ok, UserLoginController")
 	return nil
 }
 
-func SubjectListController(c *framework.Context) error {
-	c.Json(200, "ok, SubjectListController")
-	return nil
-}
-
-func SubjectDelController(c *framework.Context) error {
-	c.Json(200, "ok, SubjectDelController")
-	return nil
-}
-
-func SubjectUpdateController(c *framework.Context) error {
-	c.Json(200, "ok, SubjectUpdateController")
-	return nil
-}
-
-func SubjectGetController(c *framework.Context) error {
-	c.Json(200, "ok, SubjectGetController")
-	return nil
-}
-
-func SubjectNameController(c *framework.Context) error {
-	c.Json(200, "ok, SubjectNameController")
+func TimeoutController(c *framework.Context) error {
+	// 执行具体的业务逻辑
+	time.Sleep(2 * time.Second)
+	c.Json(200, "ok, TimeoutController")
 	return nil
 }

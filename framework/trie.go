@@ -64,6 +64,7 @@ func (n *node) filterChildNodes(segment string) []*node {
 // 判断路由是否已经在节点的所有子节点树中存在了
 func (n *node) matchNode(uri string) *node {
 	// 使用分隔符将uri切割为两个部分
+	uri = strings.TrimPrefix(uri, "/") //  【/】开头的 url 去 Split 后第一层是空的，节省一层
 	segments := strings.SplitN(uri, "/", 2)
 	// 第一个部分用于匹配下一层子节点
 	segment := segments[0]
@@ -72,10 +73,6 @@ func (n *node) matchNode(uri string) *node {
 	}
 	// 匹配符合的下一层子节点
 	cnodes := n.filterChildNodes(segment)
-
-	// if cnodes == nil || len(cnodes) == 0 {}
-	// 可以优化成 len(cnodes) == 0
-	// 参考len()的注释： Slice, or map: the number of elements in v; if v is nil, len(v) is zero.
 
 	// 如果当前子节点没有一个符合，那么说明这个uri一定是之前不存在, 直接返回nil
 	if len(cnodes) == 0 {
@@ -118,7 +115,7 @@ func (tree *Tree) AddRouter(uri string, handlers []ControllerHandler) error {
 	if n.matchNode(uri) != nil {
 		return errors.New("route exist: " + uri)
 	}
-
+	uri = strings.TrimPrefix(uri, "/") //  【/】开头的 url 去 Split 后第一层是空的，节省一层
 	segments := strings.Split(uri, "/")
 	// 对每个segment
 	for index, segment := range segments {
@@ -154,10 +151,8 @@ func (tree *Tree) AddRouter(uri string, handlers []ControllerHandler) error {
 			n.childs = append(n.childs, cnode)
 			objNode = cnode
 		}
-
 		n = objNode
 	}
-
 	return nil
 }
 
