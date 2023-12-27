@@ -46,10 +46,8 @@ type IRequest interface {
 
 	// json body
 	BindJson(obj interface{}) error
-
 	// xml body
 	BindXml(obj interface{}) error
-
 	// 其他格式
 	GetRawData() ([]byte, error)
 
