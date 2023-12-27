@@ -33,5 +33,5 @@ func registerRouter(core *framework.Core) {
 		// 扩展需求：在 group 中使用 middleware.Test3() 为单个路由增加中间件
 		subjectApi.Get("/middleware/test3", middleware.Test3(), SubjectAddController)
 	}
-	core.Get("/timeout", middleware.Timeout(1*time.Second), TimeoutController)
+	core.Get("/timeout", middleware.Timeout(10*time.Second), TimeoutController)
 }

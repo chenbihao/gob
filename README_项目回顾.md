@@ -1,8 +1,8 @@
----
-create: 2023-12-23 17:08:05
-modify: 2023-12-24 22:09:55
-tags: 
----
+# 自我回顾
+
+梳理复习在使用 Golang 搭建一个 web 框架过程中的迭代步骤。
+
+项目地址：[GitHub - chenbihao/gob: go语言编写的web框架](https://github.com/chenbihao/gob)
 
 ## 01、使用 net-http 标准库搭建 Web Server
 
@@ -140,7 +140,7 @@ type Server struct {
 }
 ```
 
-### 封装一个自己的 Context
+### 目标：封装一个自己的 Context
 
 前置：
 
@@ -228,7 +228,7 @@ func FooControllerHandler(ctx *framework.Context) error {
 }  
 ```
 
-### 为单个请求设置超时
+### 目标：为单个请求设置超时
 
 自定义 Context 设置超时：
 
@@ -319,6 +319,8 @@ func (ctx *Context) WriterMux() *sync.Mutex {
 ```
 
 ## 03、自定义路由功能
+
+### 目标
 
 路由一般使用的是请求头里的 `Method` 和 `Request-URI` 这两个部分。
 
@@ -690,6 +692,8 @@ func (tree *Tree) FindHandler(uri string) ControllerHandler {
 
 ## 04、利用中间件提升扩展性
 
+### 目标
+
 03 说过，核心结构 `Core` 去实现 Handler 接口（`ServeHTTP`），来接管请求处理。
 
 并且在 `ServeHTTP` 函数里面，实现框架上下文 Context 的封装以及路由功能 router。
@@ -909,7 +913,7 @@ func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 
 ### 中间件的编写
 
-例如超时 `timeout.go`：
+在中间件中调用下一个链路（`ctx.Next()`），形成闭环。例如超时 `timeout.go`：
 
 ```go
 func Timeout(d time.Duration) framework.ControllerHandler {
@@ -948,9 +952,639 @@ func Timeout(d time.Duration) framework.ControllerHandler {
 }
 ```
 
+## 05、封装让框架更好用
 
-## 05
+### 目标
 
-## 06
+尽量在 context 这个数据结构中，封装“读取请求数据”和“封装返回数据”中的方法。
 
-## 07
+- 读取请求数据
+    - Header 信息
+        - 基础信息，比如请求地址、请求方法、请求 IP、请求域名、Cookie 信息等。
+        - 更细节的内容编码格式、缓存时长等，由于涉及的 HTTP 协议细节内容比较多，我们很难将每个细节都封装出来，但是它们都是以 key=value 的形式传递到服务端的，所以这里也考虑封装一个通用的方法。
+    - Body 信息（HTTP 是已经以某种形式封装好的）
+        - 可能是 JSON 格式、XML 格式、其他格式
+        - 也可能是 Form 表单格式
+            - 它可能包含 File 文件，请求参数和返回值肯定和其他的 Form 表单字段是不一样的，需要我们对其单独封装一个函数
+
+- 封装返回数据
+    - Header 头部
+        - 我们经常要设置的是返回状态码和 Cookie，所以单独为其封装。
+        - 其他的 Header 同样是 key=value 形式设置的，设置一个通用的方法即可。
+    - 返回 Body 体
+        - 比如 JSON、JSONP、XML、HTML 或者其他文本格式，要针对不同的 Body 体形式，进行不同的封装
+
+### 如何实现
+
+首先，定义一个清晰的、包含若干个方法的接口，可以让使用者更加清晰明了地使用框架，同时做到“实现解耦”。
+
+实现接口，可以利用 [第三方库cast](https://github.com/spf13/cast) 方便编码，利用官方库 [html/template](https://golang.org/pkg/html/template/) 方便模板数据替换。
+
+### 代码实现
+
+#### IRequest 接口定义与实现
+
+读取请求数据 IRequest，`request.go`：
+
+```go
+package framework
+import (
+	"bytes"
+	"encoding/json"
+	"encoding/xml"
+	"errors"
+	"github.com/spf13/cast"
+	"io/ioutil"
+	"mime/multipart"
+)
+
+// 代表请求包含的方法
+type IRequest interface {
+	// 请求地址 url 中带的参数
+	// 形如: foo.com?a=1&b=bar&c[]=bar
+	QueryInt(key string, def int) (int, bool)
+	QueryInt64(key string, def int64) (int64, bool)
+	QueryFloat64(key string, def float64) (float64, bool)
+	QueryFloat32(key string, def float32) (float32, bool)
+	QueryBool(key string, def bool) (bool, bool)
+	QueryString(key string, def string) (string, bool)
+	QueryStringSlice(key string, def []string) ([]string, bool)
+	Query(key string) interface{}
+
+	// 路由匹配中带的参数
+	// 形如 /book/:id
+	ParamInt(key string, def int) (int, bool)
+	ParamInt64(key string, def int64) (int64, bool)
+	ParamFloat64(key string, def float64) (float64, bool)
+	ParamFloat32(key string, def float32) (float32, bool)
+	ParamBool(key string, def bool) (bool, bool)
+	ParamString(key string, def string) (string, bool)
+	Param(key string) interface{}
+
+	// form 表单中带的参数
+	FormInt(key string, def int) (int, bool)
+	FormInt64(key string, def int64) (int64, bool)
+	FormFloat64(key string, def float64) (float64, bool)
+	FormFloat32(key string, def float32) (float32, bool)
+	FormBool(key string, def bool) (bool, bool)
+	FormString(key string, def string) (string, bool)
+	FormStringSlice(key string, def []string) ([]string, bool)
+	FormFile(key string) (*multipart.FileHeader, error)
+	Form(key string) interface{}
+
+	// json body
+	BindJson(obj interface{}) error
+	// xml body
+	BindXml(obj interface{}) error
+	// 其他格式
+	GetRawData() ([]byte, error)
+
+	// 基础信息
+	Uri() string
+	Method() string
+	Host() string
+	ClientIp() string
+
+	// header
+	Headers() map[string][]string
+	Header(key string) (string, bool)
+	// cookie
+	Cookies() map[string]string
+	Cookie(key string) (string, bool)
+}
+
+const defaultMultipartMemory = 32 << 20 // 32 MB
+
+var _ IRequest = new(Context) // 确保类型实现接口
+
+// 获取请求地址中所有参数
+func (ctx *Context) QueryAll() map[string][]string {
+	if ctx.request != nil {
+		return ctx.request.URL.Query()
+	}
+	return map[string][]string{}
+}
+
+// 请求地址url中带的参数
+// 形如: foo.com?a=1&b=bar&c[]=bar
+
+// 获取Int类型的请求参数
+func (ctx *Context) QueryInt(key string, def int) (int, bool) {
+	params := ctx.QueryAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			// 使用cast库将string转换为Int
+			return cast.ToInt(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) QueryInt64(key string, def int64) (int64, bool) {
+	params := ctx.QueryAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToInt64(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) QueryFloat64(key string, def float64) (float64, bool) {
+	params := ctx.QueryAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToFloat64(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) QueryFloat32(key string, def float32) (float32, bool) {
+	params := ctx.QueryAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToFloat32(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) QueryBool(key string, def bool) (bool, bool) {
+	params := ctx.QueryAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToBool(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) QueryString(key string, def string) (string, bool) {
+	params := ctx.QueryAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return vals[0], true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) QueryStringSlice(key string, def []string) ([]string, bool) {
+	params := ctx.QueryAll()
+	if vals, ok := params[key]; ok {
+		return vals, true
+	}
+	return def, false
+}
+
+func (ctx *Context) Query(key string) interface{} {
+	params := ctx.QueryAll()
+	if vals, ok := params[key]; ok {
+		return vals[0]
+	}
+	return nil
+}
+
+// 路由匹配中带的参数
+// 形如 /book/:id
+func (ctx *Context) ParamInt(key string, def int) (int, bool) {
+	if val := ctx.Param(key); val != nil {
+		// 通过cast进行类型转换
+		return cast.ToInt(val), true
+	}
+	return def, false
+}
+
+func (ctx *Context) ParamInt64(key string, def int64) (int64, bool) {
+	if val := ctx.Param(key); val != nil {
+		return cast.ToInt64(val), true
+	}
+	return def, false
+}
+
+func (ctx *Context) ParamFloat64(key string, def float64) (float64, bool) {
+	if val := ctx.Param(key); val != nil {
+		return cast.ToFloat64(val), true
+	}
+	return def, false
+}
+
+func (ctx *Context) ParamFloat32(key string, def float32) (float32, bool) {
+	if val := ctx.Param(key); val != nil {
+		return cast.ToFloat32(val), true
+	}
+	return def, false
+}
+
+func (ctx *Context) ParamBool(key string, def bool) (bool, bool) {
+	if val := ctx.Param(key); val != nil {
+		return cast.ToBool(val), true
+	}
+	return def, false
+}
+
+func (ctx *Context) ParamString(key string, def string) (string, bool) {
+	if val := ctx.Param(key); val != nil {
+		return cast.ToString(val), true
+	}
+	return def, false
+}
+
+// 获取路由参数
+func (ctx *Context) Param(key string) interface{} {
+	if ctx.params != nil {
+		if val, ok := ctx.params[key]; ok {
+			return val
+		}
+	}
+	return nil
+}
+
+func (ctx *Context) FormAll() map[string][]string {
+	if ctx.request != nil {
+		ctx.request.ParseForm()
+		return ctx.request.PostForm
+	}
+	return map[string][]string{}
+}
+
+func (ctx *Context) FormInt(key string, def int) (int, bool) {
+	params := ctx.FormAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToInt(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) FormInt64(key string, def int64) (int64, bool) {
+	params := ctx.FormAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToInt64(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) FormFloat64(key string, def float64) (float64, bool) {
+	params := ctx.FormAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToFloat64(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) FormFloat32(key string, def float32) (float32, bool) {
+	params := ctx.FormAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToFloat32(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) FormBool(key string, def bool) (bool, bool) {
+	params := ctx.FormAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return cast.ToBool(vals[0]), true
+		}
+	}
+	return def, false
+}
+
+func (ctx *Context) FormString(key string, def string) (string, bool) {
+	params := ctx.FormAll()
+	if vals, ok := params[key]; ok {
+		return vals[0], true
+	}
+	return def, false
+}
+
+func (ctx *Context) FormStringSlice(key string, def []string) ([]string, bool) {
+	params := ctx.FormAll()
+	if vals, ok := params[key]; ok {
+		return vals, true
+	}
+	return def, false
+}
+
+func (ctx *Context) FormFile(key string) (*multipart.FileHeader, error) {
+	if ctx.request.MultipartForm == nil {
+		if err := ctx.request.ParseMultipartForm(defaultMultipartMemory); err != nil {
+			return nil, err
+		}
+	}
+	f, fh, err := ctx.request.FormFile(key)
+	if err != nil {
+		return nil, err
+	}
+	f.Close()
+	return fh, err
+}
+
+func (ctx *Context) Form(key string) interface{} {
+	params := ctx.FormAll()
+	if vals, ok := params[key]; ok {
+		if len(vals) > 0 {
+			return vals[0]
+		}
+	}
+	return nil
+}
+
+// 将body文本解析到obj结构体中
+func (ctx *Context) BindJson(obj interface{}) error {
+	if ctx.request != nil {
+		// 读取文本
+		body, err := ioutil.ReadAll(ctx.request.Body)
+		if err != nil {
+			return err
+		}
+		// 重新填充request.Body，为后续的逻辑二次读取做准备
+		ctx.request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+		// 解析到obj结构体中
+		err = json.Unmarshal(body, obj)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("ctx.request empty")
+	}
+	return nil
+}
+
+// xml body
+func (ctx *Context) BindXml(obj interface{}) error {
+	if ctx.request != nil {
+		body, err := ioutil.ReadAll(ctx.request.Body)
+		if err != nil {
+			return err
+		}
+		ctx.request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+		err = xml.Unmarshal(body, obj)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("ctx.request empty")
+	}
+	return nil
+}
+
+// 其他格式
+func (ctx *Context) GetRawData() ([]byte, error) {
+	if ctx.request != nil {
+		body, err := ioutil.ReadAll(ctx.request.Body)
+		if err != nil {
+			return nil, err
+		}
+		ctx.request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		return body, nil
+	}
+	return nil, errors.New("ctx.request empty")
+}
+
+// 基础信息
+func (ctx *Context) Uri() string {
+	return ctx.request.RequestURI
+}
+
+func (ctx *Context) Method() string {
+	return ctx.request.Method
+}
+
+func (ctx *Context) Host() string {
+	return ctx.request.URL.Host
+}
+
+func (ctx *Context) ClientIp() string {
+	r := ctx.request
+	ipAddress := r.Header.Get("X-Real-Ip")
+	if ipAddress == "" {
+		ipAddress = r.Header.Get("X-Forwarded-For")
+	}
+	if ipAddress == "" {
+		ipAddress = r.RemoteAddr
+	}
+	return ipAddress
+}
+
+// header
+func (ctx *Context) Headers() map[string][]string {
+	return ctx.request.Header
+}
+
+func (ctx *Context) Header(key string) (string, bool) {
+	vals := ctx.request.Header.Values(key)
+	if vals == nil || len(vals) <= 0 {
+		return "", false
+	}
+	return vals[0], true
+}
+
+// cookie
+func (ctx *Context) Cookies() map[string]string {
+	cookies := ctx.request.Cookies()
+	ret := map[string]string{}
+	for _, cookie := range cookies {
+		ret[cookie.Name] = cookie.Value
+	}
+	return ret
+}
+
+func (ctx *Context) Cookie(key string) (string, bool) {
+	cookies := ctx.Cookies()
+	if val, ok := cookies[key]; ok {
+		return val, true
+	}
+	return "", false
+}
+
+```
+
+#### IResponse 接口定义与实现
+
+封装返回数据 IResponse，`response.go`：
+
+```go
+package framework
+
+import (
+	"encoding/json"
+	"encoding/xml"
+	"fmt"
+	"html/template"
+	"net/http"
+	"net/url"
+)
+
+// IResponse 代表返回方法
+type IResponse interface {
+	// Json 输出
+	Json(obj interface{}) IResponse
+	// Jsonp 输出
+	Jsonp(obj interface{}) IResponse
+	//xml 输出
+	Xml(obj interface{}) IResponse
+	// html 输出
+	Html(template string, obj interface{}) IResponse
+	// string
+	Text(format string, values ...interface{}) IResponse
+
+	// 重定向
+	Redirect(path string) IResponse
+
+	// header
+	SetHeader(key string, val string) IResponse
+	// Cookie
+	SetCookie(key string, val string, maxAge int, path, domain string, secure, httpOnly bool) IResponse
+	// 设置状态码
+	SetStatus(code int) IResponse
+	// 设置 200 状态
+	SetOkStatus() IResponse
+}
+
+var _ IResponse = new(Context) // 确保类型实现接口
+
+// Jsonp输出
+func (ctx *Context) Jsonp(obj interface{}) IResponse {
+	// 获取请求参数callback
+	callbackFunc, _ := ctx.QueryString("callback", "callback_function")
+	ctx.SetHeader("Content-Type", "application/javascript")
+	// 输出到前端页面的时候需要注意下进行字符过滤，否则有可能造成xss攻击
+	callback := template.JSEscapeString(callbackFunc)
+
+	// 输出函数名
+	_, err := ctx.responseWriter.Write([]byte(callback))
+	if err != nil {
+		return ctx
+	}
+	// 输出左括号
+	_, err = ctx.responseWriter.Write([]byte("("))
+	if err != nil {
+		return ctx
+	}
+	// 数据函数参数
+	ret, err := json.Marshal(obj)
+	if err != nil {
+		return ctx
+	}
+	_, err = ctx.responseWriter.Write(ret)
+	if err != nil {
+		return ctx
+	}
+	// 输出右括号
+	_, err = ctx.responseWriter.Write([]byte(")"))
+	if err != nil {
+		return ctx
+	}
+	return ctx
+}
+
+// xml输出
+func (ctx *Context) Xml(obj interface{}) IResponse {
+	byt, err := xml.Marshal(obj)
+	if err != nil {
+		return ctx.SetStatus(http.StatusInternalServerError)
+	}
+	ctx.SetHeader("Content-Type", "application/html")
+	ctx.responseWriter.Write(byt)
+	return ctx
+}
+
+// html输出
+func (ctx *Context) Html(file string, obj interface{}) IResponse {
+	// 读取模版文件，创建template实例
+	t, err := template.New("output").ParseFiles(file)
+	if err != nil {
+		return ctx
+	}
+	// 执行Execute方法将obj和模版进行结合
+	if err := t.Execute(ctx.responseWriter, obj); err != nil {
+		return ctx
+	}
+
+	ctx.SetHeader("Content-Type", "application/html")
+	return ctx
+}
+
+// string
+func (ctx *Context) Text(format string, values ...interface{}) IResponse {
+	out := fmt.Sprintf(format, values...)
+	ctx.SetHeader("Content-Type", "application/text")
+	ctx.responseWriter.Write([]byte(out))
+	return ctx
+}
+
+// 重定向
+func (ctx *Context) Redirect(path string) IResponse {
+	http.Redirect(ctx.responseWriter, ctx.request, path, http.StatusMovedPermanently)
+	return ctx
+}
+
+// header
+func (ctx *Context) SetHeader(key string, val string) IResponse {
+	ctx.responseWriter.Header().Add(key, val)
+	return ctx
+}
+
+// Cookie
+func (ctx *Context) SetCookie(key string, val string, maxAge int, path string, domain string, secure bool, httpOnly bool) IResponse {
+	if path == "" {
+		path = "/"
+	}
+	http.SetCookie(ctx.responseWriter, &http.Cookie{
+		Name:     key,
+		Value:    url.QueryEscape(val),
+		MaxAge:   maxAge,
+		Path:     path,
+		Domain:   domain,
+		SameSite: 1,
+		Secure:   secure,
+		HttpOnly: httpOnly,
+	})
+	return ctx
+}
+
+// 设置状态码
+func (ctx *Context) SetStatus(code int) IResponse {
+	ctx.responseWriter.WriteHeader(code)
+	return ctx
+}
+
+// 设置200状态
+func (ctx *Context) SetOkStatus() IResponse {
+	ctx.responseWriter.WriteHeader(http.StatusOK)
+	return ctx
+}
+
+func (ctx *Context) Json(obj interface{}) IResponse {
+	byt, err := json.Marshal(obj)
+	if err != nil {
+		return ctx.SetStatus(http.StatusInternalServerError)
+	}
+	ctx.SetHeader("Content-Type", "application/json")
+	ctx.responseWriter.Write(byt)
+	return ctx
+}
+
+```
+
+## 06、
+
+## 07、
+
+## 08、
+
+## 09、
+
+## 10、
