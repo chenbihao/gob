@@ -1579,12 +1579,137 @@ func (ctx *Context) Json(obj interface{}) IResponse {
 
 ```
 
-## 06、
+## 06、优雅关闭
 
-## 07、
+### 目标
+
+优雅关闭服务：关闭进程的时候，不能暴力关闭进程，而是要等进程中的所有请求都逻辑处理结束后，才关闭进程。
+
+分为两步：
+- 控制关闭进程的操作
+- 等待所有逻辑都处理结束
+
+### 如何实现
+
+#### 关闭进程的相关操作
+
+- `Ctrl + C`：
+    - 向进程发送信号 `SIGINT` 中断。可以被阻塞和处理的。
+- `Ctrl + \`：
+    - 向进程发送信号 `SIGQUIT`，和 `SIGINT` 差不多，可以被阻塞和处理的，默认行为会产生 core 文件。
+- `Kill 命令`：
+    - `kill pid` 会向进程发送 `SIGTERM` 信号，可以被阻塞和处理的
+    - `kill -9 pid` 会向进程发送 `SIGKILL` 信号，不能被阻塞和处理的
+
+在 Golang 标准库中提供了 `os/signal` 这个库可以用来捕获信号。
+
+#### 等待所有逻辑都处理结束
+
+在 Golang 1.8 版本之前，`net/http` 是没有提供方法的，可以用第三方库例如：[manners](https://github.com/braintree/manners) 、 [graceful](https://github.com/tylerstillwater/graceful) 、 [grace](https://github.com/facebookarchive/grace) 。
+
+在 1.8 版本之后，`net/http` 引入了 `server.Shutdown` 来进行优雅重启。
+
+标准库里实现了 `inShutdown` 原子标记，用来标记服务器是否正在关闭，真正执行操作的是 `closeIdleConns` 方法。这个方法循环判断所有连接中的请求是否已经完成操作（是否处于 Idle 状态）。
+
+### 代码实现
+
+```go
+func main() {
+	// 核心框架初始化
+	core := framework.NewCore()
+	// 设置路由
+	registerRouter(core)
+	server := &http.Server{
+		// 自定义的请求核心处理函数
+		Handler: core,
+		// 请求监听地址
+		Addr: ":8080",
+	}
+
+	// 这个goroutine是启动服务的goroutine
+	go func() {
+		server.ListenAndServe()
+	}()
+
+	// 当前的goroutine等待信号量
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	<-quit // 这里会阻塞当前goroutine等待信号
+
+	// 设置超时关闭限制
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	
+	// 调用Server.Shutdown graceful结束
+	if err := server.Shutdown(timeoutCtx); err != nil {
+		log.Fatal("Server Shutdown:", err)
+	}
+
+}
+```
+
+## 07、理想框架到底长什么样
+
+### 开源框架怎么比较
+
+可以参考的框架评判标准：
+
+- **核心模块**
+    - 服务启动方式、路由分发机制、上下文封装性、中间件机制设计等。
+    - 理想的核心模块必须要有设计感，有自己的思想，代码质量、性能都不能出问题。
+- **功能完备**
+    - 是否提供日志模块、是否提供脚手架、命令行工具、缓存机制、ORM 等。
+    - 希望不同水平的同学能写出基本一样的代码，那就要靠框架这个顶层设计来规范。
+- **框架扩展**
+    - 扩展功能时改动是否较大、是否支持功能实现的可插拔等。
+    - 框架要做的事情应该是定义模块与模块之间的交互标准，而不应该直接定义模块的具体实现方式。
+- **框架性能**
+    - 框架每秒支持多少请求、是否有性能问题等。
+    - 不应该把各个框架孤立出来看，应该将差不多量级的性能归为一组。
+- **文档完备** / **社区活跃**
+    - 是否有完善的文档支持、社区是否足够活跃、咨询问题多久回复等。
+    - 从项目官网、GitHub 或邮件组上获取信息。
+
+### 框架选择
+
+[第三方测评结果](https://web-frameworks-benchmark.netlify.app/result) 可以用来查看各框架之间的性能对比。
+
+[go-web-framework-stars](https://github.com/mingrammer/go-web-framework-stars)，可以用来获取实时流行度对比。
+
+- **Beego**：功能很全的一个框架，设计感较为古早，从零快速开发场景适用。
+- **Echo**：轻量，除了路由、Context 之外，都以 Middleware 形式提供，扩展性强，适合个人开发者。
+- **Gin**：轻量，路由使用 `httprouter` 包，链式加载调用 Middleware，并且制定标准并开放 [社区贡献 organizations](https://github.com/gin-contrib)，社区活跃度高，扩展性强，适合企业级团队使用。
+
+在保证框架的核心模块能满足要求的情况下，我们一般在功能完备性和框架扩展性之间取舍。
+
+- 并发低、人少、开发快，可以优先考虑功能完备性；
+- 高并发、团队、改动框架需求大，可以优先考虑扩展性；
+- 更多灵活性，可以考虑从 `net/http` 标准库开始自研；
+
+原则：**只选最适合的**
 
 ## 08、
 
 ## 09、
 
 ## 10、
+
+## 11、
+
+## 12、
+
+## 13、
+
+## 14、
+
+## 15、
+
+## 16、
+
+## 17、
+
+## 18、
+
+## 19、
+
+## 20、
