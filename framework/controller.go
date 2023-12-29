@@ -1,3 +1,5 @@
 package framework
 
-type ControllerHandler func(c *Context) error
+import "github.com/chenbihao/gob/framework/gin"
+
+type ControllerHandler func(c *gin.Context) error

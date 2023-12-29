@@ -1,18 +1,16 @@
 package main
 
 import (
-	"gob/framework"
+	"github.com/chenbihao/gob/framework/gin"
 	"time"
 )
 
-func UserLoginController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, UserLoginController")
-	return nil
+func UserLoginController(c *gin.Context) {
+	c.ISetOkStatus().IJson("ok, UserLoginController")
 }
 
-func TimeoutController(c *framework.Context) error {
+func TimeoutController(c *gin.Context) {
 	// 执行具体的业务逻辑
 	time.Sleep(8 * time.Second)
-	c.SetOkStatus().Json("ok, TimeoutController")
-	return nil
+	c.ISetOkStatus().IJson("ok, TimeoutController")
 }

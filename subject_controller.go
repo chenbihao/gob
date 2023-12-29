@@ -1,33 +1,31 @@
 package main
 
-import "gob/framework"
+import (
+	"fmt"
+	"github.com/chenbihao/gob/framework/gin"
+)
 
-func SubjectAddController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, SubjectAddController")
-	return nil
+func SubjectAddController(c *gin.Context) {
+	c.ISetOkStatus().IJson("ok, SubjectAddController")
 }
 
-func SubjectListController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, SubjectListController")
-	return nil
+func SubjectListController(c *gin.Context) {
+	c.ISetOkStatus().IJson("ok, SubjectListController")
 }
 
-func SubjectDelController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, SubjectDelController")
-	return nil
+func SubjectDelController(c *gin.Context) {
+	c.ISetOkStatus().IJson("ok, SubjectDelController")
 }
 
-func SubjectUpdateController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, SubjectUpdateController")
-	return nil
+func SubjectUpdateController(c *gin.Context) {
+	c.ISetOkStatus().IJson("ok, SubjectUpdateController")
 }
 
-func SubjectGetController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, SubjectGetController")
-	return nil
+func SubjectGetController(c *gin.Context) {
+	subjectId, _ := c.DefaultParamInt("id", 0)
+	c.ISetOkStatus().IJson("ok, SubjectGetController:" + fmt.Sprint(subjectId))
 }
 
-func SubjectNameController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, SubjectNameController")
-	return nil
+func SubjectNameController(c *gin.Context) {
+	c.ISetOkStatus().IJson("ok, SubjectNameController")
 }
