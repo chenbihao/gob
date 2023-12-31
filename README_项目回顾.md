@@ -4,7 +4,7 @@
 
 项目地址：[GitHub - chenbihao/gob: go语言编写的web框架](https://github.com/chenbihao/gob)
 
-## 01、使用 net-http 标准库搭建 Web Server
+## 01、搭建 Web Server
 
 ### net-http 标准库
 
@@ -41,13 +41,13 @@ log.Fatal(http.ListenAndServe(":8080", nil))
 核心函数（能力、method）：
 
 - 第一层：标准库创建 HTTP 服务是通过创建一个 Server 数据结构完成的
-- 第二层：Server 数据结构在 for 循环中不断监听每一个连接
+- 第二层：`Server` 数据结构在 `for` 循环中不断监听每一个连接
 - 第三层：每个连接默认开启一个 Goroutine 为其服务
-- 第四五层：serverHandler 结构代表请求对应的处理逻辑，并且通过这个结构进行具体业务逻辑处理
-- 第六层：Server 数据结构如果没有设置处理函数 Handler，默认使用 DefaultServerMux 处理请求
-- 第七层：DefaultServerMux 是使用 map 结构来存储和查找路由规则
+- 第四五层：`serverHandler` 结构代表请求对应的处理逻辑，并且通过这个结构进行具体业务逻辑处理
+- 第六层：Server 数据结构如果没有设置处理函数 Handler，默认使用 `DefaultServerMux` 处理请求
+- 第七层：`DefaultServerMux` 是使用 map 结构来存储和查找路由规则
 
-## 02、使用 Context 标准库控制请求上下文
+## 02、控制请求上下文
 
 ### Context 标准库
 
@@ -987,17 +987,6 @@ func Timeout(d time.Duration) framework.ControllerHandler {
 读取请求数据 IRequest，`request.go`：
 
 ```go
-package framework
-import (
-	"bytes"
-	"encoding/json"
-	"encoding/xml"
-	"errors"
-	"github.com/spf13/cast"
-	"io/ioutil"
-	"mime/multipart"
-)
-
 // 代表请求包含的方法
 type IRequest interface {
 	// 请求地址 url 中带的参数
@@ -1065,131 +1054,7 @@ func (ctx *Context) QueryAll() map[string][]string {
 	return map[string][]string{}
 }
 
-// 请求地址url中带的参数
-// 形如: foo.com?a=1&b=bar&c[]=bar
-
-// 获取Int类型的请求参数
-func (ctx *Context) QueryInt(key string, def int) (int, bool) {
-	params := ctx.QueryAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			// 使用cast库将string转换为Int
-			return cast.ToInt(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) QueryInt64(key string, def int64) (int64, bool) {
-	params := ctx.QueryAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToInt64(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) QueryFloat64(key string, def float64) (float64, bool) {
-	params := ctx.QueryAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToFloat64(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) QueryFloat32(key string, def float32) (float32, bool) {
-	params := ctx.QueryAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToFloat32(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) QueryBool(key string, def bool) (bool, bool) {
-	params := ctx.QueryAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToBool(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) QueryString(key string, def string) (string, bool) {
-	params := ctx.QueryAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return vals[0], true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) QueryStringSlice(key string, def []string) ([]string, bool) {
-	params := ctx.QueryAll()
-	if vals, ok := params[key]; ok {
-		return vals, true
-	}
-	return def, false
-}
-
-func (ctx *Context) Query(key string) interface{} {
-	params := ctx.QueryAll()
-	if vals, ok := params[key]; ok {
-		return vals[0]
-	}
-	return nil
-}
-
-// 路由匹配中带的参数
-// 形如 /book/:id
-func (ctx *Context) ParamInt(key string, def int) (int, bool) {
-	if val := ctx.Param(key); val != nil {
-		// 通过cast进行类型转换
-		return cast.ToInt(val), true
-	}
-	return def, false
-}
-
-func (ctx *Context) ParamInt64(key string, def int64) (int64, bool) {
-	if val := ctx.Param(key); val != nil {
-		return cast.ToInt64(val), true
-	}
-	return def, false
-}
-
-func (ctx *Context) ParamFloat64(key string, def float64) (float64, bool) {
-	if val := ctx.Param(key); val != nil {
-		return cast.ToFloat64(val), true
-	}
-	return def, false
-}
-
-func (ctx *Context) ParamFloat32(key string, def float32) (float32, bool) {
-	if val := ctx.Param(key); val != nil {
-		return cast.ToFloat32(val), true
-	}
-	return def, false
-}
-
-func (ctx *Context) ParamBool(key string, def bool) (bool, bool) {
-	if val := ctx.Param(key); val != nil {
-		return cast.ToBool(val), true
-	}
-	return def, false
-}
-
-func (ctx *Context) ParamString(key string, def string) (string, bool) {
-	if val := ctx.Param(key); val != nil {
-		return cast.ToString(val), true
-	}
-	return def, false
-}
+... // Query* 
 
 // 获取路由参数
 func (ctx *Context) Param(key string) interface{} {
@@ -1201,78 +1066,14 @@ func (ctx *Context) Param(key string) interface{} {
 	return nil
 }
 
+... // Param* 
+
 func (ctx *Context) FormAll() map[string][]string {
 	if ctx.request != nil {
 		ctx.request.ParseForm()
 		return ctx.request.PostForm
 	}
 	return map[string][]string{}
-}
-
-func (ctx *Context) FormInt(key string, def int) (int, bool) {
-	params := ctx.FormAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToInt(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) FormInt64(key string, def int64) (int64, bool) {
-	params := ctx.FormAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToInt64(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) FormFloat64(key string, def float64) (float64, bool) {
-	params := ctx.FormAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToFloat64(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) FormFloat32(key string, def float32) (float32, bool) {
-	params := ctx.FormAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToFloat32(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) FormBool(key string, def bool) (bool, bool) {
-	params := ctx.FormAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return cast.ToBool(vals[0]), true
-		}
-	}
-	return def, false
-}
-
-func (ctx *Context) FormString(key string, def string) (string, bool) {
-	params := ctx.FormAll()
-	if vals, ok := params[key]; ok {
-		return vals[0], true
-	}
-	return def, false
-}
-
-func (ctx *Context) FormStringSlice(key string, def []string) ([]string, bool) {
-	params := ctx.FormAll()
-	if vals, ok := params[key]; ok {
-		return vals, true
-	}
-	return def, false
 }
 
 func (ctx *Context) FormFile(key string) (*multipart.FileHeader, error) {
@@ -1289,15 +1090,7 @@ func (ctx *Context) FormFile(key string) (*multipart.FileHeader, error) {
 	return fh, err
 }
 
-func (ctx *Context) Form(key string) interface{} {
-	params := ctx.FormAll()
-	if vals, ok := params[key]; ok {
-		if len(vals) > 0 {
-			return vals[0]
-		}
-	}
-	return nil
-}
+... // Form* 
 
 // 将body文本解析到obj结构体中
 func (ctx *Context) BindJson(obj interface{}) error {
@@ -1354,17 +1147,9 @@ func (ctx *Context) GetRawData() ([]byte, error) {
 }
 
 // 基础信息
-func (ctx *Context) Uri() string {
-	return ctx.request.RequestURI
-}
-
-func (ctx *Context) Method() string {
-	return ctx.request.Method
-}
-
-func (ctx *Context) Host() string {
-	return ctx.request.URL.Host
-}
+func (ctx *Context) Uri() string { return ctx.request.RequestURI }
+func (ctx *Context) Method() string { return ctx.request.Method }
+func (ctx *Context) Host() string { return ctx.request.URL.Host }
 
 func (ctx *Context) ClientIp() string {
 	r := ctx.request
@@ -1378,11 +1163,9 @@ func (ctx *Context) ClientIp() string {
 	return ipAddress
 }
 
-// header
 func (ctx *Context) Headers() map[string][]string {
 	return ctx.request.Header
 }
-
 func (ctx *Context) Header(key string) (string, bool) {
 	vals := ctx.request.Header.Values(key)
 	if vals == nil || len(vals) <= 0 {
@@ -1390,8 +1173,6 @@ func (ctx *Context) Header(key string) (string, bool) {
 	}
 	return vals[0], true
 }
-
-// cookie
 func (ctx *Context) Cookies() map[string]string {
 	cookies := ctx.request.Cookies()
 	ret := map[string]string{}
@@ -1400,7 +1181,6 @@ func (ctx *Context) Cookies() map[string]string {
 	}
 	return ret
 }
-
 func (ctx *Context) Cookie(key string) (string, bool) {
 	cookies := ctx.Cookies()
 	if val, ok := cookies[key]; ok {
@@ -1416,40 +1196,20 @@ func (ctx *Context) Cookie(key string) (string, bool) {
 封装返回数据 IResponse，`response.go`：
 
 ```go
-package framework
-
-import (
-	"encoding/json"
-	"encoding/xml"
-	"fmt"
-	"html/template"
-	"net/http"
-	"net/url"
-)
-
 // IResponse 代表返回方法
 type IResponse interface {
-	// Json 输出
 	Json(obj interface{}) IResponse
-	// Jsonp 输出
 	Jsonp(obj interface{}) IResponse
-	//xml 输出
 	Xml(obj interface{}) IResponse
-	// html 输出
 	Html(template string, obj interface{}) IResponse
-	// string
 	Text(format string, values ...interface{}) IResponse
 
 	// 重定向
 	Redirect(path string) IResponse
-
 	// header
 	SetHeader(key string, val string) IResponse
-	// Cookie
 	SetCookie(key string, val string, maxAge int, path, domain string, secure, httpOnly bool) IResponse
-	// 设置状态码
 	SetStatus(code int) IResponse
-	// 设置 200 状态
 	SetOkStatus() IResponse
 }
 
@@ -1465,28 +1225,18 @@ func (ctx *Context) Jsonp(obj interface{}) IResponse {
 
 	// 输出函数名
 	_, err := ctx.responseWriter.Write([]byte(callback))
-	if err != nil {
-		return ctx
-	}
+	if err != nil { return ctx }
 	// 输出左括号
 	_, err = ctx.responseWriter.Write([]byte("("))
-	if err != nil {
-		return ctx
-	}
+	if err != nil {	return ctx }
 	// 数据函数参数
 	ret, err := json.Marshal(obj)
-	if err != nil {
-		return ctx
-	}
+	if err != nil {	return ctx }
 	_, err = ctx.responseWriter.Write(ret)
-	if err != nil {
-		return ctx
-	}
+	if err != nil {	return ctx }
 	// 输出右括号
 	_, err = ctx.responseWriter.Write([]byte(")"))
-	if err != nil {
-		return ctx
-	}
+	if err != nil {	return ctx }
 	return ctx
 }
 
@@ -1505,9 +1255,7 @@ func (ctx *Context) Xml(obj interface{}) IResponse {
 func (ctx *Context) Html(file string, obj interface{}) IResponse {
 	// 读取模版文件，创建template实例
 	t, err := template.New("output").ParseFiles(file)
-	if err != nil {
-		return ctx
-	}
+	if err != nil { return ctx }
 	// 执行Execute方法将obj和模版进行结合
 	if err := t.Execute(ctx.responseWriter, obj); err != nil {
 		return ctx
@@ -1583,7 +1331,7 @@ func (ctx *Context) Json(obj interface{}) IResponse {
 
 ### 目标
 
-优雅关闭服务：关闭进程的时候，不能暴力关闭进程，而是要等进程中的所有请求都逻辑处理结束后，才关闭进程。
+优雅关闭服务：关闭进程的时候，不能暴力关闭进程，要等进程中的所有请求都逻辑处理结束后才关闭进程。
 
 分为两步：
 - 控制关闭进程的操作
@@ -1605,7 +1353,7 @@ func (ctx *Context) Json(obj interface{}) IResponse {
 
 #### 等待所有逻辑都处理结束
 
-在 Golang 1.8 版本之前，`net/http` 是没有提供方法的，可以用第三方库例如：[manners](https://github.com/braintree/manners) 、 [graceful](https://github.com/tylerstillwater/graceful) 、 [grace](https://github.com/facebookarchive/grace) 。
+在 Golang 1.8 版本之前，`net/http` 没有提供，可以用第三方库例如：[manners](https://github.com/braintree/manners) 、 [graceful](https://github.com/tylerstillwater/graceful) 、 [grace](https://github.com/facebookarchive/grace) 。
 
 在 1.8 版本之后，`net/http` 引入了 `server.Shutdown` 来进行优雅重启。
 
@@ -1678,7 +1426,7 @@ func main() {
 
 - **Beego**：功能很全的一个框架，设计感较为古早，从零快速开发场景适用。
 - **Echo**：轻量，除了路由、Context 之外，都以 Middleware 形式提供，扩展性强，适合个人开发者。
-- **Gin**：轻量，路由使用 `httprouter` 包，链式加载调用 Middleware，并且制定标准并开放 [社区贡献 organizations](https://github.com/gin-contrib)，社区活跃度高，扩展性强，适合企业级团队使用。
+- **Gin**：轻量，路由使用 [httprouter](https://github.com/julienschmidt/httprouter) 包，链式加载调用 Middleware，并且制定标准并开放 [社区贡献 organizations](https://github.com/gin-contrib)，社区活跃度高，扩展性强，适合企业级团队使用。
 
 在保证框架的核心模块能满足要求的情况下，我们一般在功能完备性和框架扩展性之间取舍。
 
@@ -1688,13 +1436,403 @@ func main() {
 
 原则：**只选最适合的**
 
-## 08、
+## 08、09、集成 Gin 替换已有核心
 
-## 09、
+### 新旧框架差距：细节与生态
 
-## 10、
+例如 `Recovery` 的错误捕获，Gin 也很细节的处理了底层连接的异常，并且进行堆栈信息打印等（细节处理）。
 
-## 11、
+例如路由处理，Gin 选用了压缩后的基数树（radix tree），并且使用 `indices`、 `unsafe.Pointer` 等，优化查询效率减少资源消耗。
+
+同时，Gin 社区也有共享开源中间件， [官方GitHub](https://github.com/orgs/gin-contrib/repositories) 组织收录的中间件有 23 个，非收录官方的在 [官方README](https://github.com/gin-gonic/contrib) 记录的也有 45 个。
+
+这些中间件包含了 Web 开发各个方面的功能，比如提供跨域请求的 cors 中间件、提供本地缓存的 cache 中间件、集成了 pprof 工具的 pprof 中间件、自动生成全链路 trace 的 opengintracing 中间件等等。 **如果你用一个自己的框架，就需要重建生态一一开发，这是非常烦琐的，而且工作量巨大**。
+
+### 站在巨人的肩膀才能做得更好
+
+只有站在巨人的肩膀才能做得更好，如果是为了学习，直接从零自己边造轮子边学是个好方法； **但是如果你的目标是工业使用，那从零开始就非常不明智了**。
+
+**其实很多市面上的框架，也都是基于已有的轮子来再开发的**。就拿 Gin 框架本身来说吧，它的路由是基于 [httprouter](https://github.com/julienschmidt/httprouter) 这个项目来定制化修改的；再比如 [Macaron](https://github.com/go-macaron/macaron) 框架，它是基于 [Martini](https://github.com/go-martini/martini) 框架的设计实现的。它们都是在原有的开源项目基础上，按照自己的设计思路重新改造的，也都获得了成功。
+
+所以，我们先从零搭建出框架的核心部分，然后基于 Gin 来做进一步拓展和完善整个框架。
+
+### 小结
+
+**现代框架的理念不在于实现，而更多在于组合**。基于某些基础组件或者基础实现，不断按照自己或者公司的需求，进行二次改造和二次开发，从而打造出适合需求的形态。
+
+比如 PHP 领域的 Laravel 框架，就是将各种底层组件、Symfony、Eloquent ORM、Monolog 等进行组装，而框架自身提供统一的组合调度方式；比如 Ruby 领域的 Rails 框架，整合了 Ruby 领域的各种优秀开源库。
+
+**而框架的重点在于如何整理组件库、如何提供更便捷的机制，让程序员迅速解决问题**。
+
+### 如何借力，开源项目的许可协议
+
+最主流的开源许可证有 6 种：Apache、BSD、GPL、LGPL、MIT、Mozillia。
+
+BSD 许可证、MIT 许可证和 Apache 许可证属于三个比较宽松的许可，都允许对源代码进行修改，且可以在闭源软件中使用，区别在于对新的修改，是否必须使用原先的许可证格式，以及修改后的软件是否能以原软件的名义进行销售等。
+
+Gin 框架使用的 [MIT开源许可证](https://github.com/gin-gonic/gin/blob/master/LICENSE) ：
+
+- 允许被许可人使用、复制、修改、合并、出版发行、散布、再许可、售卖软件及软件副本。
+- 唯一条件是在软件和软件副本中必须包含著作权声明和本许可声明。
+
+只需要在软件中包含著作权声明和许可协议声明就行，且不要求新的文件必须使用 MIT 协议。
+
+### 如何将 Gin 迁移进框架
+
+#### 复制项目与替换引用
+
+复制项目进 `framework` 目录的 `gin` 子目录里
+
+- 将 Gin 目录下的 `go.mod` 的内容复制到我们项目的 `go.mod` 里，并将 Gin 目录下的 `go.mod` 和 `go.sum` 删除。
+
+```go
+// 这里我从 module gob 改为为 module github.com/chenbihao/gob
+// 引用到包相关的也需要改
+// 例如 main.go 中的 import "gob/framework" 需改成 "github.com/chenbihao/gob/framework"
+module github.com/用户名/项目名  // 不一定要项目地址，可以自定义
+
+go 1.20
+
+require (
+	...  
+	github.com/spf13/cast v1.6.0
+)
+```
+
+- 将 Gin 中原有 Gin 库的引用地址，统一替换为当前项目的地址
+
+将 Gin 框架中引用 `github.com/gin-gonic/gin` 的地方替换为 `github.com/用户名/项目名/framework/gin`
+
+做完上述两步的操作之后，项目 `github.com/chenbihao/gob` 就包含了 Gin 1.9.1 了。
+
+#### 迁移功能
+
+梳理下目前已经实现的模块：
+
+- Context（Gin 已有，逻辑差不多）
+    - 作用：请求控制器，控制每个请求的超时等逻辑；
+    - `Core` 数据结构对应 Gin 中的 `Engine`，
+    - `Group` 数据结构对应 Gin 的 `Group` 结构，
+    - `Context` 数据结构对应 Gin 的 `Context` 数据结构。
+- 路由（Gin 已有，用的 [httprouter](https://github.com/julienschmidt/httprouter) ）
+    - 作用：让请求更快寻找目标函数，并且支持通配符、分组等方式制定路由规则；
+- 中间件（Gin 已有，无返回错误）
+    - 作用：能将通用逻辑转化为中间件，并串联中间件实现业务逻辑；
+- 封装（Gin 部分实现）
+    - 作用：提供易用的逻辑，把 `request` 和 `response` 封装在 Context 结构中；
+- 重启（直接用）
+    - 作用：实现优雅关闭机制，让服务可以重启。
+
+Context 实现基本一致，路由实现更好，中间件调整成无返回错误。
+
+以上直接用实现得更好的 gin 框架内容，保留我们自己封装的优雅关闭，以及 `request` 和 `response` 。
+
+#### 代码实现
+
+`main.go` ：
+
+```go
+func main() {
+	// 核心框架初始化
+	// core := framework.NewCore()
+	core := gin.New()   
+	
+	// 设置路由  
+	registerRouter(core)
+	...
+}
+```
+
+注册路由也改为 gin 的用法，`router.go`：
+
+```go
+// 注册路由规则
+// func registerRouter(core *framework.Core) {
+func registerRouter(core *gin.Engine) {
+	core.Use(gin.Recovery())  // 使用 gin 的 Recovery 中间件
+	core.Use(middleware.Cost())
+	// gin.Engine 的方法为全大写
+	core.GET("/user/login", middleware.Test3(), UserLoginController)
+	
+	subjectApi := core.Group("/subject")
+	{
+		subjectApi.DELETE("/:id", SubjectDelController)
+		subjectApi.PUT("/:id", SubjectUpdateController)
+		subjectApi.GET("/:id", SubjectGetController)
+		subjectApi.GET("/list/all", SubjectListController)
+		subjectInnerApi := subjectApi.Group("/info")
+		subjectInnerApi.GET("/name", SubjectNameController)
+	}
+	core.GET("/timeout", middleware.Timeout(10*time.Second), TimeoutController)
+}
+```
+
+`context.go` 迁入 `gin` 文件夹里，并且改名为 `gob_context.go`，只保留 `BaseContext()` ：
+
+```go
+func (ctx *Context) BaseContext() context.Context {
+	return ctx.Request.Context()
+}
+```
+
+中间件改动，`middleware` 文件夹：
+
+```go
+func MiddlewareName() framework.ControllerHandler {
+	return func(ctx *framework.Context) error {
+	...  
+	return nil
+}}
+
+// framework.ControllerHandler 改成 gin.HandlerFunc ，
+// *framework.Context 改成 *gin.Context  并且去掉返回错误
+
+func MiddlewareName() gin.HandlerFunc {
+	return func(c *gin.Context) {
+	...
+}}
+```
+
+业务 `controller.go` 改动：
+
+```go
+func UserLoginController(c *framework.Context) error {
+
+// 把 *framework.Context  改成 *gin.Context
+// 去掉返回错误，并且把相关 IResponse 调整一下
+
+func UserLoginController(c *gin.Context) {
+```
+
+`request.go` 与 `response.go` 迁入 `gin` 文件夹里，并且改名为 `gob_request.go` 与 `gob_response.go`，
+
+改造 `gob_request.go`：
+
+```go
+// const defaultMultipartMemory = 32 << 20 // 32 MB
+
+// 代表请求包含的方法
+type IRequest interface {
+	// 请求地址url中带的参数
+	DefaultQueryInt(key string, def int) (int, bool)
+	DefaultQueryInt64(key string, def int64) (int64, bool)
+	DefaultQueryFloat64(key string, def float64) (float64, bool)
+	DefaultQueryFloat32(key string, def float32) (float32, bool)
+	DefaultQueryBool(key string, def bool) (bool, bool)
+	DefaultQueryString(key string, def string) (string, bool)
+	DefaultQueryStringSlice(key string, def []string) ([]string, bool)
+
+	// 路由匹配中带的参数
+	DefaultParamInt(key string, def int) (int, bool)
+	DefaultParamInt64(key string, def int64) (int64, bool)
+	DefaultParamFloat64(key string, def float64) (float64, bool)
+	DefaultParamFloat32(key string, def float32) (float32, bool)
+	DefaultParamBool(key string, def bool) (bool, bool)
+	DefaultParamString(key string, def string) (string, bool)
+	DefaultParam(key string) interface{}
+
+	// form表单中带的参数
+	DefaultFormInt(key string, def int) (int, bool)
+	DefaultFormInt64(key string, def int64) (int64, bool)
+	DefaultFormFloat64(key string, def float64) (float64, bool)
+	DefaultFormFloat32(key string, def float32) (float32, bool)
+	DefaultFormBool(key string, def bool) (bool, bool)
+	DefaultFormString(key string, def string) (string, bool)
+	DefaultFormStringSlice(key string, def []string) ([]string, bool)
+	DefaultFormFile(key string) (*multipart.FileHeader, error)
+	DefaultForm(key string) interface{}
+}
+
+var _ IRequest = new(Context) // 确保类型实现接口
+
+// 获取请求地址中所有参数
+func (ctx *Context) QueryAll() map[string][]string {
+	ctx.initQueryCache()
+	return ctx.queryCache
+}
+
+// gin 已经实现的
+//func (ctx *Context) Query(key string) interface{} {
+
+... // DefaultQuery*
+
+// 获取路由参数
+func (ctx *Context) DefaultParam(key string) interface{} {
+	if val, ok := ctx.Params.Get(key); ok {
+		return val
+	}
+	return nil
+}
+
+... // DefaultParam*
+
+func (ctx *Context) FormAll() map[string][]string {
+	ctx.initFormCache()
+	return ctx.formCache
+}
+func (ctx *Context) DefaultFormFile(key string) (*multipart.FileHeader, error) {
+	if ctx.Request.MultipartForm == nil {
+		if err := ctx.Request.ParseMultipartForm(defaultMultipartMemory); err != nil {
+			return nil, err
+		}
+	}
+	f, fh, err := ctx.Request.FormFile(key)
+	if err != nil {
+		return nil, err
+	}
+	f.Close()
+	return fh, err
+}
+
+... // DefaultForm*
+
+```
+
+`gob_response.go`：
+
+```go
+// IResponse 代表返回方法
+type IResponse interface {
+	// Json 输出
+	IJson(obj interface{}) IResponse
+	// Jsonp 输出
+	IJsonp(obj interface{}) IResponse
+	// xml 输出
+	IXml(obj interface{}) IResponse
+	// html 输出
+	IHtml(template string, obj interface{}) IResponse
+	// string
+	IText(format string, values ...interface{}) IResponse
+
+	// 重定向
+	IRedirect(path string) IResponse
+
+	// header
+	ISetHeader(key string, val string) IResponse
+	// Cookie
+	ISetCookie(key string, val string, maxAge int, path, domain string, secure, httpOnly bool) IResponse
+	// 设置状态码
+	ISetStatus(code int) IResponse
+	// 设置200状态
+	ISetOkStatus() IResponse
+}
+
+var _ IResponse = new(Context) // 确保类型实现接口
+
+// Jsonp输出
+func (ctx *Context) IJsonp(obj interface{}) IResponse {
+	// 获取请求参数callback
+	callbackFunc := ctx.Query("callback")
+	ctx.ISetHeader("Content-Type", "application/javascript")
+	// 输出到前端页面的时候需要注意下进行字符过滤，否则有可能造成xss攻击
+	callback := template.JSEscapeString(callbackFunc)
+
+	// 输出函数名
+	_, err := ctx.Writer.Write([]byte(callback))
+	if err != nil { return ctx }
+	// 输出左括号
+	_, err = ctx.Writer.Write([]byte("("))
+	if err != nil { return ctx }
+	// 数据函数参数
+	ret, err := json.Marshal(obj)
+	if err != nil { return ctx }
+	_, err = ctx.Writer.Write(ret)
+	if err != nil { return ctx }
+	// 输出右括号
+	_, err = ctx.Writer.Write([]byte(")"))
+	if err != nil { return ctx }
+	return ctx
+}
+
+// xml输出
+func (ctx *Context) IXml(obj interface{}) IResponse {
+	byt, err := xml.Marshal(obj)
+	if err != nil {
+		return ctx.ISetStatus(http.StatusInternalServerError)
+	}
+	ctx.ISetHeader("Content-Type", "application/html")
+	ctx.Writer.Write(byt)
+	return ctx
+}
+
+// html输出
+func (ctx *Context) IHtml(file string, obj interface{}) IResponse {
+	// 读取模版文件，创建template实例
+	t, err := template.New("output").ParseFiles(file)
+	if err != nil {
+		return ctx
+	}
+	// 执行Execute方法将obj和模版进行结合
+	if err := t.Execute(ctx.Writer, obj); err != nil {
+		return ctx
+	}
+	ctx.ISetHeader("Content-Type", "application/html")
+	return ctx
+}
+
+// string
+func (ctx *Context) IText(format string, values ...interface{}) IResponse {
+	out := fmt.Sprintf(format, values...)
+	ctx.ISetHeader("Content-Type", "application/text")
+	ctx.Writer.Write([]byte(out))
+	return ctx
+}
+
+func (ctx *Context) IRedirect(path string) IResponse {
+	http.Redirect(ctx.Writer, ctx.Request, path, http.StatusMovedPermanently)
+	return ctx
+}
+func (ctx *Context) ISetHeader(key string, val string) IResponse {
+	ctx.Writer.Header().Add(key, val)
+	return ctx
+}
+func (ctx *Context) ISetCookie(key string, val string, maxAge int, path string, domain string, secure bool, httpOnly bool) IResponse {
+	if path == "" {
+		path = "/"
+	}
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     key,
+		Value:    url.QueryEscape(val),
+		MaxAge:   maxAge,
+		Path:     path,
+		Domain:   domain,
+		SameSite: 1,
+		Secure:   secure,
+		HttpOnly: httpOnly,
+	})
+	return ctx
+}
+func (ctx *Context) ISetStatus(code int) IResponse {
+	ctx.Writer.WriteHeader(code)
+	return ctx
+}
+func (ctx *Context) ISetOkStatus() IResponse {
+	ctx.Writer.WriteHeader(http.StatusOK)
+	return ctx
+}
+func (ctx *Context) IJson(obj interface{}) IResponse {
+	byt, err := json.Marshal(obj)
+	if err != nil {
+		return ctx.ISetStatus(http.StatusInternalServerError)
+	}
+	ctx.ISetHeader("Content-Type", "application/json")
+	ctx.Writer.Write(byt)
+	return ctx
+}
+
+```
+
+>[!note] 注意：在运行时需要 build 整个项目，否则会导致找不到方法
+>
+> Goland 中可以配置成：package 模式，包路径为：github.com/chenbihao/gob
+
+#### 验证
+
+调用 `go test ./...` 来运行 Gin 程序的所有测试用例，显示成功则表示我们的迁移成功。
+
+并且通过 `go build && ./hade` 可以看到熟悉的 gin 调试模式的输出。
+
+## 10、11、面向接口编程：封装服务
 
 ## 12、
 
