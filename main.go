@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/chenbihao/gob/provider/demo"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +18,9 @@ func main() {
 	// 核心框架初始化
 	// core := framework.NewCore()
 	core := gin.New()
+
+	// 绑定具体的服务
+	core.Bind(&demo.DemoServiceProvider{})
 
 	// 设置路由
 	registerRouter(core)

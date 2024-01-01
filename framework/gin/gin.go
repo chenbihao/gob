@@ -6,6 +6,7 @@ package gin
 
 import (
 	"fmt"
+	"github.com/chenbihao/gob/framework"
 	"html/template"
 	"net"
 	"net/http"
@@ -82,6 +83,10 @@ const (
 // Engine is the framework's instance, it contains the muxer, middleware and configuration settings.
 // Create an instance of Engine, by using New() or Default()
 type Engine struct {
+
+	// gob改动：新增容器
+	container framework.Container
+
 	RouterGroup
 
 	// RedirectTrailingSlash enables automatic redirection if the current route can't be matched but a
@@ -188,6 +193,8 @@ func New() *Engine {
 			basePath: "/",
 			root:     true,
 		},
+		// gob改动：这里注入了 container
+		container:              framework.NewGobContainer(),
 		FuncMap:                template.FuncMap{},
 		RedirectTrailingSlash:  true,
 		RedirectFixedPath:      false,
@@ -232,7 +239,8 @@ func (engine *Engine) Handler() http.Handler {
 func (engine *Engine) allocateContext(maxParams uint16) *Context {
 	v := make(Params, 0, maxParams)
 	skippedNodes := make([]skippedNode, 0, engine.maxSections)
-	return &Context{engine: engine, params: &v, skippedNodes: &skippedNodes}
+	// gob改动：注入容器到每个Context中
+	return &Context{engine: engine, params: &v, skippedNodes: &skippedNodes, container: engine.container}
 }
 
 // Delims sets template left and right delims and returns an Engine instance.
