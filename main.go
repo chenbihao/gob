@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/chenbihao/gob/provider/demo"
+	"github.com/chenbihao/gob/framework/provider/app"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +20,8 @@ func main() {
 	core := gin.New()
 
 	// 绑定具体的服务
-	core.Bind(&demo.DemoServiceProvider{})
+	// 指定 BaseFolder
+	core.Bind(&app.GobAppProvider{BaseFolder: "/tmp"})
 
 	// 设置路由
 	registerRouter(core)
