@@ -13,7 +13,8 @@ type DemoService struct {
 	c framework.Container
 }
 
-var _ Service = &DemoService{} // 确保已经实现 Service 接口
+// var _ Service = &DemoService{} // 确保已经实现 Service 接口
+var _ Service = new(DemoService) // 确保已经实现 Service 接口
 
 // 实现接口
 func (s *DemoService) GetFoo() Foo {
