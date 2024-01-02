@@ -18,7 +18,7 @@ http.Handle("/foo", fooHandler)
 
 // 创建一个bar路由和处理函数
 http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
 })
 
 // 监听8080端口
@@ -67,9 +67,9 @@ log.Fatal(http.ListenAndServe(":8080", nil))
 
 ```go
 type Context interface {
-    // 当 Context 被取消或者到了 deadline，返回一个被关闭的 channel
-    Done() <-chan struct{}
-    ...
+// 当 Context 被取消或者到了 deadline，返回一个被关闭的 channel
+Done() <-chan struct{}
+...
 }
 
 //函数句柄
@@ -95,13 +95,13 @@ import (
 const shortDuration = 1 * time.Millisecond
 
 func main() {
-    // 创建截止时间
+	// 创建截止时间
 	d := time.Now().Add(shortDuration)
-    // 创建有截止时间的 Context
+	// 创建有截止时间的 Context
 	ctx, cancel := context.WithDeadline(context.Background(), d)
 	defer cancel()
 
-    // 使用 select 监听 1s 和有截止时间的 Context 哪个先结束
+	// 使用 select 监听 1s 和有截止时间的 Context 哪个先结束
 	select {
 	case <-time.After(1 * time.Second):
 		fmt.Println("overslept")
@@ -128,15 +128,15 @@ func main() {
 
 ```go
 type Server struct {
-	...
-    // BaseContext 用来为整个链条创建初始化 Context
-    // 如果没有设置的话，默认使用 context.Background()
-	BaseContext func(net.Listener) context.Context{}
-	
-    // ConnContext 用来为每个连接封装 Context
-    // 参数中的 context.Context 是从 BaseContext 继承来的
-	ConnContext func(ctx context.Context, c net.Conn) context.Context{}
-    ...
+...
+// BaseContext 用来为整个链条创建初始化 Context
+// 如果没有设置的话，默认使用 context.Background()
+BaseContext func(net.Listener) context.Context{}
+
+// ConnContext 用来为每个连接封装 Context
+// 参数中的 context.Context 是从 BaseContext 继承来的
+ConnContext func(ctx context.Context, c net.Conn) context.Context{}
+...
 }
 ```
 
@@ -157,15 +157,15 @@ func Foo1(request *http.Request, response http.ResponseWriter) {}
 
 // 期待封装 Context 后的控制器使用
 func Foo2(ctx *framework.Context) error {
-	obj := map[string]interface{}{
-		"data":   nil,
-	}
-    // 从请求体中获取参数
- 	fooInt := ctx.FormInt("foo", 10)
-    // 构建返回结构
-	obj["data"] = fooInt
-    // 输出返回结构
-	return ctx.Json(http.StatusOK, obj)
+obj := map[string]interface{}{
+"data":   nil,
+}
+// 从请求体中获取参数
+fooInt := ctx.FormInt("foo", 10)
+// 构建返回结构
+obj["data"] = fooInt
+// 输出返回结构
+return ctx.Json(http.StatusOK, obj)
 }
 ```
 
@@ -176,32 +176,32 @@ func Foo2(ctx *framework.Context) error {
 ```go
 // 自定义 Context
 type Context struct {
-	request        *http.Request
-	responseWriter http.ResponseWriter
-	...
+request        *http.Request
+responseWriter http.ResponseWriter
+...
 }
 
 // 直接返回原生 Context
 func (ctx *Context) BaseContext() context.Context {
-	return ctx.request.Context()
+return ctx.request.Context()
 }
 
 // implement context.Context （实现标准 Context 接口）
 
 func (ctx *Context) Deadline() (deadline time.Time, ok bool) {
-	return ctx.BaseContext().Deadline()
+return ctx.BaseContext().Deadline()
 }
 
 func (ctx *Context) Done() <-chan struct{} {
-	return ctx.BaseContext().Done()
+return ctx.BaseContext().Done()
 }
 
 func (ctx *Context) Err() error {
-	return ctx.BaseContext().Err()
+return ctx.BaseContext().Err()
 }
 
 func (ctx *Context) Value(key any) any {
-	return ctx.BaseContext().Value(key)
+return ctx.BaseContext().Value(key)
 }
 ```
 
@@ -221,10 +221,10 @@ type ControllerHandler func(c *Context) error
 控制器使用，业务目录 `controller.go` ：
 
 ```go
-func FooControllerHandler(ctx *framework.Context) error {  
-    return ctx.Json(200, map[string]interface{}{  
-        "code": 0,  
-    })  
+func FooControllerHandler(ctx *framework.Context) error {
+return ctx.Json(200, map[string]interface{}{
+"code": 0,
+})
 }  
 ```
 
@@ -338,7 +338,7 @@ func (ctx *Context) WriterMux() *sync.Mutex {
 
 ```go
 type Handler interface {
-	ServeHTTP(ResponseWriter, *Request)
+ServeHTTP(ResponseWriter, *Request)
 }
 ```
 
@@ -351,19 +351,19 @@ type Handler interface {
 ```go
 func main() {
 
-	// 核心框架初始化
-	core := framework.NewCore()
+// 核心框架初始化
+core := framework.NewCore()
 
-	// 设置路由
-	registerRouter(core)
+// 设置路由
+registerRouter(core)
 
-	server := &http.Server{
-		// 自定义的请求核心处理函数
-		Handler: core,
-		// 请求监听地址
-		Addr: ":8080",
-	}
-	server.ListenAndServe()
+server := &http.Server{
+// 自定义的请求核心处理函数
+Handler: core,
+// 请求监听地址
+Addr: ":8080",
+}
+server.ListenAndServe()
 }
 ```
 
@@ -377,8 +377,8 @@ type ControllerHandler func(c *Context) error
 
 ```go
 func UserLoginController(c *framework.Context) error {
-	c.Json(200, "ok, UserLoginController")
-	return nil
+c.Json(200, "ok, UserLoginController")
+return nil
 }
 ```
 
@@ -387,24 +387,24 @@ func UserLoginController(c *framework.Context) error {
 ```go
 // 注册路由规则
 func registerRouter(core *framework.Core) {
-	// 需求1+2:HTTP方法+静态路由匹配
-	core.Get("/user/login", UserLoginController)
+// 需求1+2:HTTP方法+静态路由匹配
+core.Get("/user/login", UserLoginController)
 
-	// 需求3:批量通用前缀
-	subjectApi := core.Group("/subject")
-	{
-		// 需求4:动态路由
-		subjectApi.Delete("/:id", SubjectDelController)
-		subjectApi.Put("/:id", SubjectUpdateController)
-		subjectApi.Get("/:id", SubjectGetController)
-		subjectApi.Get("/list/all", SubjectListController)
-		
-		// 扩展需求：分组嵌套
-		subjectInnerApi := subjectApi.Group("/info")
-		{
-			subjectInnerApi.Get("/name", SubjectNameController)
-		}
-	}
+// 需求3:批量通用前缀
+subjectApi := core.Group("/subject")
+{
+// 需求4:动态路由
+subjectApi.Delete("/:id", SubjectDelController)
+subjectApi.Put("/:id", SubjectUpdateController)
+subjectApi.Get("/:id", SubjectGetController)
+subjectApi.Get("/list/all", SubjectListController)
+
+// 扩展需求：分组嵌套
+subjectInnerApi := subjectApi.Group("/info")
+{
+subjectInnerApi.Get("/name", SubjectNameController)
+}
+}
 }
 ```
 
@@ -413,53 +413,53 @@ func registerRouter(core *framework.Core) {
 ```go
 // IGroup 代表前缀分组
 type IGroup interface {
-	// 实现HttpMethod方法
-	Get(string, ControllerHandler)
-	Post(string, ControllerHandler)
-	Put(string, ControllerHandler)
-	Delete(string, ControllerHandler)
+// 实现HttpMethod方法
+Get(string, ControllerHandler)
+Post(string, ControllerHandler)
+Put(string, ControllerHandler)
+Delete(string, ControllerHandler)
 
-	// 实现嵌套group
-	Group(string) IGroup
+// 实现嵌套group
+Group(string) IGroup
 }
 
 // Group struct 实现了IGroup
 type Group struct {
-	core   *Core  // 指向core结构
-	parent *Group // 指向上一个Group，如果有的话
-	prefix string // 这个group的通用前缀
+core   *Core  // 指向core结构
+parent *Group // 指向上一个Group，如果有的话
+prefix string // 这个group的通用前缀
 }
 
 // 初始化Group
 func NewGroup(core *Core, prefix string) *Group {
-	return &Group{
-		core:   core,
-		parent: nil,
-		prefix: prefix,
-	}
+return &Group{
+core:   core,
+parent: nil,
+prefix: prefix,
+}
 }
 
 // 实现Get方法
 func (g *Group) Get(uri string, handler ControllerHandler) {
-	uri = g.getAbsolutePrefix() + uri
-	g.core.Get(uri, handler)
+uri = g.getAbsolutePrefix() + uri
+g.core.Get(uri, handler)
 }
 
 ...  //  POST、PUT、DELETE
 
 // 获取当前group的绝对路径
 func (g *Group) getAbsolutePrefix() string {
-	if g.parent == nil {
-		return g.prefix
-	}
-	return g.parent.getAbsolutePrefix() + g.prefix
+if g.parent == nil {
+return g.prefix
+}
+return g.parent.getAbsolutePrefix() + g.prefix
 }
 
 // 实现 Group 方法
 func (g *Group) Group(uri string) IGroup {
-	cgroup := NewGroup(g.core, uri)
-	cgroup.parent = g
-	return cgroup
+cgroup := NewGroup(g.core, uri)
+cgroup.parent = g
+return cgroup
 }
 ```
 
@@ -722,19 +722,19 @@ func (tree *Tree) FindHandler(uri string) ControllerHandler {
 // 注册路由规则
 func registerRouter(core *framework.Core) {
 
-	// 扩展需求1：core中使用use注册全局中间件 （需放在前面）
-	core.Use(middleware.Recovery(), middleware.Cost())
-	
-	// 扩展需求2：在core中使用middleware.Test3() 为单个路由增加中间件
-	core.Get("/user/login", middleware.Test3(), UserLoginController)
+// 扩展需求1：core中使用use注册全局中间件 （需放在前面）
+core.Use(middleware.Recovery(), middleware.Cost())
 
-	subjectApi := core.Group("/subject")
-	{
-		...
-		// 扩展需求3：在 group 中使用 middleware.Test3() 为单个路由增加中间件
-		subjectApi.Get("/middleware/test3", middleware.Test3(), SubjectAddController)
-	}
-	core.Get("/timeout", middleware.Timeout(time.Second), TimeoutController)
+// 扩展需求2：在core中使用middleware.Test3() 为单个路由增加中间件
+core.Get("/user/login", middleware.Test3(), UserLoginController)
+
+subjectApi := core.Group("/subject")
+{
+...
+// 扩展需求3：在 group 中使用 middleware.Test3() 为单个路由增加中间件
+subjectApi.Get("/middleware/test3", middleware.Test3(), SubjectAddController)
+}
+core.Get("/timeout", middleware.Timeout(time.Second), TimeoutController)
 }
 ```
 
@@ -743,24 +743,24 @@ func registerRouter(core *framework.Core) {
 ```go
 // 代表节点
 type node struct {
-	... 
-	handlers []ControllerHandler // 中间件+控制器
+...
+handlers []ControllerHandler // 中间件+控制器
 }
 ...
 // 增加路由节点
 func (tree *Tree) AddRouter(uri string, handlers []ControllerHandler) error {
-	...
-				cnode.handlers = handlers
-	...
+...
+cnode.handlers = handlers
+...
 }
 
 // 匹配uri
 func (tree *Tree) FindHandler(uri string) []ControllerHandler {
-	matchNode := tree.root.matchNode(uri)
-	if matchNode == nil {
-		return nil
-	}
-	return matchNode.handlers
+matchNode := tree.root.matchNode(uri)
+if matchNode == nil {
+return nil
+}
+return matchNode.handlers
 }
 
 ```
@@ -770,33 +770,33 @@ func (tree *Tree) FindHandler(uri string) []ControllerHandler {
 ```go
 // 自定义 Context
 type Context struct {
-	...
-	handlers []ControllerHandler // 当前请求的handler链条
-	index    int                 // 当前请求调用到调用链的哪个节点
+...
+handlers []ControllerHandler // 当前请求的handler链条
+index    int                 // 当前请求调用到调用链的哪个节点
 }
 
 func NewContext(r *http.Request, w http.ResponseWriter) *Context {
-	return &Context{
-		...
-		writerMux:      &sync.Mutex{},
-		index:          -1,
-	}
+return &Context{
+...
+writerMux:      &sync.Mutex{},
+index:          -1,
+}
 }
 
 // 为context设置handlers
 func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
-	ctx.handlers = handlers
+ctx.handlers = handlers
 }
 
 // 核心函数，调用context的下一个函数 
 func (ctx *Context) Next() error {
-	ctx.index++
-	if ctx.index < len(ctx.handlers) {
-		if err := ctx.handlers[ctx.index](ctx); err != nil {
-			return err
-		}
-	}
-	return nil
+ctx.index++
+if ctx.index < len(ctx.handlers) {
+if err := ctx.handlers[ctx.index](ctx); err != nil {
+return err
+}
+}
+return nil
 }
 ```
 
@@ -814,27 +814,27 @@ func (ctx *Context) Next() error {
 
 ```go
 type IGroup interface {
-	// 实现HttpMethod方法
-	Get(string, ...ControllerHandler)
-	Post(string, ...ControllerHandler)
-	Put(string, ...ControllerHandler)
-	Delete(string, ...ControllerHandler)
+// 实现HttpMethod方法
+Get(string, ...ControllerHandler)
+Post(string, ...ControllerHandler)
+Put(string, ...ControllerHandler)
+Delete(string, ...ControllerHandler)
 
-	// 实现嵌套group
-	Group(string) IGroup
-	// 嵌套中间件
-	Use(middlewares ...ControllerHandler)
+// 实现嵌套group
+Group(string) IGroup
+// 嵌套中间件
+Use(middlewares ...ControllerHandler)
 }
 type Group struct {
-	...
-	middlewares []ControllerHandler // 存放中间件
+...
+middlewares []ControllerHandler // 存放中间件
 }
 
 // 实现Get方法
 func (g *Group) Get(uri string, handlers ...ControllerHandler) {
-	uri = g.getAbsolutePrefix() + uri
-	allHandlers := append(g.getMiddlewares(), handlers...)  // 聚合
-	g.core.Get(uri, allHandlers...)
+uri = g.getAbsolutePrefix() + uri
+allHandlers := append(g.getMiddlewares(), handlers...)  // 聚合
+g.core.Get(uri, allHandlers...)
 }
 
 ...  // NewGroup  //  POST、PUT、DELETE
@@ -842,15 +842,15 @@ func (g *Group) Get(uri string, handlers ...ControllerHandler) {
 // 获取某个group的middleware
 // 这里就是获取除了Get/Post/Put/Delete之外设置的middleware
 func (g *Group) getMiddlewares() []ControllerHandler {
-	if g.parent == nil {
-		return g.middlewares
-	}
-	return append(g.parent.getMiddlewares(), g.middlewares...)
+if g.parent == nil {
+return g.middlewares
+}
+return append(g.parent.getMiddlewares(), g.middlewares...)
 }
 
 // 注册中间件
 func (g *Group) Use(middlewares ...ControllerHandler) {
-	g.middlewares = append(g.middlewares, middlewares...)
+g.middlewares = append(g.middlewares, middlewares...)
 }
 ```
 
@@ -917,38 +917,38 @@ func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 
 ```go
 func Timeout(d time.Duration) framework.ControllerHandler {
-	// 使用函数回调
-	return func(ctx *framework.Context) error {
-		finish := make(chan struct{}, 1)
-		panicChan := make(chan interface{}, 1)
-		// 执行业务逻辑前预操作：初始化超时context
-		durationCtx, cancel := context.WithTimeout(ctx.BaseContext(), d)
-		defer cancel()
+// 使用函数回调
+return func(ctx *framework.Context) error {
+finish := make(chan struct{}, 1)
+panicChan := make(chan interface{}, 1)
+// 执行业务逻辑前预操作：初始化超时context
+durationCtx, cancel := context.WithTimeout(ctx.BaseContext(), d)
+defer cancel()
 
-		go func() {
-			defer func() {
-				if p := recover(); p != nil {
-					panicChan <- p
-				}
-			}()
-			// 使用next执行具体的业务逻辑
-			ctx.Next()
+go func() {
+defer func() {
+if p := recover(); p != nil {
+panicChan <- p
+}
+}()
+// 使用next执行具体的业务逻辑
+ctx.Next()
 
-			finish <- struct{}{}
-		}()
-		// 执行业务逻辑后操作
-		select {
-		case p := <-panicChan:
-			ctx.Json(500, "time out")
-			log.Println(p)
-		case <-finish:
-			fmt.Println("finish")
-		case <-durationCtx.Done():
-			ctx.Json(500, "time out")
-			ctx.SetHasTimeout()
-		}
-		return nil
-	}
+finish <- struct{}{}
+}()
+// 执行业务逻辑后操作
+select {
+case p := <-panicChan:
+ctx.Json(500, "time out")
+log.Println(p)
+case <-finish:
+fmt.Println("finish")
+case <-durationCtx.Done():
+ctx.Json(500, "time out")
+ctx.SetHasTimeout()
+}
+return nil
+}
 }
 ```
 
@@ -1826,7 +1826,7 @@ func (ctx *Context) IJson(obj interface{}) IResponse {
 >
 > Goland 中可以配置成：package 模式，包路径为：github.com/chenbihao/gob
 
-#### 验证
+#### 代码验证
 
 调用 `go test ./...` 来运行 Gin 程序的所有测试用例，显示成功则表示我们的迁移成功。
 
@@ -1834,7 +1834,452 @@ func (ctx *Context) IJson(obj interface{}) IResponse {
 
 ## 10、11、面向接口编程：封装服务
 
-## 12、
+先接口后实现的方式，其实不仅仅是一种代码优化手段，更是一种编程思想：面向接口编程
+
+### 如何理解面向接口编程
+
+#### 抽象业务
+
+首先，接口实现了对业务逻辑的抽象，设计接口就是抽象业务的过程。
+
+#### 屏蔽具体实现
+
+其次，接口的使用能让调用方对能力敏感，而对具体实现不敏感。
+
+#### 面向接口/对象/过程
+
+面向过程：缺点是一旦需求有一些变化，整个链路的改动都会受影响。
+
+面向对象：抽象性强，但是封装性还不够。
+
+面向接口：
+
+面对业务，我们并不先定义具体的对象、思考对象有哪些属性，而是 **先思考如何抽象接口，把接口的定义放在第一步，然后多个模块之间梳理如何通过接口进行交互，最后才是实现具体的模块**。
+
+### 接口服务的理论基础
+
+按照面向接口编程的理念，将每个模块看成是一个服务，服务的具体实现不关心，关心的是服务提供的能力，即接口协议。
+
+**定义好每个模块服务的接口协议，规范服务与服务之间的调用，并且管理每个服务的具体实现。**
+
+每个模块服务都做两件事情：
+
+1. **服务提供者**（service provider）：
+    - 提供是 “创建服务实例的方法”
+    - 和自己提供的接口协议做绑定，这样当其他人要使用这个接口协议时能找到自己；
+2. **服务容器**（service container）：
+    - 提供 “实例化服务的方法”
+    - 使用到其他接口协议的时候，去框架主体中寻找。
+
+在框架初始化启动的时候，可以选择在服务容器中绑定多个服务提供者，每个服务提供者对应一个凭证。
+
+当要使用到某个服务的时候，再根据这个凭证去服务容器中，获取这个服务提供者提供的服务。
+
+**服务实例拥有哪些能力，即符合哪个接口协议，是预先在框架主体中定义好的。
+
+### 服务提供者的接口定义
+
+服务提供者需要以下能力：
+
+- 三个基础能力
+    - 获取服务凭证的能力 `Name`；
+    - 注册服务实例化的方法的能力 `Register`；
+    - 获取服务实例化方法参数的能力 `Params`；
+- 两个与实例化控制相关的方法
+    - 控制实例化时机方法 `IsDefer`
+    - 实例化预处理的方法 `Boot`。
+
+### 小结
+
+定义好每个模块服务的接口，规范服务与服务之间的调用，并且管理每个服务的具体实现
+
+### 服务容器的实现
+
+#### 目标
+
+框架的核心设计就是：框架主体作为一个服务容器，其他各个服务模块都作为服务提供者，在服务容器中注册自己的服务凭证和服务接口，通过服务凭证来获取具体的服务实例。
+
+这样，功能的具体实现交给了各个服务模块，我们只需要规范服务提供者也就是服务容器中的接口协议。
+
+#### 如何实现
+
+##### 服务容器接口设计
+
+**一个服务容器主要的功能是：为服务提供注册绑定、提供获取服务实例**，所以服务容器至少有两个方法：
+
+- 注册方法 `Bind`、以及扩展出判断是否已绑定 `IsBind` 方法。
+- 获取实例方法 `Make`，以及扩展出不返回 error 的 `MustMake` 方法。
+
+考虑 `Make` 的一种拓展场景：
+
+- 在获取服务实例的时候，按照不同参数初始化的 `MakeNew` 的方法，根据参数获取不同实例。
+
+##### 服务容器具体设计
+
+定义一个 GobContainer 数据结构，并且有 `map[string]interface{}` 结构 `instances`，其中 key 为关键字，value 为具体的服务实例，在 `Make` 系列的方法中，可以根据这个结构获取对应的服务实例。
+
+服务提供方也需要设计一个 `map[string]ServiceProvider` 来存储它们，这样在 Bind 操作的时候，只需要将服务提供方绑定到某个关键字凭证上即可。
+
+##### 容器与框架结合
+
+绑定操作是全局的操作，而获取操作是在单个请求中使用的。所以在全局，我们为服务容器绑定了服务提供方，就能在单个请求中获取这个服务。
+
+可以 **将服务容器存放在 Engine 中，并且在 Engine 初始化 Context 的时候，将服务容器传递进入 Context**。
+
+#### 代码实现
+
+服务提供者接口定义 `framework/provider.go` ：
+
+```go
+package framework
+
+// NewInstance 定义了如何创建一个新实例，所有服务容器的创建服务
+type NewInstance func(...interface{}) (interface{}, error)
+
+// ServiceProvider 定义一个服务提供者需要实现的接口
+type ServiceProvider interface {
+	// Register 在服务容器中注册了一个实例化服务的方法，是否在注册的时候就实例化，需要参考 IsDefer 接口。
+	Register(Container) NewInstance
+	// Boot 在调用实例化服务的时候会调用，可以把一些准备工作：基础配置，初始化参数的操作放在这个里面。
+	// 如果 Boot 返回 error，整个服务实例化就会实例化失败，返回错误
+	Boot(Container) error
+	// IsDefer 决定是否在注册的时候实例化这个服务，如果不是则在第一次 make 的时候进行实例化操作
+	// false 表示不需要延迟实例化，在注册的时候就实例化。true 表示延迟实例化
+	IsDefer() bool
+	// Params params 定义传递给 NewInstance 的参数，可以自定义多个，建议将 container 作为第一个参数
+	Params(Container) []interface{}
+	// Name 代表了这个服务提供者的凭证
+	Name() string
+}
+```
+
+服务容器的接口设计与具体实现 `framework/container.go` ：
+
+```go
+// Container 是一个服务容器，提供绑定服务和获取服务的功能
+type Container interface {
+	// Bind 绑定一个服务提供者，如果关键字凭证已经存在，会进行替换操作，返回 error
+	Bind(provider ServiceProvider) error
+	// IsBind 关键字凭证是否已经绑定服务提供者
+	IsBind(key string) bool
+	// Make 根据关键字凭证获取一个服务
+	Make(key string) (interface{}, error)
+	// MustMake 根据关键字凭证获取一个服务，如果未绑定服务提供者，那么会 panic。
+	// 在使用这个接口的时候请保证服务容器已经为这个关键字凭证绑定了服务提供者。
+	MustMake(key string) interface{}
+	// MakeNew 根据关键字凭证获取一个服务，只是这个服务并不是单例模式的
+	// 它是根据服务提供者注册的启动函数和传递的 params 参数实例化出来的
+	// 这个函数在需要为不同参数启动不同实例的时候非常有用
+	MakeNew(key string, params []interface{}) (interface{}, error)
+}
+
+// GobContainer 是服务容器的具体实现
+type GobContainer struct {
+	Container                            // 强制要求 GobContainer 实现 Container 接口
+	providers map[string]ServiceProvider // providers 存储注册的服务提供者，key 为字符串凭证
+	instances map[string]interface{}     // instance 存储具体的实例，key 为字符串凭证
+	lock      sync.RWMutex               // lock 用于锁住对容器的变更操作
+}
+
+// NewGobContainer 创建一个服务容器
+func NewGobContainer() *GobContainer {
+	return &GobContainer{
+		providers: map[string]ServiceProvider{},
+		instances: map[string]interface{}{},
+		lock:      sync.RWMutex{},
+	}
+}
+
+
+// Bind 将服务容器和关键字做了绑定
+func (container *GobContainer) Bind(provider ServiceProvider) error {
+	// 写锁
+	container.lock.Lock()
+	defer container.lock.Unlock()
+	key := provider.Name()
+
+	// key 为关键字，value 为注册的 ServiceProvider
+	container.providers[key] = provider
+
+	// if provider is not defer
+	if provider.IsDefer() == false {
+		if err := provider.Boot(container); err != nil {
+			return err
+		}
+		// 实例化方法
+		params := provider.Params(container)
+		method := provider.Register(container)
+		instance, err := method(params...)
+		if err != nil {
+			return errors.New(err.Error())
+		}
+		container.instances[key] = instance
+	}
+	return nil
+}
+func (container *GobContainer) IsBind(key string) bool {
+	return container.findServiceProvider(key) != nil
+}
+
+func (container *GobContainer) findServiceProvider(key string) ServiceProvider {
+	container.lock.RLock()
+	defer container.lock.RUnlock()
+	if sp, ok := container.providers[key]; ok {
+		return sp
+	}
+	return nil
+}
+
+func (container *GobContainer) newInstance(sp ServiceProvider, params []interface{}) (interface{}, error) {
+	// force new a
+	if err := sp.Boot(container); err != nil {
+		return nil, err
+	}
+	if params == nil {
+		params = sp.Params(container)
+	}
+	method := sp.Register(container)
+	ins, err := method(params...)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+	return ins, err
+}
+
+// Make 方式调用内部的 make 实现
+func (container *GobContainer) Make(key string) (interface{}, error) {
+	return container.make(key, nil, false)
+}
+
+// MustMake 方式调用内部的 make 实现
+func (container *GobContainer) MustMake(key string) interface{} {
+	serv, err := container.make(key, nil, false)
+	if err != nil {
+		panic(err)
+	}
+	return serv
+}
+
+// MakeNew 方式使用内部的 make 初始化
+func (container *GobContainer) MakeNew(key string, params []interface{}) (interface{}, error) {
+	return container.make(key, params, true)
+}
+
+// 真正的实例化一个服务
+func (container *GobContainer) make(key string, params []interface{}, forceNew bool) (interface{}, error) {
+	container.lock.RLock()
+	defer container.lock.RUnlock()
+	// 查询是否已经注册了这个服务提供者，如果没有注册，则返回错误
+	sp := container.findServiceProvider(key)
+	if sp == nil {
+		return nil, errors.New("contract " + key + " have not register")
+	}
+	if forceNew {
+		return container.newInstance(sp, params)
+	}
+	// 不需要强制重新实例化，如果容器中已经实例化了，那么就直接使用容器中的实例
+	if ins, ok := container.instances[key]; ok {
+		return ins, nil
+	}
+
+	// 容器中还未实例化，则进行一次实例化
+	inst, err := container.newInstance(sp, nil)
+	if err != nil {
+		return nil, err
+	}
+	container.instances[key] = inst
+	return inst, nil
+}
+
+
+```
+
+容器与框架结合 - 服务容器的创建和传递
+
+`framework/gin/gin.go` 中：
+
+```go
+type Engine struct {
+	// gob改动：新增容器
+	container framework.Container
+    ...
+}
+
+func New() *Engine {
+	debugPrintWARNINGNew()
+	engine := &Engine{
+		...
+		// gob改动：这里注入了 container
+		container:              framework.NewHadeContainer(),
+		...
+	}
+	...
+	engine.pool.New = func() any {
+		return engine.allocateContext(engine.maxParams)
+	}
+	return engine
+}
+
+// engine 创建 context
+func (engine *Engine) allocateContext() *Context {
+	v := make(Params, 0, engine.maxParams)
+	// gob改动：注入容器到每个Context中（在分配新的 Context 的时候）
+	return &Context{engine: engine, params: &v, container: engine.container}
+}
+```
+
+`framework/gin/context.go` ：
+
+```go
+type Context struct {
+	// gob改动：注入容器到每个Context中
+	container framework.Container
+	...
+}
+```
+
+容器与框架结合 - 服务容器方法的封装
+
+`Engine` 中负责绑定，`Context` 中负责获取，调整文件 `framework/gin/gob_context.go` ：
+
+```go
+// --- 基础能力
+
+func (ctx *Context) BaseContext() context.Context {
+	return ctx.Request.Context()
+}
+
+// --- 服务容器：engine 实现 container 的绑定封装
+
+// Bind 绑定一个服务提供者，如果关键字凭证已经存在，会进行替换操作，返回 error
+func (engine *Engine) Bind(provider framework.ServiceProvider) error {
+	return engine.container.Bind(provider)
+}
+
+// IsBind 关键字凭证是否已经绑定服务提供者
+func (engine *Engine) IsBind(key string) bool {
+	return engine.container.IsBind(key)
+}
+
+// --- 服务容器：context 实现 container 的几个封装
+
+// 实现 make 的封装
+func (ctx *Context) Make(key string) (interface{}, error) {
+	return ctx.container.Make(key)
+}
+
+// 实现 mustMake 的封装
+func (ctx *Context) MustMake(key string) interface{} {
+	return ctx.container.MustMake(key)
+}
+
+// 实现 makeNew 的封装
+func (ctx *Context) MakeNew(key string, params []interface{}) (interface{}, error) {
+	return ctx.container.MakeNew(key, params)
+}
+
+```
+
+#### 代码验证
+
+在业务目录中创建一个目录 `provider/demo` ，
+
+接口说明文件 `contract.go`：
+
+```go
+// Demo 服务的 key
+const Key = "hade:demo"
+
+// Demo 服务的接口
+type Service interface {
+	GetFoo() Foo
+}
+
+// Demo 服务接口定义的一个数据结构
+type Foo struct {
+	Name string
+}
+```
+
+ServiceProvider 实现文件 `provider.go`：
+
+```go
+// 服务提供方
+type DemoServiceProvider struct {}
+
+// Name 方法直接将服务对应的字符串凭证返回，在这个例子中就是“hade.demo"
+func (sp *DemoServiceProvider) Name() string {
+	return Key
+}
+
+// Register 方法是注册初始化服务实例的方法，这里先暂定为 NewDemoService
+func (sp *DemoServiceProvider) Register(c framework.Container) framework.NewInstance {
+	return NewDemoService
+}
+
+// IsDefer 方法表示是否延迟实例化，我们这里设置为 true，将这个服务的实例化延迟到第一次 make 的时候
+func (sp *DemoServiceProvider) IsDefer() bool {
+	return true
+}
+
+// Params 方法表示实例化的参数。我们这里只实例化一个参数：container，表示我们在 NewDemoService 这个函数中，只有一个参数，container
+func (sp *DemoServiceProvider) Params(c framework.Container) []interface{} {
+	return []interface{}{c}
+}
+
+// Boot 方法我们这里我们什么逻辑都不执行, 只打印一行日志信息
+func (sp *DemoServiceProvider) Boot(c framework.Container) error {
+	fmt.Println("demo service boot")
+	return nil
+}
+```
+
+实现具体的服务实例 `service.go` ：
+
+```go
+// 具体的接口实例
+type DemoService struct {
+	// 参数
+	c framework.Container
+}
+
+// var _ Service = &DemoService{} // 确保已经实现 Service 接口
+var _ Service = new(DemoService) // 确保已经实现 Service 接口
+
+// 实现接口
+func (s *DemoService) GetFoo() Foo {
+	return Foo{
+		Name: "i am foo",
+	}
+}
+
+// 初始化实例的方法
+func NewDemoService(params ...interface{}) (interface{}, error) {
+	// 这里需要将参数展开
+	c := params[0].(framework.Container)
+
+	fmt.Println("new demo service")
+	// 返回实例
+	return &DemoService{c: c}, nil
+}
+
+```
+
+测试调用 `subject_controller.go` ：
+
+```go
+// 对应路由 /subject/list/all
+func SubjectListController(c *gin.Context) {
+	// 获取 demo 服务实例
+	demoService := c.MustMake(demo.Key).(demo.Service)
+	// 调用服务实例的方法
+	foo := demoService.GetFoo()
+	// 输出结果
+	c.ISetOkStatus().IJson(foo)
+}
+```
+
+## 12、设计框架的整体目录
 
 ## 13、
 
