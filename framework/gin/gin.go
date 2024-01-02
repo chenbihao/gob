@@ -239,7 +239,7 @@ func (engine *Engine) Handler() http.Handler {
 func (engine *Engine) allocateContext(maxParams uint16) *Context {
 	v := make(Params, 0, maxParams)
 	skippedNodes := make([]skippedNode, 0, engine.maxSections)
-	// gob改动：注入容器到每个Context中
+	// gob改动：注入容器到每个Context中（在分配新的 Context 的时候）
 	return &Context{engine: engine, params: &v, skippedNodes: &skippedNodes, container: engine.container}
 }
 

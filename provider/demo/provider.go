@@ -7,8 +7,7 @@ import (
 )
 
 // 服务提供方
-type DemoServiceProvider struct {
-}
+type DemoServiceProvider struct{}
 
 // Name 方法直接将服务对应的字符串凭证返回，在这个例子中就是“hade.demo"
 func (sp *DemoServiceProvider) Name() string {

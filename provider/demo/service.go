@@ -9,12 +9,11 @@ import (
 
 // 具体的接口实例
 type DemoService struct {
-	// 实现接口
-	Service
-
 	// 参数
 	c framework.Container
 }
+
+var _ Service = &DemoService{} // 确保已经实现 Service 接口
 
 // 实现接口
 func (s *DemoService) GetFoo() Foo {
