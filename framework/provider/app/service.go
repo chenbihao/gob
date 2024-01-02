@@ -21,7 +21,7 @@ var _ contract.App = (*GobApp)(nil)
 
 // Version 实现版本
 func (app GobApp) Version() string {
-	return "0.1.1"
+	return "0.1.2"
 }
 
 // BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
