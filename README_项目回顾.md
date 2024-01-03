@@ -18,7 +18,7 @@ http.Handle("/foo", fooHandler)
 
 // 创建一个bar路由和处理函数
 http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
-fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
 })
 
 // 监听8080端口
@@ -67,9 +67,9 @@ log.Fatal(http.ListenAndServe(":8080", nil))
 
 ```go
 type Context interface {
-// 当 Context 被取消或者到了 deadline，返回一个被关闭的 channel
-Done() <-chan struct{}
-...
+    // 当 Context 被取消或者到了 deadline，返回一个被关闭的 channel
+    Done() <-chan struct{}
+    ...
 }
 
 //函数句柄
@@ -95,13 +95,13 @@ import (
 const shortDuration = 1 * time.Millisecond
 
 func main() {
-	// 创建截止时间
+    // 创建截止时间
 	d := time.Now().Add(shortDuration)
-	// 创建有截止时间的 Context
+    // 创建有截止时间的 Context
 	ctx, cancel := context.WithDeadline(context.Background(), d)
 	defer cancel()
 
-	// 使用 select 监听 1s 和有截止时间的 Context 哪个先结束
+    // 使用 select 监听 1s 和有截止时间的 Context 哪个先结束
 	select {
 	case <-time.After(1 * time.Second):
 		fmt.Println("overslept")
@@ -128,15 +128,15 @@ func main() {
 
 ```go
 type Server struct {
-...
-// BaseContext 用来为整个链条创建初始化 Context
-// 如果没有设置的话，默认使用 context.Background()
-BaseContext func(net.Listener) context.Context{}
-
-// ConnContext 用来为每个连接封装 Context
-// 参数中的 context.Context 是从 BaseContext 继承来的
-ConnContext func(ctx context.Context, c net.Conn) context.Context{}
-...
+	...
+    // BaseContext 用来为整个链条创建初始化 Context
+    // 如果没有设置的话，默认使用 context.Background()
+	BaseContext func(net.Listener) context.Context{}
+	
+    // ConnContext 用来为每个连接封装 Context
+    // 参数中的 context.Context 是从 BaseContext 继承来的
+	ConnContext func(ctx context.Context, c net.Conn) context.Context{}
+    ...
 }
 ```
 
@@ -157,15 +157,15 @@ func Foo1(request *http.Request, response http.ResponseWriter) {}
 
 // 期待封装 Context 后的控制器使用
 func Foo2(ctx *framework.Context) error {
-obj := map[string]interface{}{
-"data":   nil,
-}
-// 从请求体中获取参数
-fooInt := ctx.FormInt("foo", 10)
-// 构建返回结构
-obj["data"] = fooInt
-// 输出返回结构
-return ctx.Json(http.StatusOK, obj)
+	obj := map[string]interface{}{
+		"data":   nil,
+	}
+    // 从请求体中获取参数
+ 	fooInt := ctx.FormInt("foo", 10)
+    // 构建返回结构
+	obj["data"] = fooInt
+    // 输出返回结构
+	return ctx.Json(http.StatusOK, obj)
 }
 ```
 
@@ -176,32 +176,32 @@ return ctx.Json(http.StatusOK, obj)
 ```go
 // 自定义 Context
 type Context struct {
-request        *http.Request
-responseWriter http.ResponseWriter
-...
+	request        *http.Request
+	responseWriter http.ResponseWriter
+	...
 }
 
 // 直接返回原生 Context
 func (ctx *Context) BaseContext() context.Context {
-return ctx.request.Context()
+	return ctx.request.Context()
 }
 
 // implement context.Context （实现标准 Context 接口）
 
 func (ctx *Context) Deadline() (deadline time.Time, ok bool) {
-return ctx.BaseContext().Deadline()
+	return ctx.BaseContext().Deadline()
 }
 
 func (ctx *Context) Done() <-chan struct{} {
-return ctx.BaseContext().Done()
+	return ctx.BaseContext().Done()
 }
 
 func (ctx *Context) Err() error {
-return ctx.BaseContext().Err()
+	return ctx.BaseContext().Err()
 }
 
 func (ctx *Context) Value(key any) any {
-return ctx.BaseContext().Value(key)
+	return ctx.BaseContext().Value(key)
 }
 ```
 
@@ -221,10 +221,10 @@ type ControllerHandler func(c *Context) error
 控制器使用，业务目录 `controller.go` ：
 
 ```go
-func FooControllerHandler(ctx *framework.Context) error {
-return ctx.Json(200, map[string]interface{}{
-"code": 0,
-})
+func FooControllerHandler(ctx *framework.Context) error {  
+    return ctx.Json(200, map[string]interface{}{  
+        "code": 0,  
+    })  
 }  
 ```
 
@@ -338,7 +338,7 @@ func (ctx *Context) WriterMux() *sync.Mutex {
 
 ```go
 type Handler interface {
-ServeHTTP(ResponseWriter, *Request)
+	ServeHTTP(ResponseWriter, *Request)
 }
 ```
 
@@ -351,19 +351,19 @@ ServeHTTP(ResponseWriter, *Request)
 ```go
 func main() {
 
-// 核心框架初始化
-core := framework.NewCore()
+	// 核心框架初始化
+	core := framework.NewCore()
 
-// 设置路由
-registerRouter(core)
+	// 设置路由
+	registerRouter(core)
 
-server := &http.Server{
-// 自定义的请求核心处理函数
-Handler: core,
-// 请求监听地址
-Addr: ":8080",
-}
-server.ListenAndServe()
+	server := &http.Server{
+		// 自定义的请求核心处理函数
+		Handler: core,
+		// 请求监听地址
+		Addr: ":8080",
+	}
+	server.ListenAndServe()
 }
 ```
 
@@ -377,8 +377,8 @@ type ControllerHandler func(c *Context) error
 
 ```go
 func UserLoginController(c *framework.Context) error {
-c.Json(200, "ok, UserLoginController")
-return nil
+	c.Json(200, "ok, UserLoginController")
+	return nil
 }
 ```
 
@@ -387,24 +387,24 @@ return nil
 ```go
 // 注册路由规则
 func registerRouter(core *framework.Core) {
-// 需求1+2:HTTP方法+静态路由匹配
-core.Get("/user/login", UserLoginController)
+	// 需求1+2:HTTP方法+静态路由匹配
+	core.Get("/user/login", UserLoginController)
 
-// 需求3:批量通用前缀
-subjectApi := core.Group("/subject")
-{
-// 需求4:动态路由
-subjectApi.Delete("/:id", SubjectDelController)
-subjectApi.Put("/:id", SubjectUpdateController)
-subjectApi.Get("/:id", SubjectGetController)
-subjectApi.Get("/list/all", SubjectListController)
-
-// 扩展需求：分组嵌套
-subjectInnerApi := subjectApi.Group("/info")
-{
-subjectInnerApi.Get("/name", SubjectNameController)
-}
-}
+	// 需求3:批量通用前缀
+	subjectApi := core.Group("/subject")
+	{
+		// 需求4:动态路由
+		subjectApi.Delete("/:id", SubjectDelController)
+		subjectApi.Put("/:id", SubjectUpdateController)
+		subjectApi.Get("/:id", SubjectGetController)
+		subjectApi.Get("/list/all", SubjectListController)
+		
+		// 扩展需求：分组嵌套
+		subjectInnerApi := subjectApi.Group("/info")
+		{
+			subjectInnerApi.Get("/name", SubjectNameController)
+		}
+	}
 }
 ```
 
@@ -413,53 +413,53 @@ subjectInnerApi.Get("/name", SubjectNameController)
 ```go
 // IGroup 代表前缀分组
 type IGroup interface {
-// 实现HttpMethod方法
-Get(string, ControllerHandler)
-Post(string, ControllerHandler)
-Put(string, ControllerHandler)
-Delete(string, ControllerHandler)
+	// 实现HttpMethod方法
+	Get(string, ControllerHandler)
+	Post(string, ControllerHandler)
+	Put(string, ControllerHandler)
+	Delete(string, ControllerHandler)
 
-// 实现嵌套group
-Group(string) IGroup
+	// 实现嵌套group
+	Group(string) IGroup
 }
 
 // Group struct 实现了IGroup
 type Group struct {
-core   *Core  // 指向core结构
-parent *Group // 指向上一个Group，如果有的话
-prefix string // 这个group的通用前缀
+	core   *Core  // 指向core结构
+	parent *Group // 指向上一个Group，如果有的话
+	prefix string // 这个group的通用前缀
 }
 
 // 初始化Group
 func NewGroup(core *Core, prefix string) *Group {
-return &Group{
-core:   core,
-parent: nil,
-prefix: prefix,
-}
+	return &Group{
+		core:   core,
+		parent: nil,
+		prefix: prefix,
+	}
 }
 
 // 实现Get方法
 func (g *Group) Get(uri string, handler ControllerHandler) {
-uri = g.getAbsolutePrefix() + uri
-g.core.Get(uri, handler)
+	uri = g.getAbsolutePrefix() + uri
+	g.core.Get(uri, handler)
 }
 
 ...  //  POST、PUT、DELETE
 
 // 获取当前group的绝对路径
 func (g *Group) getAbsolutePrefix() string {
-if g.parent == nil {
-return g.prefix
-}
-return g.parent.getAbsolutePrefix() + g.prefix
+	if g.parent == nil {
+		return g.prefix
+	}
+	return g.parent.getAbsolutePrefix() + g.prefix
 }
 
 // 实现 Group 方法
 func (g *Group) Group(uri string) IGroup {
-cgroup := NewGroup(g.core, uri)
-cgroup.parent = g
-return cgroup
+	cgroup := NewGroup(g.core, uri)
+	cgroup.parent = g
+	return cgroup
 }
 ```
 
@@ -722,19 +722,19 @@ func (tree *Tree) FindHandler(uri string) ControllerHandler {
 // 注册路由规则
 func registerRouter(core *framework.Core) {
 
-// 扩展需求1：core中使用use注册全局中间件 （需放在前面）
-core.Use(middleware.Recovery(), middleware.Cost())
+	// 扩展需求1：core中使用use注册全局中间件 （需放在前面）
+	core.Use(middleware.Recovery(), middleware.Cost())
+	
+	// 扩展需求2：在core中使用middleware.Test3() 为单个路由增加中间件
+	core.Get("/user/login", middleware.Test3(), UserLoginController)
 
-// 扩展需求2：在core中使用middleware.Test3() 为单个路由增加中间件
-core.Get("/user/login", middleware.Test3(), UserLoginController)
-
-subjectApi := core.Group("/subject")
-{
-...
-// 扩展需求3：在 group 中使用 middleware.Test3() 为单个路由增加中间件
-subjectApi.Get("/middleware/test3", middleware.Test3(), SubjectAddController)
-}
-core.Get("/timeout", middleware.Timeout(time.Second), TimeoutController)
+	subjectApi := core.Group("/subject")
+	{
+		...
+		// 扩展需求3：在 group 中使用 middleware.Test3() 为单个路由增加中间件
+		subjectApi.Get("/middleware/test3", middleware.Test3(), SubjectAddController)
+	}
+	core.Get("/timeout", middleware.Timeout(time.Second), TimeoutController)
 }
 ```
 
@@ -743,24 +743,24 @@ core.Get("/timeout", middleware.Timeout(time.Second), TimeoutController)
 ```go
 // 代表节点
 type node struct {
-...
-handlers []ControllerHandler // 中间件+控制器
+	... 
+	handlers []ControllerHandler // 中间件+控制器
 }
 ...
 // 增加路由节点
 func (tree *Tree) AddRouter(uri string, handlers []ControllerHandler) error {
-...
-cnode.handlers = handlers
-...
+	...
+				cnode.handlers = handlers
+	...
 }
 
 // 匹配uri
 func (tree *Tree) FindHandler(uri string) []ControllerHandler {
-matchNode := tree.root.matchNode(uri)
-if matchNode == nil {
-return nil
-}
-return matchNode.handlers
+	matchNode := tree.root.matchNode(uri)
+	if matchNode == nil {
+		return nil
+	}
+	return matchNode.handlers
 }
 
 ```
@@ -770,33 +770,33 @@ return matchNode.handlers
 ```go
 // 自定义 Context
 type Context struct {
-...
-handlers []ControllerHandler // 当前请求的handler链条
-index    int                 // 当前请求调用到调用链的哪个节点
+	...
+	handlers []ControllerHandler // 当前请求的handler链条
+	index    int                 // 当前请求调用到调用链的哪个节点
 }
 
 func NewContext(r *http.Request, w http.ResponseWriter) *Context {
-return &Context{
-...
-writerMux:      &sync.Mutex{},
-index:          -1,
-}
+	return &Context{
+		...
+		writerMux:      &sync.Mutex{},
+		index:          -1,
+	}
 }
 
 // 为context设置handlers
 func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
-ctx.handlers = handlers
+	ctx.handlers = handlers
 }
 
 // 核心函数，调用context的下一个函数 
 func (ctx *Context) Next() error {
-ctx.index++
-if ctx.index < len(ctx.handlers) {
-if err := ctx.handlers[ctx.index](ctx); err != nil {
-return err
-}
-}
-return nil
+	ctx.index++
+	if ctx.index < len(ctx.handlers) {
+		if err := ctx.handlers[ctx.index](ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 ```
 
@@ -814,27 +814,27 @@ return nil
 
 ```go
 type IGroup interface {
-// 实现HttpMethod方法
-Get(string, ...ControllerHandler)
-Post(string, ...ControllerHandler)
-Put(string, ...ControllerHandler)
-Delete(string, ...ControllerHandler)
+	// 实现HttpMethod方法
+	Get(string, ...ControllerHandler)
+	Post(string, ...ControllerHandler)
+	Put(string, ...ControllerHandler)
+	Delete(string, ...ControllerHandler)
 
-// 实现嵌套group
-Group(string) IGroup
-// 嵌套中间件
-Use(middlewares ...ControllerHandler)
+	// 实现嵌套group
+	Group(string) IGroup
+	// 嵌套中间件
+	Use(middlewares ...ControllerHandler)
 }
 type Group struct {
-...
-middlewares []ControllerHandler // 存放中间件
+	...
+	middlewares []ControllerHandler // 存放中间件
 }
 
 // 实现Get方法
 func (g *Group) Get(uri string, handlers ...ControllerHandler) {
-uri = g.getAbsolutePrefix() + uri
-allHandlers := append(g.getMiddlewares(), handlers...)  // 聚合
-g.core.Get(uri, allHandlers...)
+	uri = g.getAbsolutePrefix() + uri
+	allHandlers := append(g.getMiddlewares(), handlers...)  // 聚合
+	g.core.Get(uri, allHandlers...)
 }
 
 ...  // NewGroup  //  POST、PUT、DELETE
@@ -842,15 +842,15 @@ g.core.Get(uri, allHandlers...)
 // 获取某个group的middleware
 // 这里就是获取除了Get/Post/Put/Delete之外设置的middleware
 func (g *Group) getMiddlewares() []ControllerHandler {
-if g.parent == nil {
-return g.middlewares
-}
-return append(g.parent.getMiddlewares(), g.middlewares...)
+	if g.parent == nil {
+		return g.middlewares
+	}
+	return append(g.parent.getMiddlewares(), g.middlewares...)
 }
 
 // 注册中间件
 func (g *Group) Use(middlewares ...ControllerHandler) {
-g.middlewares = append(g.middlewares, middlewares...)
+	g.middlewares = append(g.middlewares, middlewares...)
 }
 ```
 
@@ -917,38 +917,38 @@ func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 
 ```go
 func Timeout(d time.Duration) framework.ControllerHandler {
-// 使用函数回调
-return func(ctx *framework.Context) error {
-finish := make(chan struct{}, 1)
-panicChan := make(chan interface{}, 1)
-// 执行业务逻辑前预操作：初始化超时context
-durationCtx, cancel := context.WithTimeout(ctx.BaseContext(), d)
-defer cancel()
+	// 使用函数回调
+	return func(ctx *framework.Context) error {
+		finish := make(chan struct{}, 1)
+		panicChan := make(chan interface{}, 1)
+		// 执行业务逻辑前预操作：初始化超时context
+		durationCtx, cancel := context.WithTimeout(ctx.BaseContext(), d)
+		defer cancel()
 
-go func() {
-defer func() {
-if p := recover(); p != nil {
-panicChan <- p
-}
-}()
-// 使用next执行具体的业务逻辑
-ctx.Next()
+		go func() {
+			defer func() {
+				if p := recover(); p != nil {
+					panicChan <- p
+				}
+			}()
+			// 使用next执行具体的业务逻辑
+			ctx.Next()
 
-finish <- struct{}{}
-}()
-// 执行业务逻辑后操作
-select {
-case p := <-panicChan:
-ctx.Json(500, "time out")
-log.Println(p)
-case <-finish:
-fmt.Println("finish")
-case <-durationCtx.Done():
-ctx.Json(500, "time out")
-ctx.SetHasTimeout()
-}
-return nil
-}
+			finish <- struct{}{}
+		}()
+		// 执行业务逻辑后操作
+		select {
+		case p := <-panicChan:
+			ctx.Json(500, "time out")
+			log.Println(p)
+		case <-finish:
+			fmt.Println("finish")
+		case <-durationCtx.Done():
+			ctx.Json(500, "time out")
+			ctx.SetHasTimeout()
+		}
+		return nil
+	}
 }
 ```
 
@@ -2281,7 +2281,212 @@ func SubjectListController(c *gin.Context) {
 
 ## 12、设计框架的整体目录
 
-## 13、
+### 目录划分
+
+从框架层来规范业务的目录结构，不仅是一种分目录的设计，还贯彻了面向接口的思想，将目录作为一个服务提供在服务容器中
+
+根目录下划分为五个文件夹：app、framework、config、storage、test。
+
+- `app` ：存放业务相关代码
+    -  `http`：提供 Web 服务
+        - `middleware`：web 特有通用中间件
+        - `module`：每个子目录代表一个模块服务
+    -  `console` ：提供控制台进程
+        - `command`：命令行工具实现
+    -  `provider` ：通用的服务提供者
+        - 服务协议的 `contract.go` 文件
+        - 服务提供者的 `provider.go` 文件
+        - 具体服务实现的 `service.go` 文件
+- `framework` 框架所有的代码
+    - `gin`：集成 Gin 框架
+    - `contract`：框架默认提供的服务协议
+    - `provider` ：服务协议的具体实现以及服务提供者（子目录对应服务）
+    - `command`：提供框架自带命令行工具
+    - `middleware`：框架为 Web 服务提供的中间件
+    - `util` ：通用工具函数
+- `config` ：配置文件
+- `test` ：测试相关
+- `storage`：存储相关
+    - `log` ：日志
+    - `runtime` ：运行时
+
+### 定义框架基础 App 服务
+
+#### 代码实现
+
+定义 App 服务的接口协议 `framework/contract/app.go` ：
+
+```go
+// 接口说明文件 contract.go
+
+// AppKey 定义字符串凭证
+const AppKey = "gob:app"
+
+// App 定义接口（提供了获取框架相关内容，例如获取框架约定的相关目录）
+type App interface {
+	// Version 定义当前版本
+	Version() string
+	// BaseFolder 定义项目基础地址
+	BaseFolder() string
+	// ConfigFolder 定义了配置文件的路径
+	ConfigFolder() string
+	// LogFolder 定义了日志所在路径
+	LogFolder() string
+	// ProviderFolder 定义业务自己的服务提供者地址
+	ProviderFolder() string
+	// MiddlewareFolder 定义业务自己定义的中间件
+	MiddlewareFolder() string
+	// CommandFolder 定义业务定义的命令
+	CommandFolder() string
+	// RuntimeFolder 定义业务的运行中间态信息
+	RuntimeFolder() string
+	// TestFolder 存放测试所需要的信息
+	TestFolder() string
+}
+
+```
+
+App 服务实现 `ServiceProvider` 接口，`framework/provider/app/provider.go` ：
+
+```go
+// ServiceProvider 实现文件 provider.go
+
+// GobAppProvider 提供App的具体实现方法
+type GobAppProvider struct {
+	BaseFolder string
+}
+var _ framework.ServiceProvider = (*GobAppProvider)(nil)
+
+// Register 注册 GobApp 方法
+func (appProvider *GobAppProvider) Register(container framework.Container) framework.NewInstance {
+	return NewGobApp
+}
+// Boot 启动调用
+func (appProvider *GobAppProvider) Boot(container framework.Container) error {
+	return nil
+}
+// IsDefer 是否延迟初始化
+func (appProvider *GobAppProvider) IsDefer() bool {
+	return false
+}
+// Params 获取初始化参数
+func (appProvider *GobAppProvider) Params(container framework.Container) []interface{} {
+	return []interface{}{container, appProvider.BaseFolder}
+}
+// Name 获取字符串凭证
+func (appProvider *GobAppProvider) Name() string {
+	return contract.AppKey
+}
+```
+
+实现 App 服务，`framework/provider/app/service.go` ：
+
+```go
+// 实现具体的服务实例 service.go
+
+// GobApp 代表 gob 框架的 App 实现
+type GobApp struct {
+	container  framework.Container // 服务容器
+	baseFolder string              // 基础路径
+}
+var _ contract.App = (*GobApp)(nil)
+
+// Version 实现版本
+func (app GobApp) Version() string {
+	return "0.1.1"
+}
+
+// BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
+func (app GobApp) BaseFolder() string {
+	if app.baseFolder != "" {
+		return app.baseFolder
+	}
+	// 如果没有设置，则使用参数
+	var baseFolder string
+	flag.StringVar(&baseFolder, "base_folder", "", "base_folder 参数, 默认为当前路径")
+	flag.Parse()
+	if baseFolder != "" {
+		return baseFolder
+	}
+	// 如果参数也没有，使用默认的当前路径
+	return util.GetExecDirectory()
+}
+
+// ConfigFolder  表示配置文件地址
+func (app GobApp) ConfigFolder() string {
+	return filepath.Join(app.BaseFolder(), "config")
+}
+// LogFolder 表示日志存放地址
+func (app GobApp) LogFolder() string {
+	return filepath.Join(app.StorageFolder(), "log")
+}
+func (app GobApp) HttpFolder() string {
+	return filepath.Join(app.BaseFolder(), "http")
+}
+func (app GobApp) ConsoleFolder() string {
+	return filepath.Join(app.BaseFolder(), "console")
+}
+func (app GobApp) StorageFolder() string {
+	return filepath.Join(app.BaseFolder(), "storage")
+}
+// ProviderFolder 定义业务自己的服务提供者地址
+func (app GobApp) ProviderFolder() string {
+	return filepath.Join(app.BaseFolder(), "provider")
+}
+// MiddlewareFolder 定义业务自己定义的中间件
+func (app GobApp) MiddlewareFolder() string {
+	return filepath.Join(app.HttpFolder(), "middleware")
+}
+// CommandFolder 定义业务定义的命令
+func (app GobApp) CommandFolder() string {
+	return filepath.Join(app.ConsoleFolder(), "command")
+}
+// RuntimeFolder 定义业务的运行中间态信息
+func (app GobApp) RuntimeFolder() string {
+	return filepath.Join(app.StorageFolder(), "runtime")
+}
+// TestFolder 定义测试需要的信息
+func (app GobApp) TestFolder() string {
+	return filepath.Join(app.BaseFolder(), "test")
+}
+// NewGobApp 初始化 GobApp
+func NewGobApp(params ...interface{}) (interface{}, error) {
+	if len(params) != 2 {
+		return nil, errors.New("param error")
+	}
+	// 有两个参数，一个是容器，一个是 baseFolder
+	container := params[0].(framework.Container)
+	baseFolder := params[1].(string)
+	return GobApp{baseFolder: baseFolder, container: container}, nil // todo 这里可能得规范下返回的是指针或者实体
+}
+```
+
+通用方法，`util.go`：
+
+```go
+// GetExecDirectory 获取当前执行程序目录
+func GetExecDirectory() string {
+	file, err := os.Getwd()
+	if err == nil {
+		return file + "/"
+	}
+	return ""
+}
+```
+
+#### 代码验证
+
+```go
+// 对应路由 /subject/list/all
+func SubjectListController(c *gin.Context) {
+	// 获取 App 服务实例
+	appService := c.MustMake(contract.AppKey).(app.GobApp)
+	// 输出结果
+	c.ISetOkStatus().IJson(appService.ConfigFolder())
+}
+```
+
+## 13、交互：执行命令行
 
 ## 14、
 

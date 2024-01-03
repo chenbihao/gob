@@ -5,7 +5,7 @@ package contract
 // AppKey 定义字符串凭证
 const AppKey = "gob:app"
 
-// App 定义接口
+// App 定义接口（提供了获取框架相关内容，例如获取框架约定的相关目录）
 type App interface {
 	// Version 定义当前版本
 	Version() string
