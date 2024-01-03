@@ -11,23 +11,23 @@ import (
 	"path/filepath"
 )
 
-// GobApp 代表 gob 框架的 App 实现
-type GobApp struct {
+// GobAppService 代表 gob 框架的 App 实现
+type GobAppService struct {
 	container  framework.Container // 服务容器
 	baseFolder string              // 基础路径
 }
 
-var _ contract.App = (*GobApp)(nil)
+var _ contract.App = (*GobAppService)(nil)
 
 // Version 实现版本
-func (app GobApp) Version() string {
+func (s GobAppService) Version() string {
 	return "0.1.2"
 }
 
 // BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
-func (app GobApp) BaseFolder() string {
-	if app.baseFolder != "" {
-		return app.baseFolder
+func (s GobAppService) BaseFolder() string {
+	if s.baseFolder != "" {
+		return s.baseFolder
 	}
 	// 如果没有设置，则使用参数
 	var baseFolder string
@@ -41,53 +41,53 @@ func (app GobApp) BaseFolder() string {
 }
 
 // ConfigFolder  表示配置文件地址
-func (app GobApp) ConfigFolder() string {
-	return filepath.Join(app.BaseFolder(), "config")
+func (s GobAppService) ConfigFolder() string {
+	return filepath.Join(s.BaseFolder(), "config")
 }
 
 // LogFolder 表示日志存放地址
-func (app GobApp) LogFolder() string {
-	return filepath.Join(app.StorageFolder(), "log")
+func (s GobAppService) LogFolder() string {
+	return filepath.Join(s.StorageFolder(), "log")
 }
 
-func (app GobApp) HttpFolder() string {
-	return filepath.Join(app.BaseFolder(), "http")
+func (s GobAppService) HttpFolder() string {
+	return filepath.Join(s.BaseFolder(), "http")
 }
 
-func (app GobApp) ConsoleFolder() string {
-	return filepath.Join(app.BaseFolder(), "console")
+func (s GobAppService) ConsoleFolder() string {
+	return filepath.Join(s.BaseFolder(), "console")
 }
 
-func (app GobApp) StorageFolder() string {
-	return filepath.Join(app.BaseFolder(), "storage")
+func (s GobAppService) StorageFolder() string {
+	return filepath.Join(s.BaseFolder(), "storage")
 }
 
 // ProviderFolder 定义业务自己的服务提供者地址
-func (app GobApp) ProviderFolder() string {
-	return filepath.Join(app.BaseFolder(), "provider")
+func (s GobAppService) ProviderFolder() string {
+	return filepath.Join(s.BaseFolder(), "provider")
 }
 
 // MiddlewareFolder 定义业务自己定义的中间件
-func (app GobApp) MiddlewareFolder() string {
-	return filepath.Join(app.HttpFolder(), "middleware")
+func (s GobAppService) MiddlewareFolder() string {
+	return filepath.Join(s.HttpFolder(), "middleware")
 }
 
 // CommandFolder 定义业务定义的命令
-func (app GobApp) CommandFolder() string {
-	return filepath.Join(app.ConsoleFolder(), "command")
+func (s GobAppService) CommandFolder() string {
+	return filepath.Join(s.ConsoleFolder(), "command")
 }
 
 // RuntimeFolder 定义业务的运行中间态信息
-func (app GobApp) RuntimeFolder() string {
-	return filepath.Join(app.StorageFolder(), "runtime")
+func (s GobAppService) RuntimeFolder() string {
+	return filepath.Join(s.StorageFolder(), "runtime")
 }
 
 // TestFolder 定义测试需要的信息
-func (app GobApp) TestFolder() string {
-	return filepath.Join(app.BaseFolder(), "test")
+func (s GobAppService) TestFolder() string {
+	return filepath.Join(s.BaseFolder(), "test")
 }
 
-// NewGobApp 初始化 GobApp
+// NewGobApp 初始化 GobAppService
 func NewGobApp(params ...interface{}) (interface{}, error) {
 	if len(params) != 2 {
 		return nil, errors.New("param error")
@@ -95,5 +95,5 @@ func NewGobApp(params ...interface{}) (interface{}, error) {
 	// 有两个参数，一个是容器，一个是 baseFolder
 	container := params[0].(framework.Container)
 	baseFolder := params[1].(string)
-	return GobApp{baseFolder: baseFolder, container: container}, nil // todo 这里可能得规范下返回的是指针或者实体
+	return GobAppService{baseFolder: baseFolder, container: container}, nil // todo 这里可能得规范下返回的是指针或者实体
 }

@@ -14,27 +14,27 @@ type GobAppProvider struct {
 
 var _ framework.ServiceProvider = (*GobAppProvider)(nil)
 
-// Register 注册 GobApp 方法
-func (appProvider *GobAppProvider) Register(container framework.Container) framework.NewInstance {
+// Register 注册 GobAppService 方法
+func (provider *GobAppProvider) Register(container framework.Container) framework.NewInstance {
 	return NewGobApp
 }
 
 // Boot 启动调用
-func (appProvider *GobAppProvider) Boot(container framework.Container) error {
+func (provider *GobAppProvider) Boot(container framework.Container) error {
 	return nil
 }
 
 // IsDefer 是否延迟初始化
-func (appProvider *GobAppProvider) IsDefer() bool {
+func (provider *GobAppProvider) IsDefer() bool {
 	return false
 }
 
 // Params 获取初始化参数
-func (appProvider *GobAppProvider) Params(container framework.Container) []interface{} {
-	return []interface{}{container, appProvider.BaseFolder}
+func (provider *GobAppProvider) Params(container framework.Container) []interface{} {
+	return []interface{}{container, provider.BaseFolder}
 }
 
 // Name 获取字符串凭证
-func (appProvider *GobAppProvider) Name() string {
+func (provider *GobAppProvider) Name() string {
 	return contract.AppKey
 }

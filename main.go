@@ -1,57 +1,29 @@
 package main
 
 import (
-	"context"
+	"github.com/chenbihao/gob/app/console"
+	"github.com/chenbihao/gob/app/http"
+	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/provider/app"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
-	"github.com/chenbihao/gob/framework/gin"
+	"github.com/chenbihao/gob/framework/provider/kernel"
 )
 
 func main() {
 
-	// 核心框架初始化
-	// core := framework.NewCore()
-	core := gin.New()
+	// 初始化服务容器
+	container := framework.NewGobContainer()
 
-	// 绑定具体的服务
-	// 指定 BaseFolder
-	core.Bind(&app.GobAppProvider{BaseFolder: "/tmp"})
+	// 绑定App服务提供者
+	container.Bind(&app.GobAppProvider{})
 
-	// 设置路由
-	registerRouter(core)
+	// 后续初始化需要绑定的服务提供者...
 
-	server := &http.Server{
-		// 自定义的请求核心处理函数
-		Handler: core,
-		// 请求监听地址
-		Addr: ":8080",
+	// 将HTTP引擎初始化,并且作为服务提供者绑定到服务容器中
+	if engine, err := http.NewHttpEngine(); err == nil {
+		container.Bind(&kernel.GobKernelProvider{HttpEngine: engine})
 	}
 
-	// 这个goroutine是启动服务的goroutine
-	go func() {
-		server.ListenAndServe()
-	}()
-
-	// 当前的 goroutine 等待信号量
-	quit := make(chan os.Signal)
-	// 监控信号：SIGINT, SIGTERM, SIGQUIT
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	// 这里会阻塞当前goroutine等待信号
-	<-quit
-
-	// 设置超时关闭限制
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// 调用 Server.Shutdown graceful 结束
-	if err := server.Shutdown(timeoutCtx); err != nil {
-		log.Fatal("Server Shutdown:", err)
-	}
+	// 运行root命令
+	console.RunCommand(container)
 
 }
