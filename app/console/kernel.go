@@ -30,6 +30,7 @@ func RunCommand(container framework.Container) error {
 	rootCmd.SetContainer(container)
 	// 绑定框架的命令  （框架定义的命令我们使用`framework/command/kernel.go` 中的 `AddKernelCommands` 进行挂载）
 	command.AddKernelCommands(rootCmd)
+
 	// 绑定业务的命令
 	AddAppCommand(rootCmd)
 
@@ -39,6 +40,6 @@ func RunCommand(container framework.Container) error {
 
 // 绑定业务的命令（业务定义的命令我们使用 `app/console/kernel.go` 中的 `AddAppCommand`进行挂载）
 func AddAppCommand(rootCmd *cobra.Command) {
-	//  demo 例子
+	// demo 例子
 	rootCmd.AddCommand(demo.InitFoo())
 }

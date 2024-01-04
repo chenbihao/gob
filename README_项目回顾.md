@@ -18,7 +18,7 @@ http.Handle("/foo", fooHandler)
 
 // 创建一个bar路由和处理函数
 http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
 })
 
 // 监听8080端口
@@ -67,9 +67,9 @@ log.Fatal(http.ListenAndServe(":8080", nil))
 
 ```go
 type Context interface {
-    // 当 Context 被取消或者到了 deadline，返回一个被关闭的 channel
-    Done() <-chan struct{}
-    ...
+// 当 Context 被取消或者到了 deadline，返回一个被关闭的 channel
+Done() <-chan struct{}
+...
 }
 
 //函数句柄
@@ -95,13 +95,13 @@ import (
 const shortDuration = 1 * time.Millisecond
 
 func main() {
-    // 创建截止时间
+	// 创建截止时间
 	d := time.Now().Add(shortDuration)
-    // 创建有截止时间的 Context
+	// 创建有截止时间的 Context
 	ctx, cancel := context.WithDeadline(context.Background(), d)
 	defer cancel()
 
-    // 使用 select 监听 1s 和有截止时间的 Context 哪个先结束
+	// 使用 select 监听 1s 和有截止时间的 Context 哪个先结束
 	select {
 	case <-time.After(1 * time.Second):
 		fmt.Println("overslept")
@@ -128,15 +128,15 @@ func main() {
 
 ```go
 type Server struct {
-	...
-    // BaseContext 用来为整个链条创建初始化 Context
-    // 如果没有设置的话，默认使用 context.Background()
-	BaseContext func(net.Listener) context.Context{}
-	
-    // ConnContext 用来为每个连接封装 Context
-    // 参数中的 context.Context 是从 BaseContext 继承来的
-	ConnContext func(ctx context.Context, c net.Conn) context.Context{}
-    ...
+...
+// BaseContext 用来为整个链条创建初始化 Context
+// 如果没有设置的话，默认使用 context.Background()
+BaseContext func(net.Listener) context.Context{}
+
+// ConnContext 用来为每个连接封装 Context
+// 参数中的 context.Context 是从 BaseContext 继承来的
+ConnContext func(ctx context.Context, c net.Conn) context.Context{}
+...
 }
 ```
 
@@ -157,15 +157,15 @@ func Foo1(request *http.Request, response http.ResponseWriter) {}
 
 // 期待封装 Context 后的控制器使用
 func Foo2(ctx *framework.Context) error {
-	obj := map[string]interface{}{
-		"data":   nil,
-	}
-    // 从请求体中获取参数
- 	fooInt := ctx.FormInt("foo", 10)
-    // 构建返回结构
-	obj["data"] = fooInt
-    // 输出返回结构
-	return ctx.Json(http.StatusOK, obj)
+obj := map[string]interface{}{
+"data":   nil,
+}
+// 从请求体中获取参数
+fooInt := ctx.FormInt("foo", 10)
+// 构建返回结构
+obj["data"] = fooInt
+// 输出返回结构
+return ctx.Json(http.StatusOK, obj)
 }
 ```
 
@@ -176,32 +176,32 @@ func Foo2(ctx *framework.Context) error {
 ```go
 // 自定义 Context
 type Context struct {
-	request        *http.Request
-	responseWriter http.ResponseWriter
-	...
+request        *http.Request
+responseWriter http.ResponseWriter
+...
 }
 
 // 直接返回原生 Context
 func (ctx *Context) BaseContext() context.Context {
-	return ctx.request.Context()
+return ctx.request.Context()
 }
 
 // implement context.Context （实现标准 Context 接口）
 
 func (ctx *Context) Deadline() (deadline time.Time, ok bool) {
-	return ctx.BaseContext().Deadline()
+return ctx.BaseContext().Deadline()
 }
 
 func (ctx *Context) Done() <-chan struct{} {
-	return ctx.BaseContext().Done()
+return ctx.BaseContext().Done()
 }
 
 func (ctx *Context) Err() error {
-	return ctx.BaseContext().Err()
+return ctx.BaseContext().Err()
 }
 
 func (ctx *Context) Value(key any) any {
-	return ctx.BaseContext().Value(key)
+return ctx.BaseContext().Value(key)
 }
 ```
 
@@ -221,10 +221,10 @@ type ControllerHandler func(c *Context) error
 控制器使用，业务目录 `controller.go` ：
 
 ```go
-func FooControllerHandler(ctx *framework.Context) error {  
-    return ctx.Json(200, map[string]interface{}{  
-        "code": 0,  
-    })  
+func FooControllerHandler(ctx *framework.Context) error {
+return ctx.Json(200, map[string]interface{}{
+"code": 0,
+})
 }  
 ```
 
@@ -240,47 +240,47 @@ func FooControllerHandler(ctx *framework.Context) error {
 
 ```go
 func FooControllerHandler(c *framework.Context) error {
-	// 生成一个超时的 Context
-	durationCtx, cancel := context.WithTimeout(c.BaseContext(), 1*time.Second)
-	// 当所有事情处理结束后调用 cancel，告知 durationCtx 的后续 Context 结束
-	defer cancel()
+// 生成一个超时的 Context
+durationCtx, cancel := context.WithTimeout(c.BaseContext(), 1*time.Second)
+// 当所有事情处理结束后调用 cancel，告知 durationCtx 的后续 Context 结束
+defer cancel()
 
-	finish := make(chan struct{}, 1)       // 这个 channel 负责通知结束
-	panicChan := make(chan interface{}, 1) // 这个 channel 负责通知 panic 异常
+finish := make(chan struct{}, 1)       // 这个 channel 负责通知结束
+panicChan := make(chan interface{}, 1) // 这个 channel 负责通知 panic 异常
 
-	// 创建一个新的 Goroutine 来处理业务逻辑
-	go func() {
-		defer func() {
-			if p := recover(); p != nil {
-				panicChan <- p
-			}
-		}()
-		
-		// 这里做具体的业务
-		time.Sleep(1 * time.Second)
-		
-		c.Json(200, "ok")
-		finish <- struct{}{}
-	}()
+// 创建一个新的 Goroutine 来处理业务逻辑
+go func() {
+defer func() {
+if p := recover(); p != nil {
+panicChan <- p
+}
+}()
 
-	select {
-	case p := <-panicChan:      
-		// 监听 panic
-		c.WriterMux().Lock()
-		defer c.WriterMux().Unlock()   // 考虑边界情况，加锁
-		log.Println(p)
-		c.Json(500, "panic")
-	case <-finish:                
-		// 监听结束事件
-		fmt.Println("finish")
-	case <-durationCtx.Done():    
-		// 监听超时事件
-		c.WriterMux().Lock()
-		defer c.WriterMux().Unlock()   // 考虑边界情况，加锁
-		c.Json(500, "time out")
-		c.SetHasTimeout()        // 考虑边界情况，当触发超时后避免其他协程重复写入 （todo:没作写保护）
-	}
-	return nil
+// 这里做具体的业务
+time.Sleep(1 * time.Second)
+
+c.Json(200, "ok")
+finish <- struct{}{}
+}()
+
+select {
+case p := <-panicChan:
+// 监听 panic
+c.WriterMux().Lock()
+defer c.WriterMux().Unlock()   // 考虑边界情况，加锁
+log.Println(p)
+c.Json(500, "panic")
+case <-finish:
+// 监听结束事件
+fmt.Println("finish")
+case <-durationCtx.Done():
+// 监听超时事件
+c.WriterMux().Lock()
+defer c.WriterMux().Unlock()   // 考虑边界情况，加锁
+c.Json(500, "time out")
+c.SetHasTimeout()        // 考虑边界情况，当触发超时后避免其他协程重复写入 （todo:没作写保护）
+}
+return nil
 }
 ```
 
@@ -289,31 +289,31 @@ func FooControllerHandler(c *framework.Context) error {
 ```go
 // 自定义 Context
 type Context struct {
-	...
-	hasTimeout bool        // 是否超时标记位
-	writerMux  *sync.Mutex // 写保护机制
+...
+hasTimeout bool        // 是否超时标记位
+writerMux  *sync.Mutex // 写保护机制
 }
 func NewContext(r *http.Request, w http.ResponseWriter) *Context {
-	return &Context{
-		request:        r,
-		responseWriter: w,
-		ctx:            r.Context(),
-		writerMux:      &sync.Mutex{},
-	}
+return &Context{
+request:        r,
+responseWriter: w,
+ctx:            r.Context(),
+writerMux:      &sync.Mutex{},
+}
 }
 
 ...
 
 func (ctx *Context) SetHasTimeout() {
-	ctx.hasTimeout = true
+ctx.hasTimeout = true
 }
 
 func (ctx *Context) HasTimeout() bool {
-	return ctx.hasTimeout
+return ctx.hasTimeout
 }
 
 func (ctx *Context) WriterMux() *sync.Mutex {
-	return ctx.writerMux
+return ctx.writerMux
 }
 
 ```
@@ -338,7 +338,7 @@ func (ctx *Context) WriterMux() *sync.Mutex {
 
 ```go
 type Handler interface {
-	ServeHTTP(ResponseWriter, *Request)
+ServeHTTP(ResponseWriter, *Request)
 }
 ```
 
@@ -351,19 +351,19 @@ type Handler interface {
 ```go
 func main() {
 
-	// 核心框架初始化
-	core := framework.NewCore()
+// 核心框架初始化
+core := framework.NewCore()
 
-	// 设置路由
-	registerRouter(core)
+// 设置路由
+registerRouter(core)
 
-	server := &http.Server{
-		// 自定义的请求核心处理函数
-		Handler: core,
-		// 请求监听地址
-		Addr: ":8080",
-	}
-	server.ListenAndServe()
+server := &http.Server{
+// 自定义的请求核心处理函数
+Handler: core,
+// 请求监听地址
+Addr: ":8080",
+}
+server.ListenAndServe()
 }
 ```
 
@@ -377,8 +377,8 @@ type ControllerHandler func(c *Context) error
 
 ```go
 func UserLoginController(c *framework.Context) error {
-	c.Json(200, "ok, UserLoginController")
-	return nil
+c.Json(200, "ok, UserLoginController")
+return nil
 }
 ```
 
@@ -387,24 +387,24 @@ func UserLoginController(c *framework.Context) error {
 ```go
 // 注册路由规则
 func registerRouter(core *framework.Core) {
-	// 需求1+2:HTTP方法+静态路由匹配
-	core.Get("/user/login", UserLoginController)
+// 需求1+2:HTTP方法+静态路由匹配
+core.Get("/user/login", UserLoginController)
 
-	// 需求3:批量通用前缀
-	subjectApi := core.Group("/subject")
-	{
-		// 需求4:动态路由
-		subjectApi.Delete("/:id", SubjectDelController)
-		subjectApi.Put("/:id", SubjectUpdateController)
-		subjectApi.Get("/:id", SubjectGetController)
-		subjectApi.Get("/list/all", SubjectListController)
-		
-		// 扩展需求：分组嵌套
-		subjectInnerApi := subjectApi.Group("/info")
-		{
-			subjectInnerApi.Get("/name", SubjectNameController)
-		}
-	}
+// 需求3:批量通用前缀
+subjectApi := core.Group("/subject")
+{
+// 需求4:动态路由
+subjectApi.Delete("/:id", SubjectDelController)
+subjectApi.Put("/:id", SubjectUpdateController)
+subjectApi.Get("/:id", SubjectGetController)
+subjectApi.Get("/list/all", SubjectListController)
+
+// 扩展需求：分组嵌套
+subjectInnerApi := subjectApi.Group("/info")
+{
+subjectInnerApi.Get("/name", SubjectNameController)
+}
+}
 }
 ```
 
@@ -413,53 +413,53 @@ func registerRouter(core *framework.Core) {
 ```go
 // IGroup 代表前缀分组
 type IGroup interface {
-	// 实现HttpMethod方法
-	Get(string, ControllerHandler)
-	Post(string, ControllerHandler)
-	Put(string, ControllerHandler)
-	Delete(string, ControllerHandler)
+// 实现HttpMethod方法
+Get(string, ControllerHandler)
+Post(string, ControllerHandler)
+Put(string, ControllerHandler)
+Delete(string, ControllerHandler)
 
-	// 实现嵌套group
-	Group(string) IGroup
+// 实现嵌套group
+Group(string) IGroup
 }
 
 // Group struct 实现了IGroup
 type Group struct {
-	core   *Core  // 指向core结构
-	parent *Group // 指向上一个Group，如果有的话
-	prefix string // 这个group的通用前缀
+core   *Core  // 指向core结构
+parent *Group // 指向上一个Group，如果有的话
+prefix string // 这个group的通用前缀
 }
 
 // 初始化Group
 func NewGroup(core *Core, prefix string) *Group {
-	return &Group{
-		core:   core,
-		parent: nil,
-		prefix: prefix,
-	}
+return &Group{
+core:   core,
+parent: nil,
+prefix: prefix,
+}
 }
 
 // 实现Get方法
 func (g *Group) Get(uri string, handler ControllerHandler) {
-	uri = g.getAbsolutePrefix() + uri
-	g.core.Get(uri, handler)
+uri = g.getAbsolutePrefix() + uri
+g.core.Get(uri, handler)
 }
 
 ...  //  POST、PUT、DELETE
 
 // 获取当前group的绝对路径
 func (g *Group) getAbsolutePrefix() string {
-	if g.parent == nil {
-		return g.prefix
-	}
-	return g.parent.getAbsolutePrefix() + g.prefix
+if g.parent == nil {
+return g.prefix
+}
+return g.parent.getAbsolutePrefix() + g.prefix
 }
 
 // 实现 Group 方法
 func (g *Group) Group(uri string) IGroup {
-	cgroup := NewGroup(g.core, uri)
-	cgroup.parent = g
-	return cgroup
+cgroup := NewGroup(g.core, uri)
+cgroup.parent = g
+return cgroup
 }
 ```
 
@@ -468,68 +468,68 @@ func (g *Group) Group(uri string) IGroup {
 ```go
 // 框架核心结构
 type Core struct {
-	router      map[string]*Tree    // all routers              // 一级匹配HTTP方法，二级字典树匹配
+router      map[string]*Tree    // all routers              // 一级匹配HTTP方法，二级字典树匹配
 }
 
 // 初始化Core结构
 func NewCore() *Core {
-	// 初始化路由
-	router := map[string]*Tree{}
-	router["GET"] = NewTree()
-	router["POST"] = NewTree()
-	router["PUT"] = NewTree()
-	router["DELETE"] = NewTree()
-	return &Core{router: router}
+// 初始化路由
+router := map[string]*Tree{}
+router["GET"] = NewTree()
+router["POST"] = NewTree()
+router["PUT"] = NewTree()
+router["DELETE"] = NewTree()
+return &Core{router: router}
 }
 
 // 匹配GET 方法, 增加路由规则
 func (c *Core) Get(url string, handler ControllerHandler) {
-	if err := c.router["GET"].AddRouter(url, handler); err != nil {
-		log.Fatal("add router error: ", err)
-	}
+if err := c.router["GET"].AddRouter(url, handler); err != nil {
+log.Fatal("add router error: ", err)
+}
 }
 
 ...  //  POST、PUT、DELETE
 
 // 前缀分组
 func (c *Core) Group(prefix string) IGroup {
-	return NewGroup(c, prefix)
+return NewGroup(c, prefix)
 }
 
 // 匹配路由，如果没有匹配到，返回nil
 func (c *Core) FindRouteByRequest(request *http.Request) ControllerHandler {
-	// uri 和 method 全部转换为大写，保证大小写不敏感
-	uri := request.URL.Path
-	method := request.Method
-	upperMethod := strings.ToUpper(method)
+// uri 和 method 全部转换为大写，保证大小写不敏感
+uri := request.URL.Path
+method := request.Method
+upperMethod := strings.ToUpper(method)
 
-	// 查找第一层map
-	if methodHandlers, ok := c.router[upperMethod]; ok {
-		return methodHandlers.FindHandler(uri)
-	}
-	return nil
+// 查找第一层map
+if methodHandlers, ok := c.router[upperMethod]; ok {
+return methodHandlers.FindHandler(uri)
+}
+return nil
 }
 
 // 框架核心结构实现 Handler 接口
 // 所有请求都进入这个函数, 这个函数负责路由分发
 func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 
-	// 封装自定义context
-	ctx := NewContext(request, response)
+// 封装自定义context
+ctx := NewContext(request, response)
 
-	// 寻找路由
-	router := c.FindRouteByRequest(request)
-	if router == nil {
-		// 如果没有找到，这里打印日志
-		ctx.Json(404, "not found")
-		return
-	}
+// 寻找路由
+router := c.FindRouteByRequest(request)
+if router == nil {
+// 如果没有找到，这里打印日志
+ctx.Json(404, "not found")
+return
+}
 
-	// 调用路由函数，如果返回err 代表存在内部错误，返回500状态码
-	if err := router(ctx); err != nil {
-		ctx.Json(500, "inner error")
-		return
-	}
+// 调用路由函数，如果返回err 代表存在内部错误，返回500状态码
+if err := router(ctx); err != nil {
+ctx.Json(500, "inner error")
+return
+}
 }
 ```
 
@@ -538,155 +538,155 @@ func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 ```go
 // 代表树结构
 type Tree struct {
-	root *node // 根节点
+root *node // 根节点
 }
 
 // 代表节点
 type node struct {
-	isLast   bool                // 是否可以成为最终的路由规则。该节点是否能成为一个独立的uri, 是否终极节点
-	segment  string              // uri中的字符串，代表这个节点表示的路由中某个段的字符串
-	handler ControllerHandler    // 代表这个节点中包含的控制器，用于最终加载调用
-	childs   []*node             // 代表这个节点下的子节点
+isLast   bool                // 是否可以成为最终的路由规则。该节点是否能成为一个独立的uri, 是否终极节点
+segment  string              // uri中的字符串，代表这个节点表示的路由中某个段的字符串
+handler ControllerHandler    // 代表这个节点中包含的控制器，用于最终加载调用
+childs   []*node             // 代表这个节点下的子节点
 }
 
 func newNode() *node {
-	return &node{
-		isLast:  false,
-		segment: "",
-		childs:  []*node{},
-	}
+return &node{
+isLast:  false,
+segment: "",
+childs:  []*node{},
+}
 }
 
 func NewTree() *Tree {
-	root := newNode()
-	return &Tree{root}
+root := newNode()
+return &Tree{root}
 }
 
 // 判断一个segment是否是通用segment，即以:开头
 func isWildSegment(segment string) bool {
-	return strings.HasPrefix(segment, ":")
+return strings.HasPrefix(segment, ":")
 }
 
 // 过滤下一层满足segment规则的子节点
 func (n *node) filterChildNodes(segment string) []*node {
-	if len(n.childs) == 0 {
-		return nil
-	}
-	// 如果segment是通配符，则所有下一层子节点都满足需求
-	if isWildSegment(segment) {
-		return n.childs
-	}
-	nodes := make([]*node, 0, len(n.childs))
-	// 过滤所有的下一层子节点
-	for _, cnode := range n.childs {
-		if isWildSegment(cnode.segment) {
-			// 如果下一层子节点有通配符，则满足需求
-			nodes = append(nodes, cnode)
-		} else if cnode.segment == segment {
-			// 如果下一层子节点没有通配符，但是文本完全匹配，则满足需求
-			nodes = append(nodes, cnode)
-		}
-	}
-	return nodes
+if len(n.childs) == 0 {
+return nil
+}
+// 如果segment是通配符，则所有下一层子节点都满足需求
+if isWildSegment(segment) {
+return n.childs
+}
+nodes := make([]*node, 0, len(n.childs))
+// 过滤所有的下一层子节点
+for _, cnode := range n.childs {
+if isWildSegment(cnode.segment) {
+// 如果下一层子节点有通配符，则满足需求
+nodes = append(nodes, cnode)
+} else if cnode.segment == segment {
+// 如果下一层子节点没有通配符，但是文本完全匹配，则满足需求
+nodes = append(nodes, cnode)
+}
+}
+return nodes
 }
 
 // 判断路由是否已经在节点的所有子节点树中存在了
 func (n *node) matchNode(uri string) *node {
-	// 使用分隔符将uri切割为两个部分
-	uri = strings.TrimPrefix(uri, "/") //  【/】开头的 url 去 Split 后第一层是空的，节省一层
-	segments := strings.SplitN(uri, "/", 2)
-	// 第一个部分用于匹配下一层子节点
-	segment := segments[0]
-	if !isWildSegment(segment) {
-		segment = strings.ToUpper(segment)
-	}
-	// 匹配符合的下一层子节点
-	cnodes := n.filterChildNodes(segment)
+// 使用分隔符将uri切割为两个部分
+uri = strings.TrimPrefix(uri, "/") //  【/】开头的 url 去 Split 后第一层是空的，节省一层
+segments := strings.SplitN(uri, "/", 2)
+// 第一个部分用于匹配下一层子节点
+segment := segments[0]
+if !isWildSegment(segment) {
+segment = strings.ToUpper(segment)
+}
+// 匹配符合的下一层子节点
+cnodes := n.filterChildNodes(segment)
 
-	// 如果当前子节点没有一个符合，那么说明这个uri一定是之前不存在, 直接返回nil
-	if len(cnodes) == 0 {
-		return nil
-	}
+// 如果当前子节点没有一个符合，那么说明这个uri一定是之前不存在, 直接返回nil
+if len(cnodes) == 0 {
+return nil
+}
 
-	// 如果只有一个segment，则是最后一个标记
-	if len(segments) == 1 {
-		// 如果segment已经是最后一个节点，判断这些cnode是否有isLast标志
-		for _, tn := range cnodes {
-			if tn.isLast {
-				return tn
-			}
-		}
-		// 都不是最后一个节点
-		return nil
-	}
+// 如果只有一个segment，则是最后一个标记
+if len(segments) == 1 {
+// 如果segment已经是最后一个节点，判断这些cnode是否有isLast标志
+for _, tn := range cnodes {
+if tn.isLast {
+return tn
+}
+}
+// 都不是最后一个节点
+return nil
+}
 
-	// 如果有2个segment, 递归每个子节点继续进行查找
-	for _, tn := range cnodes {
-		tnMatch := tn.matchNode(segments[1])
-		if tnMatch != nil {
-			return tnMatch
-		}
-	}
-	return nil
+// 如果有2个segment, 递归每个子节点继续进行查找
+for _, tn := range cnodes {
+tnMatch := tn.matchNode(segments[1])
+if tnMatch != nil {
+return tnMatch
+}
+}
+return nil
 }
 
 // 增加路由节点
 func (tree *Tree) AddRouter(uri string, handler ControllerHandler) error {
-	n := tree.root  
-	
-	// 确认路由是否冲突
-	if n.matchNode(uri) != nil {
-		return errors.New("route exist: " + uri)
-	}
-	uri = strings.TrimPrefix(uri, "/") //  【/】开头的 url 去 Split 后第一层是空的，节省一层
-	segments := strings.Split(uri, "/")
-	// 对每个segment
-	for index, segment := range segments {
+n := tree.root
 
-		// 最终进入Node segment的字段
-		if !isWildSegment(segment) {
-			segment = strings.ToUpper(segment)
-		}
-		isLast := index == len(segments)-1
+// 确认路由是否冲突
+if n.matchNode(uri) != nil {
+return errors.New("route exist: " + uri)
+}
+uri = strings.TrimPrefix(uri, "/") //  【/】开头的 url 去 Split 后第一层是空的，节省一层
+segments := strings.Split(uri, "/")
+// 对每个segment
+for index, segment := range segments {
 
-		var objNode *node // 标记是否有合适的子节点
+// 最终进入Node segment的字段
+if !isWildSegment(segment) {
+segment = strings.ToUpper(segment)
+}
+isLast := index == len(segments)-1
 
-		childNodes := n.filterChildNodes(segment)
-		// 如果有匹配的子节点
-		if len(childNodes) > 0 {
-			// 如果有segment相同的子节点，则选择这个子节点
-			for _, cnode := range childNodes {
-				if cnode.segment == segment {
-					objNode = cnode
-					break
-				}
-			}
-		}
+var objNode *node // 标记是否有合适的子节点
 
-		if objNode == nil {
-			// 创建一个当前node的节点
-			cnode := newNode()
-			cnode.segment = segment
-			if isLast {
-				cnode.isLast = true  
-				cnode.handler = handler
-			}
-			n.childs = append(n.childs, cnode)
-			objNode = cnode
-		}
-		n = objNode
-	}
-	return nil
+childNodes := n.filterChildNodes(segment)
+// 如果有匹配的子节点
+if len(childNodes) > 0 {
+// 如果有segment相同的子节点，则选择这个子节点
+for _, cnode := range childNodes {
+if cnode.segment == segment {
+objNode = cnode
+break
+}
+}
+}
+
+if objNode == nil {
+// 创建一个当前node的节点
+cnode := newNode()
+cnode.segment = segment
+if isLast {
+cnode.isLast = true
+cnode.handler = handler
+}
+n.childs = append(n.childs, cnode)
+objNode = cnode
+}
+n = objNode
+}
+return nil
 }
 
 // 匹配uri
 func (tree *Tree) FindHandler(uri string) ControllerHandler {
-	// 直接复用matchNode函数，uri是不带通配符的地址
-	matchNode := tree.root.matchNode(uri)
-	if matchNode == nil {
-		return nil
-	}
-	return matchNode.handler
+// 直接复用matchNode函数，uri是不带通配符的地址
+matchNode := tree.root.matchNode(uri)
+if matchNode == nil {
+return nil
+}
+return matchNode.handler
 }
 ```
 
@@ -722,19 +722,19 @@ func (tree *Tree) FindHandler(uri string) ControllerHandler {
 // 注册路由规则
 func registerRouter(core *framework.Core) {
 
-	// 扩展需求1：core中使用use注册全局中间件 （需放在前面）
-	core.Use(middleware.Recovery(), middleware.Cost())
-	
-	// 扩展需求2：在core中使用middleware.Test3() 为单个路由增加中间件
-	core.Get("/user/login", middleware.Test3(), UserLoginController)
+// 扩展需求1：core中使用use注册全局中间件 （需放在前面）
+core.Use(middleware.Recovery(), middleware.Cost())
 
-	subjectApi := core.Group("/subject")
-	{
-		...
-		// 扩展需求3：在 group 中使用 middleware.Test3() 为单个路由增加中间件
-		subjectApi.Get("/middleware/test3", middleware.Test3(), SubjectAddController)
-	}
-	core.Get("/timeout", middleware.Timeout(time.Second), TimeoutController)
+// 扩展需求2：在core中使用middleware.Test3() 为单个路由增加中间件
+core.Get("/user/login", middleware.Test3(), UserLoginController)
+
+subjectApi := core.Group("/subject")
+{
+...
+// 扩展需求3：在 group 中使用 middleware.Test3() 为单个路由增加中间件
+subjectApi.Get("/middleware/test3", middleware.Test3(), SubjectAddController)
+}
+core.Get("/timeout", middleware.Timeout(time.Second), TimeoutController)
 }
 ```
 
@@ -743,24 +743,24 @@ func registerRouter(core *framework.Core) {
 ```go
 // 代表节点
 type node struct {
-	... 
-	handlers []ControllerHandler // 中间件+控制器
+...
+handlers []ControllerHandler // 中间件+控制器
 }
 ...
 // 增加路由节点
 func (tree *Tree) AddRouter(uri string, handlers []ControllerHandler) error {
-	...
-				cnode.handlers = handlers
-	...
+...
+cnode.handlers = handlers
+...
 }
 
 // 匹配uri
 func (tree *Tree) FindHandler(uri string) []ControllerHandler {
-	matchNode := tree.root.matchNode(uri)
-	if matchNode == nil {
-		return nil
-	}
-	return matchNode.handlers
+matchNode := tree.root.matchNode(uri)
+if matchNode == nil {
+return nil
+}
+return matchNode.handlers
 }
 
 ```
@@ -770,33 +770,33 @@ func (tree *Tree) FindHandler(uri string) []ControllerHandler {
 ```go
 // 自定义 Context
 type Context struct {
-	...
-	handlers []ControllerHandler // 当前请求的handler链条
-	index    int                 // 当前请求调用到调用链的哪个节点
+...
+handlers []ControllerHandler // 当前请求的handler链条
+index    int                 // 当前请求调用到调用链的哪个节点
 }
 
 func NewContext(r *http.Request, w http.ResponseWriter) *Context {
-	return &Context{
-		...
-		writerMux:      &sync.Mutex{},
-		index:          -1,
-	}
+return &Context{
+...
+writerMux:      &sync.Mutex{},
+index:          -1,
+}
 }
 
 // 为context设置handlers
 func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
-	ctx.handlers = handlers
+ctx.handlers = handlers
 }
 
 // 核心函数，调用context的下一个函数 
 func (ctx *Context) Next() error {
-	ctx.index++
-	if ctx.index < len(ctx.handlers) {
-		if err := ctx.handlers[ctx.index](ctx); err != nil {
-			return err
-		}
-	}
-	return nil
+ctx.index++
+if ctx.index < len(ctx.handlers) {
+if err := ctx.handlers[ctx.index](ctx); err != nil {
+return err
+}
+}
+return nil
 }
 ```
 
@@ -814,27 +814,27 @@ func (ctx *Context) Next() error {
 
 ```go
 type IGroup interface {
-	// 实现HttpMethod方法
-	Get(string, ...ControllerHandler)
-	Post(string, ...ControllerHandler)
-	Put(string, ...ControllerHandler)
-	Delete(string, ...ControllerHandler)
+// 实现HttpMethod方法
+Get(string, ...ControllerHandler)
+Post(string, ...ControllerHandler)
+Put(string, ...ControllerHandler)
+Delete(string, ...ControllerHandler)
 
-	// 实现嵌套group
-	Group(string) IGroup
-	// 嵌套中间件
-	Use(middlewares ...ControllerHandler)
+// 实现嵌套group
+Group(string) IGroup
+// 嵌套中间件
+Use(middlewares ...ControllerHandler)
 }
 type Group struct {
-	...
-	middlewares []ControllerHandler // 存放中间件
+...
+middlewares []ControllerHandler // 存放中间件
 }
 
 // 实现Get方法
 func (g *Group) Get(uri string, handlers ...ControllerHandler) {
-	uri = g.getAbsolutePrefix() + uri
-	allHandlers := append(g.getMiddlewares(), handlers...)  // 聚合
-	g.core.Get(uri, allHandlers...)
+uri = g.getAbsolutePrefix() + uri
+allHandlers := append(g.getMiddlewares(), handlers...)  // 聚合
+g.core.Get(uri, allHandlers...)
 }
 
 ...  // NewGroup  //  POST、PUT、DELETE
@@ -842,15 +842,15 @@ func (g *Group) Get(uri string, handlers ...ControllerHandler) {
 // 获取某个group的middleware
 // 这里就是获取除了Get/Post/Put/Delete之外设置的middleware
 func (g *Group) getMiddlewares() []ControllerHandler {
-	if g.parent == nil {
-		return g.middlewares
-	}
-	return append(g.parent.getMiddlewares(), g.middlewares...)
+if g.parent == nil {
+return g.middlewares
+}
+return append(g.parent.getMiddlewares(), g.middlewares...)
 }
 
 // 注册中间件
 func (g *Group) Use(middlewares ...ControllerHandler) {
-	g.middlewares = append(g.middlewares, middlewares...)
+g.middlewares = append(g.middlewares, middlewares...)
 }
 ```
 
@@ -859,55 +859,55 @@ func (g *Group) Use(middlewares ...ControllerHandler) {
 ```go
 // 框架核心结构
 type Core struct {
-	...
-	middlewares []ControllerHandler // 从 core 这边设置的中间件   
+...
+middlewares []ControllerHandler // 从 core 这边设置的中间件   
 }
 
 ... // NewCore
 
 // 匹配 GET 方法, 增加路由规则
 func (c *Core) Get(url string, handlers ...ControllerHandler) {
-	// 将core的middleware 和 handlers结合起来
-	allHandlers := append(c.middlewares, handlers...)
-	if err := c.router["GET"].AddRouter(url, allHandlers); err != nil {
-		log.Fatal("add router error: ", err)
-	}
+// 将core的middleware 和 handlers结合起来
+allHandlers := append(c.middlewares, handlers...)
+if err := c.router["GET"].AddRouter(url, allHandlers); err != nil {
+log.Fatal("add router error: ", err)
+}
 }
 
 ...  //  POST、PUT、DELETE   、Group
 
 // 注册全局中间件
 func (c *Core) Use(middlewares ...ControllerHandler) {
-	c.middlewares = append(c.middlewares, middlewares...)
+c.middlewares = append(c.middlewares, middlewares...)
 }
 
 // 匹配路由，如果没有匹配到，返回nil
 func (c *Core) FindRouteByRequest(request *http.Request) []ControllerHandler {
-	...
+...
 }
 
 // 框架核心结构实现 Handler 接口
 // 所有请求都进入这个函数, 这个函数负责路由分发
 func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	// 封装自定义context
-	ctx := NewContext(request, response)
+// 封装自定义context
+ctx := NewContext(request, response)
 
-	// 寻找路由
-	handlers := c.FindRouteByRequest(request)
-	if handlers == nil {
-		// 如果没有找到，这里打印日志
-		ctx.Json(404, "not found")
-		return
-	}
+// 寻找路由
+handlers := c.FindRouteByRequest(request)
+if handlers == nil {
+// 如果没有找到，这里打印日志
+ctx.Json(404, "not found")
+return
+}
 
-	// 设置context中的handlers字段
-	ctx.SetHandlers(handlers)
+// 设置context中的handlers字段
+ctx.SetHandlers(handlers)
 
-	// 调用路由函数，如果返回err 代表存在内部错误，返回500状态码
-	if err := ctx.Next(); err != nil {
-		ctx.Json(500, "inner error")
-		return
-	}
+// 调用路由函数，如果返回err 代表存在内部错误，返回500状态码
+if err := ctx.Next(); err != nil {
+ctx.Json(500, "inner error")
+return
+}
 }
 ```
 
@@ -917,38 +917,38 @@ func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 
 ```go
 func Timeout(d time.Duration) framework.ControllerHandler {
-	// 使用函数回调
-	return func(ctx *framework.Context) error {
-		finish := make(chan struct{}, 1)
-		panicChan := make(chan interface{}, 1)
-		// 执行业务逻辑前预操作：初始化超时context
-		durationCtx, cancel := context.WithTimeout(ctx.BaseContext(), d)
-		defer cancel()
+// 使用函数回调
+return func(ctx *framework.Context) error {
+finish := make(chan struct{}, 1)
+panicChan := make(chan interface{}, 1)
+// 执行业务逻辑前预操作：初始化超时context
+durationCtx, cancel := context.WithTimeout(ctx.BaseContext(), d)
+defer cancel()
 
-		go func() {
-			defer func() {
-				if p := recover(); p != nil {
-					panicChan <- p
-				}
-			}()
-			// 使用next执行具体的业务逻辑
-			ctx.Next()
+go func() {
+defer func() {
+if p := recover(); p != nil {
+panicChan <- p
+}
+}()
+// 使用next执行具体的业务逻辑
+ctx.Next()
 
-			finish <- struct{}{}
-		}()
-		// 执行业务逻辑后操作
-		select {
-		case p := <-panicChan:
-			ctx.Json(500, "time out")
-			log.Println(p)
-		case <-finish:
-			fmt.Println("finish")
-		case <-durationCtx.Done():
-			ctx.Json(500, "time out")
-			ctx.SetHasTimeout()
-		}
-		return nil
-	}
+finish <- struct{}{}
+}()
+// 执行业务逻辑后操作
+select {
+case p := <-panicChan:
+ctx.Json(500, "time out")
+log.Println(p)
+case <-finish:
+fmt.Println("finish")
+case <-durationCtx.Done():
+ctx.Json(500, "time out")
+ctx.SetHasTimeout()
+}
+return nil
+}
 }
 ```
 
@@ -2487,6 +2487,407 @@ func SubjectListController(c *gin.Context) {
 ```
 
 ## 13、交互：执行命令行
+
+### 目标
+
+引入命令行工具库，并改造整个项目
+
+### 如何实现
+
+- 源码引入
+- 把服务容器嵌入 `Command`
+- 把 Web 服务封装成命令
+    - 准备工作：把创建 Web 服务引擎的方法作为一个服务封装在服务容器中
+    - main 函数的改造：初始化一个服务容器，然后将各个服务绑定到这个服务容器中，包括定义的提供 Web 引擎的服务
+    - 在业务代码中将业务需要的路由绑定到 Web 引擎中去
+    - 完成服务的绑定之后，最后要创建一个 `根Command`，并且创建一个 Web 启动的 `Command`
+
+### 代码实现
+
+#### 源码引入
+
+引入命令行工具库 [cobra](https://github.com/spf13/cobra)，许可证允许，复制进 `framework/cobra`，并且迁移 `go.mod` 内容。
+
+#### 把服务容器嵌入
+
+单独抽取 engine 实现 container 的绑定封装 ，并且新增设置容器方法 `SetContainer`， `/framework/gin/gob_engine.go`：
+
+```go
+// --- 服务容器：engine 实现 container 的绑定封装
+
+// Bind 绑定一个服务提供者，如果关键字凭证已经存在，会进行替换操作，返回 error
+func (engine *Engine) Bind(provider framework.ServiceProvider) error {
+	return engine.container.Bind(provider)
+}
+
+// IsBind 关键字凭证是否已经绑定服务提供者
+func (engine *Engine) IsBind(key string) bool {
+	return engine.container.IsBind(key)
+}
+
+// SetContainer 设置服务容器
+func (engine *Engine) SetContainer(container framework.Container) {
+	engine.container = container
+}
+```
+
+在 `framework/cobra/command.go` 中修改 `Command` 结构，加入服务容器：
+
+```go
+type Command struct {
+	// gob改动：引入服务容器
+	container framework.Container
+	...
+}
+```
+
+再为 `Command` 提供两个方法：设置服务容器、获取服务容器，单独创建 `framework/cobra/hade_command.go` ：
+
+```go
+// SetContainer 设置服务容器
+func (c *Command) SetContainer(container framework.Container) {
+	c.container = container
+}
+// GetContainer 获取容器
+func (c *Command) GetContainer() framework.Container {
+	return c.Root().container
+}
+```
+
+#### 把 Web 服务封装成命令
+
+准备工作：把创建 Web 服务引擎的方法作为一个服务封装在服务容器中
+
+在 `framework/contract/kernel.go` 中，把创建 `Engine` 的过程封装为一个服务接口协议：
+
+```go
+// KernelKey 提供 kenel 服务凭证
+const KernelKey = "gob:kernel"
+
+// Kernel 接口提供框架最核心的结构
+type Kernel interface {
+	// HttpEngine http.Handler结构，作为net/http框架使用, 实际上是gin.Engine
+	HttpEngine() http.Handler
+}
+
+```
+
+在 `framework/provider/kernel/provider.go` 中定义一个服务提供者：
+
+```go
+// GobKernelProvider 提供web引擎
+type GobKernelProvider struct {
+	HttpEngine *gin.Engine
+}
+// Register 注册服务提供者
+func (provider *GobKernelProvider) Register(c framework.Container) framework.NewInstance {
+	return NewGobKernelService
+}
+// Boot 启动的时候判断是否由外界注入了Engine，如果注入的化，用注入的，如果没有，重新实例化
+func (provider *GobKernelProvider) Boot(c framework.Container) error {
+	if provider.HttpEngine == nil {
+		provider.HttpEngine = gin.Default()
+	}
+	provider.HttpEngine.SetContainer(c)
+	return nil
+}
+// IsDefer 引擎的初始化我们希望开始就进行初始化
+func (provider *GobKernelProvider) IsDefer() bool {
+	return false
+}
+// Params 参数就是一个HttpEngine
+func (provider *GobKernelProvider) Params(c framework.Container) []interface{} {
+	return []interface{}{provider.HttpEngine}
+}
+// Name 提供凭证
+func (provider *GobKernelProvider) Name() string {
+	return contract.KernelKey
+}
+```
+
+初始化实例 `framework/provider/kernel/service.go` ：
+
+```go
+// 引擎服务
+type GobKernelService struct {
+	engine *gin.Engine
+}
+
+var _ contract.Kernel = (*GobKernelService)(nil)
+
+// 初始化 web 引擎服务实例
+func NewGobKernelService(params ...interface{}) (interface{}, error) {
+	httpEngine := params[0].(*gin.Engine)
+	return &GobKernelService{engine: httpEngine}, nil
+}
+// 返回 web 引擎
+func (s *GobKernelService) HttpEngine() http.Handler {
+	return s.engine
+}
+```
+
+main 函数的改造：初始化一个服务容器，然后将各个服务绑定到这个服务容器中，包括定义的提供 Web 引擎的服务
+
+`main.go`：
+
+```go
+func main() {
+
+	// 初始化服务容器
+	container := framework.NewGobContainer()
+	// 绑定 App 服务提供者
+	container.Bind(&app.GobAppProvider{})
+
+	// 后续初始化需要绑定的服务提供者...
+
+	// 将 HTTP 引擎初始化,并且作为服务提供者绑定到服务容器中
+	if engine, err := http.NewHttpEngine(); err == nil {
+		// 绑定 Kernel 服务提供者
+		container.Bind(&kernel.GobKernelProvider{HttpEngine: engine})
+	}
+	// 运行root命令
+	console.RunCommand(container)
+}
+```
+
+在业务代码中将业务需要的路由绑定到 Web 引擎中去
+
+`http.NewHttpEngine` 这个创建 Web 引擎的方法必须放在业务层，因为这个 Web 引擎不仅仅是调用了 Gin 创建 Web 引擎的方法，更重要的是调用了业务需要的绑定路由的功能。
+
+创建引擎 `app/http/kernel.go` ：
+
+```go
+// NewHttpEngine 创建了一个绑定了路由的 Web 引擎
+func NewHttpEngine() (*gin.Engine, error) {
+	// 设置为 Release，为的是默认在启动中不输出调试信息
+	gin.SetMode(gin.ReleaseMode)
+	// 默认启动一个 Web 引擎
+	r := gin.Default()
+	// 业务绑定路由操作
+	Routes(r)
+	// 返回绑定路由后的 Web 引擎
+	return r, nil
+}
+```
+
+绑定路由 `app/http/route.go` ：
+
+```go
+// Routes 绑定业务层路由
+func Routes(r *gin.Engine) {
+	r.Static("/dist/", "./dist/")
+	demo.Register(r) // 这个demo是业务App自定义的demo服务,位置在 `app/http/module/demo/*`
+}
+```
+
+完成服务的绑定之后，最后要创建一个 `根Command`，并且创建一个 Web 启动的二级 `Command`，
+
+`app/console/kernel.go` ：
+
+```go
+// RunCommand  初始化根Command并运行
+func RunCommand(container framework.Container) error {
+	// 根Command
+	var rootCmd = &cobra.Command{
+		// 定义根命令的关键字
+		Use: "gob",
+		// 简短介绍
+		Short: "gob 命令",
+		// 根命令的详细介绍
+		Long: "gob 框架提供的命令行工具，使用这个命令行工具能很方便执行框架自带命令，也能很方便编写业务命令",
+		// 根命令的执行函数
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cmd.InitDefaultHelpFlag()
+			return cmd.Help()
+		},
+		// 不需要出现cobra默认的completion子命令
+		CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
+	}
+
+	// 为根Command设置服务容器
+	rootCmd.SetContainer(container)
+	// 绑定框架的命令  （框架定义的命令我们使用`framework/command/kernel.go` 中的 `AddKernelCommands` 进行挂载）
+	command.AddKernelCommands(rootCmd)
+	// 绑定业务的命令
+	AddAppCommand(rootCmd)
+
+	// 执行RootCommand
+	return rootCmd.Execute()
+}
+
+// 绑定业务的命令（业务定义的命令我们使用 `app/console/kernel.go` 中的 `AddAppCommand`进行挂载）
+func AddAppCommand(rootCmd *cobra.Command) {
+	//  demo 例子
+	rootCmd.AddCommand(demo.InitFoo())
+}
+```
+
+这里绑定了一个业务代码的 demo 命令用来测试，`app/console/command/demo/foo.go` ：
+
+```go
+// InitFoo 初始化Foo命令
+func InitFoo() *cobra.Command {
+	FooCommand.AddCommand(Foo1Command)
+	return FooCommand
+}
+
+// FooCommand 代表Foo命令
+var FooCommand = &cobra.Command{
+	Use:     "foo",
+	Short:   "foo的简要说明",
+	Long:    "foo的长说明",
+	Aliases: []string{"fo", "f"},
+	Example: "foo命令的例子",
+	RunE: func(c *cobra.Command, args []string) error {
+		container := c.GetContainer()
+		log.Println(container)
+		return nil
+	},
+}
+```
+
+前面在 `app/console` 里创建了根命令，并且加载了框架与业务命令初始化，这里初始化框架相关的命令，`framework/command/kernel.go` ：
+
+```go
+// AddKernelCommands will add all command/* to root command
+func AddKernelCommands(root *cobra.Command) {
+	// 挂载AppCommand命令
+	root.AddCommand(initAppCommand())
+}
+
+```
+
+封装二级 Web 启动 App 命令， `framework/command/app.go`：
+
+```go
+// initAppCommand 初始化app命令和其子命令
+func initAppCommand() *cobra.Command {
+	appCommand.AddCommand(appStartCommand)
+	return appCommand
+}
+
+// AppCommand 是命令行参数第一级为app的命令，它没有实际功能，只是打印帮助文档
+var appCommand = &cobra.Command{
+	Use:   "app",
+	Short: "业务应用控制命令",
+	Long:  "业务应用控制命令，其包含业务启动，关闭，重启，查询等功能",
+	RunE: func(c *cobra.Command, args []string) error {
+		// 打印帮助文档
+		c.Help()
+		return nil
+	},
+}
+
+// appStartCommand 启动一个Web服务
+var appStartCommand = &cobra.Command{
+	Use:   "start",
+	Short: "启动一个Web服务",
+	RunE: func(c *cobra.Command, args []string) error {
+		// 从Command中获取服务容器
+		container := c.GetContainer()
+		// 从服务容器中获取kernel的服务实例
+		kernelService := container.MustMake(contract.KernelKey).(contract.Kernel)
+		// 从kernel服务实例中获取引擎
+		core := kernelService.HttpEngine()
+
+		// 创建一个Server服务
+		server := &http.Server{
+			Handler: core,
+			Addr:    ":8080",
+		}
+		// 这个goroutine是启动服务的goroutine
+		go func() {
+			server.ListenAndServe()
+		}()
+
+		// 当前的goroutine等待信号量
+		quit := make(chan os.Signal)
+		// 监控信号：SIGINT, SIGTERM, SIGQUIT
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+		// 这里会阻塞当前goroutine等待信号
+		<-quit
+
+		// 调用Server.Shutdown graceful结束
+		timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(timeoutCtx); err != nil {
+			log.Fatal("Server Shutdown:", err)
+		}
+		return nil
+	},
+}
+```
+
+### 代码验证
+
+创建一个业务服务测试 demo，`/app/http/module/demo/api.go`：
+
+```go
+type DemoApi struct {
+	service *Service
+}
+
+func Register(r *gin.Engine) error {
+	api := NewDemoApi()
+	r.Bind(&demoService.DemoProvider{})
+
+	r.GET("/demo/demo", api.Demo)
+	r.GET("/demo/demo2", api.Demo2)
+	r.POST("/demo/demo_post", api.DemoPost)
+	return nil
+}
+
+func NewDemoApi() *DemoApi {
+	service := NewService()
+	return &DemoApi{service: service}
+}
+
+// Demo godoc
+// @Summary 获取所有用户
+// @Description 获取所有用户
+// @Produce  json
+// @Tags demo
+// @Success 200 array []UserDTO
+// @Router /demo/demo [get]
+func (api *DemoApi) Demo(c *gin.Context) {
+	//appService := c.MustMake(contract.AppKey).(contract.App)
+	//baseFolder := appService.BaseFolder()
+	users := api.service.GetUsers()
+	usersDTO := UserModelsToUserDTOs(users)
+	c.JSON(200, usersDTO)
+}
+
+// Demo godoc
+// @Summary 获取所有学生
+// @Description 获取所有学生
+// @Produce  json
+// @Tags demo
+// @Success 200 array []UserDTO
+// @Router /demo/demo2 [get]
+func (api *DemoApi) Demo2(c *gin.Context) {
+	demoProvider := c.MustMake(demoService.DemoKey).(demoService.IService)
+	students := demoProvider.GetAllStudent()
+	usersDTO := StudentsToUserDTOs(students)
+	c.JSON(200, usersDTO)
+}
+
+func (api *DemoApi) DemoPost(c *gin.Context) {
+	type Foo struct {
+		Name string
+	}
+	foo := &Foo{}
+	err := c.BindJSON(&foo)
+	if err != nil {
+		c.AbortWithError(500, err)
+	}
+	c.JSON(200, nil)
+}
+```
+
+整体框架验证：`go build` 编译后调用 `./hade` （或者直接 `go run .`）。
+
+web 服务验证： `./hade app start`，可以访问到业务定义的 `/demo/demo` 路径。
 
 ## 14、
 

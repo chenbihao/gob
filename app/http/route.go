@@ -10,5 +10,5 @@ func Routes(r *gin.Engine) {
 
 	r.Static("/dist/", "./dist/")
 
-	demo.Register(r)
+	demo.Register(r) // 这个demo是业务App自定义的demo服务,位置在 `app/http/module/demo/*`
 }

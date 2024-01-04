@@ -70,6 +70,7 @@ func (container *GobContainer) Bind(provider ServiceProvider) error {
 	}
 	return nil
 }
+
 func (container *GobContainer) IsBind(key string) bool {
 	return container.findServiceProvider(key) != nil
 }
