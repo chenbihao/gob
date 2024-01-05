@@ -24,7 +24,7 @@ type CronSpec struct {
 	ServiceName string
 }
 
-func (c *Command) SetParantNull() {
+func (c *Command) SetParentNull() {
 	c.parent = nil
 }
 
@@ -49,7 +49,7 @@ func (c *Command) AddCronCommand(spec string, cmd *Command) {
 	ctx := root.Context()
 	cronCmd = *cmd
 	cronCmd.args = []string{}
-	cronCmd.SetParantNull()
+	cronCmd.SetParentNull()
 	cronCmd.SetContainer(root.GetContainer())
 
 	// 增加调用函数
