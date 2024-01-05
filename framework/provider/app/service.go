@@ -4,7 +4,6 @@ package app
 
 import (
 	"errors"
-	"flag"
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
@@ -28,13 +27,6 @@ func (s GobAppService) Version() string {
 func (s GobAppService) BaseFolder() string {
 	if s.baseFolder != "" {
 		return s.baseFolder
-	}
-	// 如果没有设置，则使用参数
-	var baseFolder string
-	flag.StringVar(&baseFolder, "base_folder", "", "base_folder 参数, 默认为当前路径")
-	flag.Parse()
-	if baseFolder != "" {
-		return baseFolder
 	}
 	// 如果参数也没有，使用默认的当前路径
 	return util.GetExecDirectory()
