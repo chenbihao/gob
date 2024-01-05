@@ -5,6 +5,7 @@ import (
 	"github.com/chenbihao/gob/app/http"
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/provider/app"
+	"github.com/chenbihao/gob/framework/provider/distributed"
 	"github.com/chenbihao/gob/framework/provider/kernel"
 )
 
@@ -14,6 +15,8 @@ func main() {
 	container := framework.NewGobContainer()
 	// 绑定 App 服务提供者
 	container.Bind(&app.GobAppProvider{})
+	// 绑定 分布式本地锁 服务提供者
+	container.Bind(&distributed.LocalDistributedProvider{})
 
 	// 后续初始化需要绑定的服务提供者...
 

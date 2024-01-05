@@ -7,6 +7,8 @@ const AppKey = "gob:app"
 
 // App 定义接口（提供了获取框架相关内容，例如获取框架约定的相关目录）
 type App interface {
+	// AppID 表示当前这个app的唯一id, 可以用于分布式锁等
+	AppID() string
 	// Version 定义当前版本
 	Version() string
 	// BaseFolder 定义项目基础地址

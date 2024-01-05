@@ -7,6 +7,7 @@ import (
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
+	"github.com/google/uuid"
 	flag "github.com/spf13/pflag"
 	"path/filepath"
 )
@@ -15,13 +16,19 @@ import (
 type GobAppService struct {
 	container  framework.Container // 服务容器
 	baseFolder string              // 基础路径
+	appID      string              // 表示当前这个app的唯一id, 可以用于分布式锁等
 }
 
 var _ contract.App = (*GobAppService)(nil)
 
+// AppID 表示当前这个app的唯一id, 可以用于分布式锁等
+func (s GobAppService) AppID() string {
+	return s.appID
+}
+
 // Version 实现版本
 func (s GobAppService) Version() string {
-	return "0.1.2"
+	return "0.1.5"
 }
 
 // BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
@@ -95,5 +102,8 @@ func NewGobApp(params ...interface{}) (interface{}, error) {
 		flag.Parse()
 	}
 
-	return GobAppService{baseFolder: baseFolder, container: container}, nil // todo 这里可能得规范下返回的是指针或者实体
+	appID := uuid.New().String()
+
+	// todo 这里可能得规范下返回的是指针或者实体
+	return GobAppService{baseFolder: baseFolder, container: container, appID: appID}, nil
 }

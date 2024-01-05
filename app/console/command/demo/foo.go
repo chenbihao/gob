@@ -19,9 +19,12 @@ var FooCommand = &cobra.Command{
 	Aliases: []string{"fo", "f"},
 	Example: "foo命令的例子",
 	RunE: func(c *cobra.Command, args []string) error {
-		container := c.GetContainer()
-		log.Printf("%+v", container)
-		log.Println("execute foo command")
+		//// 获取容器
+		//container := c.GetContainer()
+		//// 获取容器中的app服务
+		//appService := container.MustMake(contract.AppKey).(contract.App)
+		//log.Println("execute foo command,当前 appid：", appService.AppID())
+		log.Println("execute command")
 		return nil
 	},
 }

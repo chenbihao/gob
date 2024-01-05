@@ -5,10 +5,11 @@ go 1.20
 require (
 	github.com/bytedance/sonic v1.10.2
 	github.com/cpuguy83/go-md2man/v2 v2.0.3
-	github.com/erikdubbelboer/gspt v0.0.0-20210805194459-ce36a5128377
+	github.com/deptofdefense/safelock v0.3.0
 	github.com/gin-contrib/sse v0.1.0
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/goccy/go-json v0.10.2
+	github.com/google/uuid v1.5.0
 	github.com/inconshreveable/mousetrap v1.1.0
 	github.com/json-iterator/go v1.1.12
 	github.com/mattn/go-isatty v0.0.20
@@ -26,6 +27,16 @@ require (
 )
 
 require (
+	github.com/aws/aws-sdk-go-v2 v1.15.0 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.0 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.6 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.1.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.13.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0 // indirect
+	github.com/aws/smithy-go v1.11.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -39,6 +50,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/spf13/afero v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
