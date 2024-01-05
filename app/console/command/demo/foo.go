@@ -20,7 +20,8 @@ var FooCommand = &cobra.Command{
 	Example: "foo命令的例子",
 	RunE: func(c *cobra.Command, args []string) error {
 		container := c.GetContainer()
-		log.Println(container)
+		log.Printf("%+v", container)
+		log.Println("execute foo command")
 		return nil
 	},
 }

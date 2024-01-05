@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/chenbihao/gob/framework"
+	"github.com/robfig/cron/v3"
 	"io"
 	"os"
 	"path/filepath"
@@ -50,8 +51,14 @@ type Group struct {
 // you to define the usage and description as part of your command
 // definition to ensure usability.
 type Command struct {
+
+	// gob改动：引入定时库
+	Cron      *cron.Cron // Command支持cron，只在RootCommand中有这个值
+	CronSpecs []CronSpec // 对应Cron命令的信息
+
 	// gob改动：引入服务容器
 	container framework.Container
+
 	// Use is the one-line usage message.
 	// Recommended syntax is as follows:
 	//   [ ] identifies an optional argument. Arguments that are not enclosed in brackets are required.
