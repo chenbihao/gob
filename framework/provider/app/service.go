@@ -7,6 +7,7 @@ import (
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
+	flag "github.com/spf13/pflag"
 	"path/filepath"
 )
 
@@ -87,5 +88,12 @@ func NewGobApp(params ...interface{}) (interface{}, error) {
 	// 有两个参数，一个是容器，一个是 baseFolder
 	container := params[0].(framework.Container)
 	baseFolder := params[1].(string)
+
+	// 如果没有设置，则使用参数
+	if baseFolder == "" {
+		flag.StringVar(&baseFolder, "base_folder", "", "base_folder参数, 默认为当前路径")
+		flag.Parse()
+	}
+
 	return GobAppService{baseFolder: baseFolder, container: container}, nil // todo 这里可能得规范下返回的是指针或者实体
 }
