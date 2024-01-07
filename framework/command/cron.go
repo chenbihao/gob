@@ -19,14 +19,13 @@ import (
 var cronDaemon = false
 
 func initCronCommand() *cobra.Command {
-
+	// 以后台 deamon 的方式启动的参数
 	cronStartCommand.Flags().BoolVarP(&cronDaemon, "daemon", "d", false, "start serve daemon")
 	cronCommand.AddCommand(cronRestartCommand)
 	cronCommand.AddCommand(cronStateCommand)
 	cronCommand.AddCommand(cronStopCommand)
 	cronCommand.AddCommand(cronListCommand)
 	cronCommand.AddCommand(cronStartCommand)
-
 	return cronCommand
 }
 
@@ -54,7 +53,6 @@ var cronListCommand = &cobra.Command{
 			ps = append(ps, line)
 		}
 		util.PrettyPrint(ps)
-
 		return nil
 	},
 }
@@ -78,9 +76,9 @@ var cronStartCommand = &cobra.Command{
 
 		// deamon 模式
 		if cronDaemon {
-			// win不支持
+			// win不支持 deamon 模式
 			if util.IsWindows() {
-				return errors.New("daemon: Non-POSIX OS is not supported, IsWindows==true")
+				return errors.New("daemon: Non-POSIX OS is not supported")
 			}
 
 			// 创建一个Context

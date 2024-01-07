@@ -44,7 +44,7 @@ func (c *Command) AddCronCommand(spec string, cmd *Command) {
 		Spec: spec,
 	})
 
-	// 制作一个rootCommand
+	// 制作一个rootCommand，成为一个新的根节点
 	var cronCmd Command
 	ctx := root.Context()
 	cronCmd = *cmd
@@ -54,7 +54,7 @@ func (c *Command) AddCronCommand(spec string, cmd *Command) {
 
 	// 增加调用函数
 	root.Cron.AddFunc(spec, func() {
-		// 如果后续的command出现panic，这里要捕获
+		// 匿名函数，如果后续的command出现panic，这里要捕获
 		defer func() {
 			if err := recover(); err != nil {
 				log.Println(err)
