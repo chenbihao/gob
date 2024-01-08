@@ -48,11 +48,10 @@ func NewGobContainer() *GobContainer {
 func (container *GobContainer) Bind(provider ServiceProvider) error {
 	// 写锁
 	container.lock.Lock()
-	defer container.lock.Unlock()
-	key := provider.Name()
-
 	// key 为关键字，value 为注册的 ServiceProvider
+	key := provider.Name()
 	container.providers[key] = provider
+	container.lock.Unlock()
 
 	// if provider is not defer
 	if provider.IsDefer() == false {
