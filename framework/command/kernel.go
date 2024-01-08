@@ -6,10 +6,10 @@ import "github.com/chenbihao/gob/framework/cobra"
 func AddKernelCommands(root *cobra.Command) {
 	// 挂载 AppCommand 命令
 	root.AddCommand(initAppCommand())
-
 	// 挂载 cron 命令
 	root.AddCommand(initCronCommand())
-
 	// 挂载 环境变量 命令
 	root.AddCommand(initEnvCommand())
+	// 挂载 配置 命令
+	root.AddCommand(initConfigCommand())
 }
