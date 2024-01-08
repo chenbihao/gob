@@ -7,34 +7,34 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 )
 
-// GobAppProvider 提供App的具体实现方法
-type GobAppProvider struct {
+// AppProvider 服务提供者具体实现方法
+type AppProvider struct {
 	BaseFolder string
 }
 
-var _ framework.ServiceProvider = (*GobAppProvider)(nil)
+var _ framework.ServiceProvider = (*AppProvider)(nil)
 
-// Register 注册 GobAppService 方法
-func (provider *GobAppProvider) Register(container framework.Container) framework.NewInstance {
+// Register 注册 AppService 方法
+func (provider *AppProvider) Register(container framework.Container) framework.NewInstance {
 	return NewGobApp
 }
 
 // Boot 启动调用
-func (provider *GobAppProvider) Boot(container framework.Container) error {
+func (provider *AppProvider) Boot(container framework.Container) error {
 	return nil
 }
 
 // IsDefer 是否延迟初始化
-func (provider *GobAppProvider) IsDefer() bool {
+func (provider *AppProvider) IsDefer() bool {
 	return false
 }
 
 // Params 获取初始化参数
-func (provider *GobAppProvider) Params(container framework.Container) []interface{} {
+func (provider *AppProvider) Params(container framework.Container) []interface{} {
 	return []interface{}{container, provider.BaseFolder}
 }
 
 // Name 获取字符串凭证
-func (provider *GobAppProvider) Name() string {
+func (provider *AppProvider) Name() string {
 	return contract.AppKey
 }

@@ -1,0 +1,5 @@
+mysql:
+  hostname: 127.0.0.1
+  username: test
+  password: env(DB_PASSWORD)
+  timeout: 1

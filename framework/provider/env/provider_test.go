@@ -15,7 +15,7 @@ func TestGobEnvProvider(t *testing.T) {
 	Convey("test gob env normal case", t, func() {
 		basePath := tests.BasePath
 		c := framework.NewGobContainer()
-		sp := &app.GobAppProvider{BaseFolder: basePath}
+		sp := &app.AppProvider{BaseFolder: basePath}
 
 		err := c.Bind(sp)
 		So(err, ShouldBeNil)

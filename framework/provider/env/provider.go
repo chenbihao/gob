@@ -7,14 +7,14 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 )
 
-// EnvProvider 提供App的具体实现方法
+// EnvProvider 服务提供者具体实现方法
 type EnvProvider struct {
 	Folder string
 }
 
 var _ framework.ServiceProvider = (*EnvProvider)(nil)
 
-// Register 注册 GobAppService 方法
+// Register 注册服务提供者
 func (provider *EnvProvider) Register(container framework.Container) framework.NewInstance {
 	return NewGobEnvService
 }

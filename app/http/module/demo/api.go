@@ -2,6 +2,7 @@ package demo
 
 import (
 	demoService "github.com/chenbihao/gob/app/provider/demo"
+	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/gin"
 )
 
@@ -32,11 +33,15 @@ func NewDemoApi() *DemoApi {
 // @Success 200 array []UserDTO
 // @Router /demo/demo [get]
 func (api *DemoApi) Demo(c *gin.Context) {
-	//appService := c.MustMake(contract.AppKey).(contract.App)
-	//baseFolder := appService.BaseFolder()
-	users := api.service.GetUsers()
-	usersDTO := UserModelsToUserDTOs(users)
-	c.JSON(200, usersDTO)
+	//users := api.service.GetUsers()
+	//usersDTO := UserModelsToUserDTOs(users)
+	//c.JSON(200, usersDTO)
+
+	// 获取password
+	configService := c.MustMake(contract.ConfigKey).(contract.Config)
+	password := configService.GetString("database.mysql.password")
+	// 打印出来
+	c.JSON(200, password)
 }
 
 // Demo godoc

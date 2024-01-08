@@ -5,7 +5,7 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 )
 
-// LocalDistributedProvider 提供分布式本地锁的具体实现方法
+// LocalDistributedProvider 服务提供者具体实现方法
 type LocalDistributedProvider struct {
 }
 

@@ -7,19 +7,19 @@ import (
 )
 
 // 引擎服务
-type GobKernelService struct {
+type KernelService struct {
 	engine *gin.Engine
 }
 
-var _ contract.Kernel = (*GobKernelService)(nil)
+var _ contract.Kernel = (*KernelService)(nil)
 
 // 初始化 web 引擎服务实例
 func NewGobKernelService(params ...interface{}) (interface{}, error) {
 	httpEngine := params[0].(*gin.Engine)
-	return &GobKernelService{engine: httpEngine}, nil
+	return &KernelService{engine: httpEngine}, nil
 }
 
 // 返回 web 引擎
-func (s *GobKernelService) HttpEngine() http.Handler {
+func (s *KernelService) HttpEngine() http.Handler {
 	return s.engine
 }

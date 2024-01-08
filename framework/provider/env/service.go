@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-// GobEnv 是 Env 的具体实现
-type GobEnv struct {
+// EnvService 是 Env 的具体实现
+type EnvService struct {
 	folder string            // 代表.env所在的目录
 	maps   map[string]string // 保存所有的环境变量
 }
@@ -31,7 +31,7 @@ func NewGobEnvService(params ...interface{}) (interface{}, error) {
 	folder := params[0].(string)
 
 	// 实例化
-	gobEnv := &GobEnv{
+	gobEnv := &EnvService{
 		folder: folder,
 		// 实例化环境变量，APP_ENV默认设置为开发环境
 		maps: map[string]string{"APP_ENV": contract.EnvDev},
@@ -81,18 +81,18 @@ func NewGobEnvService(params ...interface{}) (interface{}, error) {
 }
 
 // AppEnv 获取表示当前APP环境的变量APP_ENV
-func (en *GobEnv) AppEnv() string {
+func (en *EnvService) AppEnv() string {
 	return en.Get("APP_ENV")
 }
 
 // IsExist 判断一个环境变量是否有被设置
-func (en *GobEnv) IsExist(key string) bool {
+func (en *EnvService) IsExist(key string) bool {
 	_, ok := en.maps[key]
 	return ok
 }
 
 // Get 获取某个环境变量，如果没有设置，返回""
-func (en *GobEnv) Get(key string) string {
+func (en *EnvService) Get(key string) string {
 	if val, ok := en.maps[key]; ok {
 		return val
 	}
@@ -100,6 +100,6 @@ func (en *GobEnv) Get(key string) string {
 }
 
 // All 获取所有的环境变量，.env和运行环境变量融合后结果
-func (en *GobEnv) All() map[string]string {
+func (en *EnvService) All() map[string]string {
 	return en.maps
 }

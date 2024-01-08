@@ -12,82 +12,18 @@ import (
 	"path/filepath"
 )
 
-// GobAppService 代表 gob 框架的 App 实现
-type GobAppService struct {
+// AppService 代表 gob 框架的 App 实现
+type AppService struct {
 	container  framework.Container // 服务容器
 	baseFolder string              // 基础路径
 	appID      string              // 表示当前这个app的唯一id, 可以用于分布式锁等
+
+	configMap map[string]string // 配置加载
 }
 
-var _ contract.App = (*GobAppService)(nil)
+var _ contract.App = (*AppService)(nil)
 
-// AppID 表示当前这个app的唯一id, 可以用于分布式锁等
-func (s GobAppService) AppID() string {
-	return s.appID
-}
-
-// Version 实现版本
-func (s GobAppService) Version() string {
-	return "0.1.5"
-}
-
-// BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
-func (s GobAppService) BaseFolder() string {
-	if s.baseFolder != "" {
-		return s.baseFolder
-	}
-	// 如果参数也没有，使用默认的当前路径
-	return util.GetExecDirectory()
-}
-
-// ConfigFolder  表示配置文件地址
-func (s GobAppService) ConfigFolder() string {
-	return filepath.Join(s.BaseFolder(), "config")
-}
-
-// LogFolder 表示日志存放地址
-func (s GobAppService) LogFolder() string {
-	return filepath.Join(s.StorageFolder(), "log")
-}
-
-func (s GobAppService) HttpFolder() string {
-	return filepath.Join(s.BaseFolder(), "http")
-}
-
-func (s GobAppService) ConsoleFolder() string {
-	return filepath.Join(s.BaseFolder(), "console")
-}
-
-func (s GobAppService) StorageFolder() string {
-	return filepath.Join(s.BaseFolder(), "storage")
-}
-
-// ProviderFolder 定义业务自己的服务提供者地址
-func (s GobAppService) ProviderFolder() string {
-	return filepath.Join(s.BaseFolder(), "provider")
-}
-
-// MiddlewareFolder 定义业务自己定义的中间件
-func (s GobAppService) MiddlewareFolder() string {
-	return filepath.Join(s.HttpFolder(), "middleware")
-}
-
-// CommandFolder 定义业务定义的命令
-func (s GobAppService) CommandFolder() string {
-	return filepath.Join(s.ConsoleFolder(), "command")
-}
-
-// RuntimeFolder 定义业务的运行中间态信息
-func (s GobAppService) RuntimeFolder() string {
-	return filepath.Join(s.StorageFolder(), "runtime")
-}
-
-// TestFolder 定义测试需要的信息
-func (s GobAppService) TestFolder() string {
-	return filepath.Join(s.BaseFolder(), "test")
-}
-
-// NewGobApp 初始化 GobAppService
+// NewGobApp 初始化 AppService
 func NewGobApp(params ...interface{}) (interface{}, error) {
 	if len(params) != 2 {
 		return nil, errors.New("param error")
@@ -103,7 +39,109 @@ func NewGobApp(params ...interface{}) (interface{}, error) {
 	}
 
 	appID := uuid.New().String()
+	return &AppService{baseFolder: baseFolder, container: container, appID: appID}, nil
+}
 
-	// todo 这里可能得规范下返回的是指针或者实体
-	return GobAppService{baseFolder: baseFolder, container: container, appID: appID}, nil
+// AppID 表示当前这个app的唯一id, 可以用于分布式锁等
+func (s *AppService) AppID() string {
+	return s.appID
+}
+
+// Version 实现版本
+func (s *AppService) Version() string {
+	return "0.1.6"
+}
+
+// BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
+func (s *AppService) BaseFolder() string {
+	if s.baseFolder != "" {
+		return s.baseFolder
+	}
+
+	// 如果参数也没有，使用默认的当前路径
+	return util.GetExecDirectory()
+}
+
+// ConfigFolder  表示配置文件地址
+func (s *AppService) ConfigFolder() string {
+	if val, ok := s.configMap["config_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "config")
+}
+
+// LogFolder 表示日志存放地址
+func (s *AppService) LogFolder() string {
+	if val, ok := s.configMap["log_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.StorageFolder(), "log")
+}
+
+func (s *AppService) HttpFolder() string {
+	if val, ok := s.configMap["http_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "http")
+}
+
+func (s *AppService) ConsoleFolder() string {
+	if val, ok := s.configMap["console_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "console")
+}
+
+func (s *AppService) StorageFolder() string {
+	if val, ok := s.configMap["storage_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "storage")
+}
+
+// ProviderFolder 定义业务自己的服务提供者地址
+func (s *AppService) ProviderFolder() string {
+	if val, ok := s.configMap["provider_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "provider")
+}
+
+// MiddlewareFolder 定义业务自己定义的中间件
+func (s *AppService) MiddlewareFolder() string {
+	if val, ok := s.configMap["middleware_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.HttpFolder(), "middleware")
+}
+
+// CommandFolder 定义业务定义的命令
+func (s *AppService) CommandFolder() string {
+	if val, ok := s.configMap["command_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.ConsoleFolder(), "command")
+}
+
+// RuntimeFolder 定义业务的运行中间态信息
+func (s *AppService) RuntimeFolder() string {
+	if val, ok := s.configMap["runtime_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.StorageFolder(), "runtime")
+}
+
+// TestFolder 定义测试需要的信息
+func (s *AppService) TestFolder() string {
+	if val, ok := s.configMap["test_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "test")
+}
+
+// LoadAppConfig 加载配置map
+func (s *AppService) LoadAppConfig(kv map[string]string) {
+	for key, val := range kv {
+		s.configMap[key] = val
+	}
 }
