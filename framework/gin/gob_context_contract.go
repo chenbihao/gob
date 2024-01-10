@@ -19,7 +19,7 @@ func (c *Context) MustMakeConfig() contract.Config {
 	return c.MustMake(contract.ConfigKey).(contract.Config)
 }
 
-//// MustMakeLog 从容器中获取日志服务
-//func (c *Context) MustMakeLog() contract.Log {
-//	return c.MustMake(contract.LogKey).(contract.Log)
-//}
+// MustMakeLog 从容器中获取日志服务
+func (c *Context) MustMakeLog() contract.Log {
+	return c.MustMake(contract.LogKey).(contract.Log)
+}

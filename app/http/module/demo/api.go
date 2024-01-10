@@ -33,13 +33,16 @@ func NewDemoApi() *DemoApi {
 // @Success 200 array []UserDTO
 // @Router /demo/demo [get]
 func (api *DemoApi) Demo(c *gin.Context) {
-	//users := api.service.GetUsers()
-	//usersDTO := UserModelsToUserDTOs(users)
-	//c.JSON(200, usersDTO)
-
 	// 获取password
 	configService := c.MustMake(contract.ConfigKey).(contract.Config)
 	password := configService.GetString("database.mysql.password")
+
+	logger := c.MustMakeLog()
+	logger.Info(c, "demo test logger", map[string]interface{}{
+		"api":      "demo/demo",
+		"password": password,
+	})
+
 	// 打印出来
 	c.JSON(200, password)
 }
