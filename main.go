@@ -8,8 +8,10 @@ import (
 	"github.com/chenbihao/gob/framework/provider/config"
 	"github.com/chenbihao/gob/framework/provider/distributed"
 	"github.com/chenbihao/gob/framework/provider/env"
+	"github.com/chenbihao/gob/framework/provider/id"
 	"github.com/chenbihao/gob/framework/provider/kernel"
 	"github.com/chenbihao/gob/framework/provider/log"
+	"github.com/chenbihao/gob/framework/provider/trace"
 )
 
 func main() {
@@ -26,10 +28,9 @@ func main() {
 	container.Bind(&config.ConfigProvider{})
 	// 绑定 日志 服务提供者
 	container.Bind(&log.LogProvider{})
-
-	//container.Bind(&id.IDProvider{})
-	//container.Bind(&trace.TraceProvider{})
-	//container.Bind(&log.LogServiceProvider{})
+	// 绑定 全链路支持 服务提供者
+	container.Bind(&id.IDProvider{})
+	container.Bind(&trace.TraceProvider{})
 
 	// 将 HTTP 引擎初始化,并且作为服务提供者绑定到服务容器中
 	if engine, err := http.NewHttpEngine(); err == nil {
