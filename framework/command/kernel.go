@@ -12,4 +12,6 @@ func AddKernelCommands(root *cobra.Command) {
 	root.AddCommand(initEnvCommand())
 	// 挂载 配置 命令
 	root.AddCommand(initConfigCommand())
+	// 挂载 构建 命令
+	root.AddCommand(initBuildCommand())
 }
