@@ -18,4 +18,6 @@ func AddKernelCommands(root *cobra.Command) {
 	root.AddCommand(goCommand)
 	// 挂载 npm 命令
 	root.AddCommand(npmCommand)
+	// 挂载 dev 调试命令
+	root.AddCommand(initDevCommand())
 }

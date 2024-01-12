@@ -44,7 +44,7 @@ func (api *DemoApi) Demo(c *gin.Context) {
 	})
 
 	// 打印出来
-	c.JSON(200, password)
+	c.JSON(200, "测试dev热更新模式 123444")
 }
 
 // Demo godoc

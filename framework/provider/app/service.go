@@ -8,7 +8,6 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
 	"github.com/google/uuid"
-	flag "github.com/spf13/pflag"
 	"path/filepath"
 )
 
@@ -31,12 +30,6 @@ func NewGobApp(params ...interface{}) (interface{}, error) {
 	// 有两个参数，一个是容器，一个是 baseFolder
 	container := params[0].(framework.Container)
 	baseFolder := params[1].(string)
-
-	// 如果没有设置，则使用参数
-	if baseFolder == "" {
-		flag.StringVar(&baseFolder, "base_folder", "", "base_folder参数, 默认为当前路径")
-		flag.Parse()
-	}
 
 	appID := uuid.New().String()
 	return &AppService{baseFolder: baseFolder, container: container, appID: appID}, nil
@@ -137,6 +130,14 @@ func (s *AppService) TestFolder() string {
 		return val
 	}
 	return filepath.Join(s.BaseFolder(), "test")
+}
+
+// AppFolder 定义业务代码所在的目录，用于监控文件变更使用
+func (s *AppService) AppFolder() string {
+	if val, ok := s.configMap["app_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "app")
 }
 
 // LoadAppConfig 加载配置map
