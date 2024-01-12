@@ -40,7 +40,7 @@ var buildSelfCommand = &cobra.Command{
 			log.Fatalln("请安装 go 在你的 PATH 路径下")
 		}
 
-		cmd := exec.Command(path, "build", "-o", "gob", "./")
+		cmd := exec.Command(path, "build", "./")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Println(string(out))
