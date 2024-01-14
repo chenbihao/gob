@@ -15,9 +15,9 @@ func AddKernelCommands(root *cobra.Command) {
 	// 挂载 build 命令
 	root.AddCommand(initBuildCommand())
 	// 挂载 go 命令
-	root.AddCommand(goCommand)
+	root.AddCommand(initGoCommand())
 	// 挂载 npm 命令
-	root.AddCommand(npmCommand)
+	root.AddCommand(initNpmCommand())
 	// 挂载 dev 调试命令
 	root.AddCommand(initDevCommand())
 	// 挂载 provider 命令

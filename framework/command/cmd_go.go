@@ -8,6 +8,10 @@ import (
 	"os/exec"
 )
 
+func initGoCommand() *cobra.Command {
+	return goCommand
+}
+
 // go just run local go bin
 var goCommand = &cobra.Command{
 	Use:   "go",

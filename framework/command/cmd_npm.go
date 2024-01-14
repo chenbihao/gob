@@ -8,6 +8,10 @@ import (
 	"os/exec"
 )
 
+func initNpmCommand() *cobra.Command {
+	return npmCommand
+}
+
 // npm just run local go bin
 var npmCommand = &cobra.Command{
 	Use:   "npm",
