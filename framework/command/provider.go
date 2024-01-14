@@ -19,13 +19,13 @@ import (
 
 /**
 	命令介绍：
-		provider
+		provider 生成
 	前置需求：
-
+		app
 	支持命令：
 		./gob provider  		// 打印帮助信息
-		./gob provider new  	// 创建一个服务
 		./gob provider list  	// 列出容器内的所有服务的字符串凭证
+		./gob provider new  	// 创建一个服务
 	支持配置：
 		无
 **/
@@ -37,7 +37,7 @@ func initProviderCommand() *cobra.Command {
 	return providerCommand
 }
 
-// providerCommand 一级命令
+// 二级命令
 var providerCommand = &cobra.Command{
 	Use:   "provider",
 	Short: "服务提供相关命令",
@@ -122,7 +122,6 @@ var providerCreateCommand = &cobra.Command{
 			return err
 		}
 		// 创建title这个模版方法
-		//funcs := template.FuncMap{"title": strings.Title} // 过时API
 		funcs := template.FuncMap{"title": cases.Title(language.Und, cases.NoLower).String}
 		{
 			//  创建contract.go
