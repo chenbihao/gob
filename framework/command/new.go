@@ -110,7 +110,10 @@ var newCommand = &cobra.Command{
 		fmt.Println("gob框架版本：", release.GetTagName())
 
 		templateFolder := filepath.Join(currentPath, "template-gob-"+version+"-"+cast.ToString(time.Now().Unix()))
-		os.Mkdir(templateFolder, os.ModePerm)
+		err := os.Mkdir(templateFolder, os.ModePerm)
+		if err != nil {
+			return err
+		}
 		fmt.Println("创建临时目录", templateFolder)
 
 		defer func() {
@@ -122,7 +125,7 @@ var newCommand = &cobra.Command{
 
 		// 拷贝template项目
 		url := release.GetZipballURL()
-		err := util.DownloadFile(filepath.Join(templateFolder, "template.zip"), url)
+		err = util.DownloadFile(filepath.Join(templateFolder, "template.zip"), url)
 		if err != nil {
 			return err
 		}
@@ -148,11 +151,11 @@ var newCommand = &cobra.Command{
 		}
 		fmt.Println("解压zip包")
 
-		os.RemoveAll(path.Join(folder, ".git"))
+		_ = os.RemoveAll(path.Join(folder, ".git"))
 		fmt.Println("删除.git目录")
 
 		// 删除framework 目录
-		os.RemoveAll(path.Join(folder, "framework"))
+		_ = os.RemoveAll(path.Join(folder, "framework"))
 		fmt.Println("删除framework目录")
 
 		filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
@@ -173,7 +176,6 @@ var newCommand = &cobra.Command{
 				}
 				return nil
 			}
-
 			isContain := bytes.Contains(b, []byte("github.com/chenbihao/gob/app"))
 			if isContain {
 				fmt.Println("更新文件:" + path)
