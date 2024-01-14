@@ -12,6 +12,7 @@ require (
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/goccy/go-json v0.10.2
+	github.com/google/go-github/v58 v58.0.0
 	github.com/google/uuid v1.5.0
 	github.com/inconshreveable/mousetrap v1.1.0
 	github.com/json-iterator/go v1.1.12
@@ -52,6 +53,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jonboulle/clockwork v0.4.0 // indirect
