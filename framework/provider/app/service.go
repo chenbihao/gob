@@ -55,6 +55,16 @@ func (s *AppService) BaseFolder() string {
 	return util.GetExecDirectory()
 }
 
+// ---------------- 根目录下
+
+// AppFolder 定义业务代码所在的目录，用于监控文件变更使用
+func (s *AppService) AppFolder() string {
+	if val, ok := s.configMap["app_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "app")
+}
+
 // ConfigFolder  表示配置文件地址
 func (s *AppService) ConfigFolder() string {
 	if val, ok := s.configMap["config_folder"]; ok {
@@ -63,28 +73,7 @@ func (s *AppService) ConfigFolder() string {
 	return filepath.Join(s.BaseFolder(), "config")
 }
 
-// LogFolder 表示日志存放地址
-func (s *AppService) LogFolder() string {
-	if val, ok := s.configMap["log_folder"]; ok {
-		return val
-	}
-	return filepath.Join(s.StorageFolder(), "log")
-}
-
-func (s *AppService) HttpFolder() string {
-	if val, ok := s.configMap["http_folder"]; ok {
-		return val
-	}
-	return filepath.Join(s.BaseFolder(), "http")
-}
-
-func (s *AppService) ConsoleFolder() string {
-	if val, ok := s.configMap["console_folder"]; ok {
-		return val
-	}
-	return filepath.Join(s.BaseFolder(), "console")
-}
-
+// StorageFolder 存储文件地址
 func (s *AppService) StorageFolder() string {
 	if val, ok := s.configMap["storage_folder"]; ok {
 		return val
@@ -92,20 +81,37 @@ func (s *AppService) StorageFolder() string {
 	return filepath.Join(s.BaseFolder(), "storage")
 }
 
-// ProviderFolder 定义业务自己的服务提供者地址
+func (s *AppService) TestFolder() string {
+	if val, ok := s.configMap["test_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "test")
+}
+
+// ---------------- app 目录下
+
+// ConsoleFolderr 定义业务自己的命令行服务提供者地址
+func (s *AppService) ConsoleFolder() string {
+	if val, ok := s.configMap["console_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.AppFolder(), "console")
+}
+
+// HttpFolderr 定义业务自己的web服务提供者地址
+func (s *AppService) HttpFolder() string {
+	if val, ok := s.configMap["http_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.AppFolder(), "http")
+}
+
+// ProviderFolder 定义业务自己的通用服务提供者地址
 func (s *AppService) ProviderFolder() string {
 	if val, ok := s.configMap["provider_folder"]; ok {
 		return val
 	}
-	return filepath.Join(s.BaseFolder(), "provider")
-}
-
-// MiddlewareFolder 定义业务自己定义的中间件
-func (s *AppService) MiddlewareFolder() string {
-	if val, ok := s.configMap["middleware_folder"]; ok {
-		return val
-	}
-	return filepath.Join(s.HttpFolder(), "middleware")
+	return filepath.Join(s.AppFolder(), "provider")
 }
 
 // CommandFolder 定义业务定义的命令
@@ -116,28 +122,31 @@ func (s *AppService) CommandFolder() string {
 	return filepath.Join(s.ConsoleFolder(), "command")
 }
 
+// MiddlewareFolder 定义业务自己定义的中间件
+func (s *AppService) MiddlewareFolder() string {
+	if val, ok := s.configMap["middleware_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.HttpFolder(), "middleware")
+}
+
+// ---------------- config 目录下
+
+// ---------------- storage 目录下
+
+func (s *AppService) LogFolder() string {
+	if val, ok := s.configMap["log_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.StorageFolder(), "log")
+}
+
 // RuntimeFolder 定义业务的运行中间态信息
 func (s *AppService) RuntimeFolder() string {
 	if val, ok := s.configMap["runtime_folder"]; ok {
 		return val
 	}
 	return filepath.Join(s.StorageFolder(), "runtime")
-}
-
-// TestFolder 定义测试需要的信息
-func (s *AppService) TestFolder() string {
-	if val, ok := s.configMap["test_folder"]; ok {
-		return val
-	}
-	return filepath.Join(s.BaseFolder(), "test")
-}
-
-// AppFolder 定义业务代码所在的目录，用于监控文件变更使用
-func (s *AppService) AppFolder() string {
-	if val, ok := s.configMap["app_folder"]; ok {
-		return val
-	}
-	return filepath.Join(s.BaseFolder(), "app")
 }
 
 // LoadAppConfig 加载配置map
