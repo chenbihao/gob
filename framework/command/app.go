@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"github.com/chenbihao/gob/framework/cobra"
 	"github.com/chenbihao/gob/framework/contract"
 	"log"
@@ -30,7 +31,7 @@ var appAddress = ""
 // initAppCommand 初始化app命令和其子命令
 func initAppCommand() *cobra.Command {
 	// 设置启动地址
-	appStartCommand.Flags().StringVar(&appAddress, "address", ":8080", "设置app启动的地址，默认为:8080")
+	appStartCommand.Flags().StringVar(&appAddress, "address", "8080", "设置app启动的地址，默认为8080端口")
 
 	appCommand.AddCommand(appStartCommand)
 	return appCommand
@@ -60,6 +61,7 @@ var appStartCommand = &cobra.Command{
 		// 从kernel服务实例中获取引擎
 		core := kernelService.HttpEngine()
 
+		appAddress = fmt.Sprintf(":" + appAddress)
 		// 创建一个Server服务
 		server := &http.Server{
 			Handler: core,
