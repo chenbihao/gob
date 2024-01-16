@@ -1,10 +1,9 @@
 package main
 
 import (
-	"time"
-
 	"github.com/chenbihao/gob/framework/gin"
-	"github.com/gin-contrib/cors"
+	"github.com/chenbihao/gob/framework/middleware/cors"
+	"time"
 )
 
 func main() {
