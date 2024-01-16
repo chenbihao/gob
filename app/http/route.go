@@ -24,8 +24,6 @@ func Routes(r *gin.Engine) {
 	r.Use(middleware.Trace())
 	// 使用中间件迁移工具迁移下来的 cors 中间件
 	r.Use(cors.Default())
-	// 使用手动迁移下来的 gin-swagger 中间件
-	r.Use(cors.Default())
 
 	// 如果配置了swagger，则显示swagger的中间件
 	if configService.GetBool("app.swagger") == true {

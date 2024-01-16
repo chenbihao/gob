@@ -42,7 +42,7 @@ func main() {
 	container.Bind(&trace.TraceProvider{})
 
 	// 将 HTTP 引擎初始化,并且作为服务提供者绑定到服务容器中
-	if engine, err := http.NewHttpEngine(); err == nil {
+	if engine, err := http.NewHttpEngine(container); err == nil {
 		// 绑定 Kernel 服务提供者
 		container.Bind(&kernel.KernelProvider{HttpEngine: engine})
 	}
