@@ -7,8 +7,8 @@ import (
 	"github.com/chenbihao/gob/framework/command"
 )
 
-// RunCommand  初始化根Command并运行
-func RunCommand(container framework.Container) error {
+// RunRootCommand  初始化根Command并运行
+func RunRootCommand(container framework.Container, onlyNewCommand bool) error {
 	// 根Command
 	var rootCmd = &cobra.Command{
 		// 定义根命令的关键字
@@ -28,10 +28,16 @@ func RunCommand(container framework.Container) error {
 
 	// 为根Command设置服务容器
 	rootCmd.SetContainer(container)
-	// 绑定框架的命令定义  （框架定义的命令我们使用`framework/command/kernel.go` 中的 `AddKernelCommands` 进行挂载）
-	command.AddKernelCommands(rootCmd)
-	// 绑定业务的命令
-	AddAppCommand(rootCmd)
+
+	if onlyNewCommand {
+		// 如果仅作为脚手架使用的化，只添加new命令
+		command.AddNewCommands(rootCmd)
+	} else {
+		// 绑定框架的命令定义  （框架定义的命令我们使用`framework/command/kernel.go` 中的 `AddKernelCommands` 进行挂载）
+		command.AddKernelCommands(rootCmd)
+		// 绑定业务的命令
+		AddAppCommand(rootCmd)
+	}
 
 	// 执行RootCommand
 	return rootCmd.Execute()

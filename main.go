@@ -12,9 +12,18 @@ import (
 	"github.com/chenbihao/gob/framework/provider/kernel"
 	"github.com/chenbihao/gob/framework/provider/log"
 	"github.com/chenbihao/gob/framework/provider/trace"
+	"os"
 )
 
 func main() {
+
+	// 如果仅当做脚手架来用的话，仅挂载new命令，不绑定各类服务提供者（暂时解决构建后无配置目录问题）
+	args := os.Args
+	if len(args) > 1 && args[1] == "new" {
+		container := framework.NewGobContainer()
+		console.RunRootCommand(container, true)
+		return
+	}
 
 	// 初始化服务容器
 	container := framework.NewGobContainer()
@@ -38,5 +47,5 @@ func main() {
 		container.Bind(&kernel.KernelProvider{HttpEngine: engine})
 	}
 	// 运行root命令
-	console.RunCommand(container)
+	console.RunRootCommand(container, false)
 }

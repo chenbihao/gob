@@ -6,7 +6,6 @@ import (
 	"github.com/chenbihao/gob/framework/provider/log/formatter"
 	"github.com/chenbihao/gob/framework/provider/log/services"
 	"io"
-	"log"
 	"strings"
 )
 
@@ -65,12 +64,7 @@ func (provider *LogProvider) IsDefer() bool {
 // Params 获取初始化参数
 func (provider *LogProvider) Params(container framework.Container) []interface{} {
 	// 获取configService
-	cs, err := container.Make(contract.ConfigKey)
-	if err != nil {
-		// todo 构建后读取配置问题
-		log.Println("!!! 读取配置失败（如在构建后运行请忽略）")
-	}
-	configService := cs.(contract.Config)
+	configService := container.MustMake(contract.ConfigKey).(contract.Config)
 	// 设置参数formatter
 	if provider.Formatter == nil {
 		provider.Formatter = formatter.TextFormatter

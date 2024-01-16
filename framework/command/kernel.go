@@ -29,3 +29,9 @@ func AddKernelCommands(root *cobra.Command) {
 	// 挂载 new 命令
 	root.AddCommand(initNewCommand())
 }
+
+// AddNewCommands will add new command to root command
+func AddNewCommands(root *cobra.Command) {
+	// 挂载 new 命令
+	root.AddCommand(initNewCommand())
+}
