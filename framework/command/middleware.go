@@ -7,6 +7,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -110,25 +111,18 @@ var middlewareMigrateCommand = &cobra.Command{
 			return err
 		}
 
-		// step3:删除不必要的文件 go.mod, go.sum, .git
+		// step3 : 删除不必要的文件如 go.mod, go.sum, .git 等
 		repoFolder := path.Join(middlewarePath, repo)
-		fmt.Println("remove " + path.Join(repoFolder, "go.mod"))
-		os.Remove(path.Join(repoFolder, "go.mod"))
-		fmt.Println("remove " + path.Join(repoFolder, "go.sum"))
-		os.Remove(path.Join(repoFolder, "go.sum"))
-		fmt.Println("remove " + path.Join(repoFolder, ".git"))
-		os.RemoveAll(path.Join(repoFolder, ".git"))
+		removeUnnecessaryFiles(repoFolder)
 
 		// step4 : 替换关键词
 		filepath.Walk(repoFolder, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
 				return nil
 			}
-
 			if filepath.Ext(path) != ".go" {
 				return nil
 			}
-
 			c, err := os.ReadFile(path)
 			if err != nil {
 				return err
@@ -147,6 +141,34 @@ var middlewareMigrateCommand = &cobra.Command{
 		})
 		return nil
 	},
+}
+
+func removeUnnecessaryFiles(repoFolder string) {
+	files := []string{"go.mod", "go.sum", ".golangci.yml", ".goreleaser.yaml", ".gitignore"}
+	removeFiles(repoFolder, files)
+	dirNames := []string{".git", ".github"}
+	removeDir(repoFolder, dirNames)
+}
+
+func removeFiles(folder string, files []string) {
+	for _, file := range files {
+		filePath := path.Join(folder, file)
+		fmt.Println("remove " + filePath)
+		err := os.Remove(filePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+func removeDir(repoFolder string, dirNames []string) {
+	for _, dirName := range dirNames {
+		dirPath := path.Join(repoFolder, dirName)
+		fmt.Println("remove " + dirPath)
+		err := os.RemoveAll(dirPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
 
 // providerCreateCommand 创建一个新的服务，包括服务提供者，服务接口协议，服务实例
