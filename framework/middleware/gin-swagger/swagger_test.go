@@ -2,14 +2,15 @@ package ginSwagger
 
 import (
 	"github.com/chenbihao/gob/framework/gin"
+	"github.com/chenbihao/gob/framework/middleware/gzip"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
-	"github.com/chenbihao/gob/framework/middleware/gin-swagger/swaggerFiles"
 	"github.com/stretchr/testify/assert"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/swag"
 )
 

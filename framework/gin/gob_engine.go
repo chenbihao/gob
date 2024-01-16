@@ -18,3 +18,8 @@ func (engine *Engine) IsBind(key string) bool {
 func (engine *Engine) SetContainer(container framework.Container) {
 	engine.container = container
 }
+
+// GetContainer 从Engine中获取container
+func (engine *Engine) GetContainer() framework.Container {
+	return engine.container
+}
