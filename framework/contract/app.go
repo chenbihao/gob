@@ -14,6 +14,8 @@ type App interface {
 	// BaseFolder 定义项目基础地址
 	BaseFolder() string
 
+	// ---------------- 根目录下
+
 	// AppFolder 定义业务代码所在的目录，用于监控文件变更使用
 	AppFolder() string
 	// ConfigFolder 定义了配置文件的路径
@@ -23,8 +25,18 @@ type App interface {
 	// StorageFolder 存储文件地址
 	StorageFolder() string
 
+	// ---------------- app 目录下
+
+	// ConsoleFolderr 定义业务自己的命令行服务提供者地址
+	ConsoleFolder() string
+	// HttpFolderr 定义业务自己的web服务提供者地址
+	HttpFolder() string
 	// ProviderFolder 定义业务自己的通用服务提供者地址
 	ProviderFolder() string
+
+	// ---------------- config 目录下
+
+	// ---------------- storage 目录下
 
 	// LogFolder 定义了日志所在路径
 	LogFolder() string

@@ -1,11 +1,14 @@
 package http
 
 import (
-	"github.com/chenbihao/gob/app/http/middleware/cors"
 	"github.com/chenbihao/gob/app/http/module/demo"
 	"github.com/chenbihao/gob/framework/gin"
 	"github.com/chenbihao/gob/framework/middleware"
+	"github.com/chenbihao/gob/framework/middleware/cors"
 	"github.com/chenbihao/gob/framework/middleware/static"
+	swaggerFiles "github.com/swaggo/files"
+
+	ginSwagger "github.com/chenbihao/gob/framework/middleware/gin-swagger"
 )
 
 // Routes 绑定业务层路由
@@ -18,6 +21,10 @@ func Routes(r *gin.Engine) {
 	r.Use(middleware.Trace())
 	// 使用中间件迁移工具迁移下来的 cors 中间件
 	r.Use(cors.Default())
+	// 使用手动迁移下来的 gin-swagger 中间件
+	r.Use(cors.Default())
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	demo.Register(r) // 这个demo是业务App自定义的demo服务,位置在 `app/http/module/demo/*`
 }

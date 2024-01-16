@@ -5,6 +5,7 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
 	"os"
@@ -17,10 +18,8 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/fsnotify/fsnotify"
 	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/cast"
-
-	"github.com/go-yaml/yaml"
 	"github.com/pkg/errors"
+	"github.com/spf13/cast"
 )
 
 // ConfigService 是 Config 的具体实现
