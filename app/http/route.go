@@ -5,10 +5,9 @@ import (
 	"github.com/chenbihao/gob/framework/gin"
 	"github.com/chenbihao/gob/framework/middleware"
 	"github.com/chenbihao/gob/framework/middleware/cors"
+	ginSwagger "github.com/chenbihao/gob/framework/middleware/gin-swagger"
 	"github.com/chenbihao/gob/framework/middleware/static"
 	swaggerFiles "github.com/swaggo/files"
-
-	ginSwagger "github.com/chenbihao/gob/framework/middleware/gin-swagger"
 )
 
 // Routes 绑定业务层路由

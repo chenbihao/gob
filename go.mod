@@ -29,7 +29,6 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
-	github.com/swaggo/files v1.0.1
 	github.com/swaggo/swag v1.16.2
 	github.com/ugorji/go/codec v1.2.12
 	golang.org/x/net v0.19.0
