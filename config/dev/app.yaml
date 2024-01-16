@@ -1,3 +1,5 @@
+swagger: true
+
 dev: # 调试模式
   port: 8070 # 调试模式最终监听的端口，默认为 8070
   frontend: # 前端调试模式配置
