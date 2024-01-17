@@ -6,8 +6,14 @@ import (
 	"github.com/chenbihao/gob/framework/gin"
 	"github.com/chenbihao/gob/framework/middleware"
 	"github.com/chenbihao/gob/framework/middleware/cors"
-	ginSwagger "github.com/chenbihao/gob/framework/middleware/gin-swagger"
+	"github.com/chenbihao/gob/framework/middleware/gzip"
 	"github.com/chenbihao/gob/framework/middleware/static"
+
+	// docs "github.com/go-project-name/docs"
+	// 项目生成的docs，这里是 _ "github.com/chenbihao/gob/app/http/swagger"
+	// 放在  `app/http/swagger.go` 那边
+
+	ginSwagger "github.com/chenbihao/gob/framework/middleware/gin-swagger"
 	swaggerFiles "github.com/swaggo/files"
 )
 
@@ -24,6 +30,8 @@ func Routes(r *gin.Engine) {
 	r.Use(middleware.Trace())
 	// 使用中间件迁移工具迁移下来的 cors 中间件
 	r.Use(cors.Default())
+	// 使用中间件迁移工具迁移下来的 gzip 中间件
+	r.Use(gzip.Gzip(gzip.BestSpeed))
 
 	// 如果配置了swagger，则显示swagger的中间件
 	if configService.GetBool("app.swagger") == true {

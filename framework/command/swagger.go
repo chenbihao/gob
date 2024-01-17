@@ -23,6 +23,7 @@ import (
 
 *
 */
+
 func initSwaggerCommand() *cobra.Command {
 	swaggerCommand.AddCommand(swaggerGenCommand)
 	return swaggerCommand

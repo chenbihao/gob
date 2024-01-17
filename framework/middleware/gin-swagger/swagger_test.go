@@ -3,7 +3,7 @@ package ginSwagger
 import (
 	"github.com/chenbihao/gob/framework/gin"
 	"github.com/chenbihao/gob/framework/middleware/gzip"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -50,7 +50,7 @@ func TestWrapCustomHandler(t *testing.T) {
 	assert.Equal(t, w2.Header()["Content-Type"][0], "application/json; charset=utf-8")
 
 	// Perform body rendering validation
-	w2Body, err := ioutil.ReadAll(w2.Body)
+	w2Body, err := io.ReadAll(w2.Body)
 	assert.NoError(t, err)
 	assert.Equal(t, doc.ReadDoc(), string(w2Body))
 
