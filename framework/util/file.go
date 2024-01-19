@@ -11,14 +11,24 @@ import (
 
 // 判断所给路径文件/文件夹是否存在
 func Exists(path string) bool {
-	_, err := os.Stat(path) //os.Stat获取文件信息
-	if err != nil {
+	// os.Stat 获取文件信息
+	if _, err := os.Stat(path); err != nil {
 		if os.IsExist(err) {
 			return true
 		}
 		return false
 	}
 	return true
+}
+
+// 如果不存在，则创建文件
+func CreateFileIfNotExists(folder string) error {
+	if !Exists(folder) {
+		if err := os.MkdirAll(folder, os.ModePerm); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // 路径是否是隐藏路径

@@ -6,7 +6,6 @@ import (
 	"github.com/chenbihao/gob/framework/cobra"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
-	//"github.com/erikdubbelboer/gspt" // win上无法使用,去掉
 	"github.com/sevlyar/go-daemon"
 	"io/ioutil"
 	"os"
@@ -19,8 +18,9 @@ import (
 var cronDaemon = false
 
 func initCronCommand() *cobra.Command {
-	// 以后台 deamon 的方式启动的参数
+	// 以后台 daemon 的方式启动的参数
 	cronStartCommand.Flags().BoolVarP(&cronDaemon, "daemon", "d", false, "start serve daemon")
+
 	cronCommand.AddCommand(cronRestartCommand)
 	cronCommand.AddCommand(cronStateCommand)
 	cronCommand.AddCommand(cronStopCommand)
@@ -68,19 +68,19 @@ var cronStartCommand = &cobra.Command{
 		appService := container.MustMake(contract.AppKey).(contract.App)
 
 		// 设置cron的日志地址和进程id地址
-		pidFolder := appService.RuntimeFolder()
-		serverPidFile := filepath.Join(pidFolder, "cron.pid")
+		runtimeFolder := appService.RuntimeFolder()
+		serverPidFile := filepath.Join(runtimeFolder, "cron.pid")
+
 		logFolder := appService.LogFolder()
 		serverLogFile := filepath.Join(logFolder, "cron.log")
 		currentFolder := appService.BaseFolder()
 
-		// deamon 模式
+		// daemon 模式
 		if cronDaemon {
-			// win不支持 deamon 模式
+			// win不支持 daemon 模式
 			if util.IsWindows() {
 				return errors.New("daemon: Non-POSIX OS is not supported")
 			}
-
 			// 创建一个Context
 			cntxt := &daemon.Context{
 				// 设置pid文件
@@ -111,22 +111,22 @@ var cronStartCommand = &cobra.Command{
 			// 子进程执行Cron.Run
 			defer cntxt.Release()
 			fmt.Println("daemon started")
-			//gspt.SetProcTitle("gob cron") // win上无法使用
+			util.SetProcessTitle("gob cron")
 			c.Root().Cron.Run()
 			return nil
 		}
 
-		// not deamon mode
+		// not daemon mode
 		fmt.Println("start cron job")
 		content := strconv.Itoa(os.Getpid())
 		fmt.Println("[PID]", content)
 
 		// todo 这里可以优化变成覆写
-		if err := ioutil.WriteFile(serverPidFile, []byte(content), 0664); err != nil {
+		if err := os.WriteFile(serverPidFile, []byte(content), 0664); err != nil {
 			return err
 		}
 
-		//gspt.SetProcTitle("gob cron") // win上无法使用
+		util.SetProcessTitle("gob cron")
 		c.Root().Cron.Run()
 		return nil
 	},

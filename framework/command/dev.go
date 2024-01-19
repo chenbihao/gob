@@ -305,7 +305,6 @@ func (p *Proxy) restartBackend() error {
 	gobAddress := fmt.Sprintf(":" + port)
 	// 使用命令行启动后端进程
 	cmd := exec.Command("./gob", "app", "start", "--address="+gobAddress)
-	//cmd := exec.Command("go", "run", ".", "app", "start", "--address="+gobAddress)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

@@ -1,10 +1,19 @@
+//go:build !windows
+
 package util
 
 import (
 	"fmt"
 	"os"
 	"syscall"
+
+	"github.com/erikdubbelboer/gspt"
 )
+
+// SetProcessTitle 设置进程名
+func SetProcessTitle(name string) {
+	gspt.SetProcTitle(name)
+}
 
 // KillProcess
 func KillProcess(pid int, signal syscall.Signal) (err error) {
