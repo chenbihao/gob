@@ -31,10 +31,10 @@ import (
 		./gob app stop 		停止已经启动的 app 服务
 		./gob app restart 	重新启动一个 app 服务
 	支持配置：
-		app.address
-		app.close_wait 优雅关闭超时时间
+		app.address 		地址格式需符合 http.Server 的 Addr 格式
+		app.close_wait 		优雅关闭超时时间
 	支持环境变量：
-		ADDRESS
+		ADDRESS				地址格式需符合 http.Server 的 Addr 格式
 **/
 
 var appAddress = ""   // app 启动地址
@@ -43,7 +43,7 @@ var appDaemon = false // app 守护模式
 // initAppCommand 初始化app命令和其子命令
 func initAppCommand() *cobra.Command {
 
-	appStartCommand.Flags().StringVar(&appAddress, "address", "8080", "设置app启动的地址，默认为8080端口")
+	appStartCommand.Flags().StringVar(&appAddress, "address", ":8080", "设置app启动的地址，默认为:8080端口")
 	appStartCommand.Flags().BoolVarP(&appDaemon, "daemon", "d", false, "以守护进程方式启动")
 
 	appCommand.AddCommand(appStartCommand)
@@ -116,11 +116,10 @@ var appStartCommand = &cobra.Command{
 				if configService.IsExist("app.address") {
 					appAddress = configService.GetString("app.address")
 				} else {
-					appAddress = "8080"
+					appAddress = ":8080"
 				}
 			}
 		}
-		appAddress = fmt.Sprintf(":" + appAddress)
 		// 创建一个Server服务
 		server := &http.Server{
 			Handler: core,
