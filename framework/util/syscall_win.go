@@ -15,6 +15,15 @@ func SetProcessTitle(name string) {
 	return
 }
 
+// CheckProcessExist Will return true if the process with PID exists.
+func CheckProcessExist(pid int) bool {
+	// 查询这个pid
+	if _, err := os.FindProcess(pid); err != nil {
+		return false
+	}
+	return true
+}
+
 // KillProcess
 func KillProcess(pid int, signal syscall.Signal) (err error) {
 	// 获取进程信息
