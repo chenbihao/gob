@@ -11,6 +11,7 @@ import (
 	"github.com/chenbihao/gob/framework/provider/id"
 	"github.com/chenbihao/gob/framework/provider/kernel"
 	"github.com/chenbihao/gob/framework/provider/log"
+	"github.com/chenbihao/gob/framework/provider/orm"
 	"github.com/chenbihao/gob/framework/provider/trace"
 	"os"
 )
@@ -40,6 +41,9 @@ func main() {
 	// 绑定 全链路支持 服务提供者
 	container.Bind(&id.IDProvider{})
 	container.Bind(&trace.TraceProvider{})
+
+	// 绑定 orm 服务提供者
+	container.Bind(&orm.GormProvider{})
 
 	// 将 HTTP 引擎初始化,并且作为服务提供者绑定到服务容器中
 	if engine, err := http.NewHttpEngine(container); err == nil {

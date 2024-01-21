@@ -35,6 +35,9 @@ func (log *LogService) logf(level contract.LogLevel, ctx context.Context, msg st
 
 	// 使用ctxFielder 获取context中的信息
 	fs := fields
+	if fs == nil {
+		fs = make(map[string]interface{})
+	}
 	if log.ctxFielder != nil {
 		t := log.ctxFielder(ctx)
 		if t != nil {
