@@ -6,6 +6,17 @@ import (
 	"time"
 )
 
+/**
+	服务介绍：
+		缓存服务
+	支持命令：无
+	支持配置：
+		```cache.yaml
+			driver: redis 	# 连接驱动，可选 redis/memory
+			... 			# 如果选择了redis，则同redis服务可配置
+		```
+**/
+
 const CacheKey = "gob:cache"
 
 // RememberFunc 缓存的Remember方法使用，Cache-Aside模式对应的对象生成方法

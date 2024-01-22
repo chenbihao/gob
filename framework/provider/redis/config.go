@@ -34,8 +34,8 @@ func WithConfigPath(configPath string) contract.RedisOption {
 		   host: localhost # ip地址
 		   port: 3306 # 端口
 		   db: 0 #db
-		   username: demo # 用户名
-		   password: "123456" # 密码
+		   username: # 用户名
+		   password: "5233" # 密码
 		   timeout: 10s # 连接超时
 		   read_timeout: 2s # 读超时
 		   write_timeout: 2s # 写超时
