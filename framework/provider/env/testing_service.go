@@ -1,5 +1,7 @@
 package env
 
+import "github.com/chenbihao/gob/framework/contract"
+
 // GobEnv 是 Env 的具体实现
 type GobTestingEnv struct {
 	folder string            // 代表.env所在的目录
@@ -16,7 +18,8 @@ func NewGobTestingEnv(params ...interface{}) (interface{}, error) {
 
 // AppEnv 获取表示当前APP环境的变量APP_ENV
 func (en *GobTestingEnv) AppEnv() string {
-	return "testing"
+	//return contract.EnvTest
+	return contract.EnvDev // 这里先获取dev配置
 }
 
 // IsExist 判断一个环境变量是否有被设置

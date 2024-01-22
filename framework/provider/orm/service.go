@@ -1,5 +1,7 @@
 package orm
 
+// 实现具体的服务实例 service.go
+
 import (
 	"context"
 	"sync"

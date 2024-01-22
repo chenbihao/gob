@@ -180,6 +180,8 @@ type Service interface {
 
 var providerTmp = `package {{.}}
 
+// ServiceProvider 实现文件 provider.go
+
 import (
 	"github.com/chenbihao/gob/framework"
 )
@@ -190,7 +192,7 @@ type {{.|title}}Provider struct {
 var _ framework.ServiceProvider = (*{{.|title}}Provider)(nil)
 
 func (sp *{{.|title}}Provider) Name() string {
-	return {{.|title}}Key
+	return contract.{{.|title}}Key
 }
 
 func (sp *{{.|title}}Provider) Register(c framework.Container) framework.NewInstance {
@@ -213,6 +215,8 @@ func (sp *{{.|title}}Provider) Boot(c framework.Container) error {
 
 var serviceTmp = `package {{.}}
 
+// 实现具体的服务实例 service.go
+
 import "github.com/chenbihao/gob/framework"
 
 type {{.|title}}Service struct {
@@ -224,7 +228,4 @@ func New{{.|title}}Service(params ...interface{}) (interface{}, error) {
 	return &{{.|title}}Service{container: container}, nil
 }
 
-func (s *{{.|title}}Service) Foo() string {
-    return ""
-}
 `
