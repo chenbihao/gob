@@ -20,7 +20,8 @@ type MemoryData struct {
 type MemoryCache struct {
 	container framework.Container
 	data      map[string]*MemoryData
-	lock      sync.RWMutex
+
+	lock sync.RWMutex
 }
 
 func NewMemoryCache(params ...interface{}) (interface{}, error) {
@@ -139,7 +140,6 @@ func (m *MemoryCache) Remember(ctx context.Context, key string, timeout time.Dur
 	if err := m.SetObj(ctx, key, objNew, timeout); err != nil {
 		return err
 	}
-
 	if err := m.GetObj(ctx, key, &obj); err != nil {
 		return err
 	}

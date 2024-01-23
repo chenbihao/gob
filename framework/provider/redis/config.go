@@ -113,7 +113,6 @@ func WithConfigPath(configPath string) contract.RedisOption {
 			}
 			config.ConnMaxIdleTime = t
 		}
-
 		return nil
 	}
 }

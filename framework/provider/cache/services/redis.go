@@ -15,7 +15,8 @@ import (
 type RedisCache struct {
 	container framework.Container
 	client    *redisv9.Client
-	lock      sync.RWMutex
+
+	lock sync.RWMutex
 }
 
 // NewRedisCache 初始化redis服务

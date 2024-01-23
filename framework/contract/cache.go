@@ -13,7 +13,7 @@ import (
 	支持配置：
 		```cache.yaml
 			driver: redis 	# 连接驱动，可选 redis/memory
-			... 			# 如果选择了redis，则同redis服务可配置
+			... 			# 如果driver选择redis，则可配置项与redis服务一致
 		```
 **/
 

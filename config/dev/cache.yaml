@@ -1,4 +1,6 @@
-driver: redis # 连接驱动
+#driver: memory # 连接驱动（内存缓存）
+
+driver: redis # 连接驱动（redis缓存）
 
 host: localhost # ip地址
 port: 6379 # 端口
@@ -8,4 +10,3 @@ timeout: 10s # 连接超时
 read_timeout: 2s # 读超时
 write_timeout: 2s # 写超时
 
-#driver: memory # 连接驱动
