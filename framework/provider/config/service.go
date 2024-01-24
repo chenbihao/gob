@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -58,14 +57,13 @@ func NewGobConfigService(params ...interface{}) (interface{}, error) {
 	}
 
 	// 读取每个文件
-	files, err := ioutil.ReadDir(envFolder)
+	files, err := os.ReadDir(envFolder)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	for _, file := range files {
 		fileName := file.Name()
-		err := gobConf.loadConfigFile(envFolder, fileName)
-		if err != nil {
+		if err := gobConf.loadConfigFile(envFolder, fileName); err != nil {
 			log.Println(err)
 			continue
 		}
@@ -99,15 +97,15 @@ func NewGobConfigService(params ...interface{}) (interface{}, error) {
 
 				if ev.Op&fsnotify.Create == fsnotify.Create {
 					log.Println("创建文件 : ", ev.Name)
-					gobConf.loadConfigFile(folder, fileName)
+					_ = gobConf.loadConfigFile(folder, fileName)
 				}
 				if ev.Op&fsnotify.Write == fsnotify.Write {
 					log.Println("写入文件 : ", ev.Name)
-					gobConf.loadConfigFile(folder, fileName)
+					_ = gobConf.loadConfigFile(folder, fileName)
 				}
 				if ev.Op&fsnotify.Remove == fsnotify.Remove {
 					log.Println("删除文件 : ", ev.Name)
-					gobConf.removeConfigFile(folder, fileName)
+					_ = gobConf.removeConfigFile(folder, fileName)
 				}
 			case err := <-watch.Errors:
 				log.Println("error : ", err)

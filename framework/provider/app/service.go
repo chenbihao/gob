@@ -88,6 +88,14 @@ func (s *AppService) TestFolder() string {
 	return filepath.Join(s.BaseFolder(), "test")
 }
 
+// DeployFolder 定义测试需要的信息
+func (s AppService) DeployFolder() string {
+	if val, ok := s.configMap["deploy_folder"]; ok {
+		return val
+	}
+	return filepath.Join(s.BaseFolder(), "deploy")
+}
+
 // ---------------- app 目录下
 
 // ConsoleFolderr 定义业务自己的命令行服务提供者地址

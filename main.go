@@ -14,6 +14,7 @@ import (
 	"github.com/chenbihao/gob/framework/provider/log"
 	"github.com/chenbihao/gob/framework/provider/orm"
 	"github.com/chenbihao/gob/framework/provider/redis"
+	"github.com/chenbihao/gob/framework/provider/ssh"
 	"github.com/chenbihao/gob/framework/provider/trace"
 	"os"
 )
@@ -40,6 +41,7 @@ func main() {
 	container.Bind(&orm.GormProvider{})                     // 绑定 orm 服务提供者
 	container.Bind(&redis.RedisProvider{})                  // 绑定 redis 服务提供者
 	container.Bind(&cache.CacheProvider{})                  // 绑定 缓存 服务提供者
+	container.Bind(&ssh.SSHProvider{})                      // 绑定 ssh 服务提供者
 
 	// 将 HTTP 引擎初始化,并且作为服务提供者绑定到服务容器中
 	if engine, err := http.NewHttpEngine(container); err == nil {

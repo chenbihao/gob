@@ -24,6 +24,8 @@ type App interface {
 	TestFolder() string
 	// StorageFolder 存储文件地址
 	StorageFolder() string
+	// DeployFolder 存放部署的时候创建的文件夹
+	DeployFolder() string
 
 	// ---------------- app 目录下
 

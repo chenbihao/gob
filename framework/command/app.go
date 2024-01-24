@@ -131,13 +131,13 @@ var appStartCommand = &cobra.Command{
 
 		runtimeFolder := appService.RuntimeFolder()
 		serverPidFile := filepath.Join(runtimeFolder, "app.pid")
-		if err := util.CreateFileIfNotExists(runtimeFolder); err != nil {
+		if err := util.CreateFolderIfNotExists(runtimeFolder); err != nil {
 			return err
 		}
 
 		logFolder := appService.LogFolder()
 		serverLogFile := filepath.Join(logFolder, "app.log")
-		if err := util.CreateFileIfNotExists(logFolder); err != nil {
+		if err := util.CreateFolderIfNotExists(logFolder); err != nil {
 			return err
 		}
 		currentFolder := util.GetExecDirectory()
@@ -170,8 +170,8 @@ var appStartCommand = &cobra.Command{
 			if err != nil {
 				return err
 			}
+			// 父进程直接打印启动成功信息，不做任何操作
 			if child != nil {
-				// 父进程直接打印启动成功信息，不做任何操作
 				fmt.Println("app启动成功，pid:", child.Pid)
 				fmt.Println("日志文件:", serverLogFile)
 				return nil
@@ -212,7 +212,11 @@ var appRestartCommand = &cobra.Command{
 		appService := container.MustMake(contract.AppKey).(contract.App)
 
 		// GetPid
-		serverPidFile := filepath.Join(appService.RuntimeFolder(), "app.pid")
+		runtimeFolder := appService.RuntimeFolder()
+		serverPidFile := filepath.Join(runtimeFolder, "app.pid")
+		if err := util.CreateFolderFileIfNotExists(runtimeFolder, serverPidFile); err != nil {
+			return err
+		}
 		content, err := os.ReadFile(serverPidFile)
 		if err != nil {
 			return err
@@ -234,7 +238,7 @@ var appRestartCommand = &cobra.Command{
 				if configService.IsExist("app.close_wait") {
 					closeWait = configService.GetInt("app.close_wait")
 				}
-				// 确认进程已经关闭,每秒检测一次， 最多检测closeWait * 2秒
+				// 确认进程已经关闭,每秒检测一次， 最多检测 closeWait * 2秒
 				for i := 0; i < closeWait*2; i++ {
 					if util.CheckProcessExist(pid) == false {
 						break
@@ -254,7 +258,7 @@ var appRestartCommand = &cobra.Command{
 			}
 		}
 
-		// todo 这里win下后台运行未实现
+		// todo 这里 win 下后台运行未实现
 		if util.IsNotWindows() {
 			appDaemon = true
 		}

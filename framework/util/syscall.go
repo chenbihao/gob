@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"os"
 	"syscall"
-
-	"github.com/erikdubbelboer/gspt"
+	//"github.com/joho/godotenv"
 )
 
 // SetProcessTitle 设置进程名
 func SetProcessTitle(name string) {
-	gspt.SetProcTitle(name)
+	// gspt 构建出错 ， 可能只支持mac并且需要安装 xcode-select
+	// godotenv.SetProcTitle(name)
 }
 
 // CheckProcessExist Will return true if the process with PID exists.

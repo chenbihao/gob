@@ -10,5 +10,6 @@ gen
 /test/*
 /storage/log/*
 /storage/runtime/*
+/deploy/20*
 
 gob.exe
