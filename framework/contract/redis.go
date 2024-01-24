@@ -6,6 +6,31 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+/**
+	服务介绍：
+		redis 服务
+	支持命令：无
+	支持配置：
+		```redis.yaml
+			timeout: 10s # 连接超时
+			read_timeout: 2s # 读超时
+			write_timeout: 2s # 写超时
+
+			host: localhost # ip地址
+			port: 6379 # 端口
+			db: 0 #db
+			username: # 用户名
+			password: "5233" # 密码
+			timeout: 10s # 连接超时
+			read_timeout: 2s # 读超时
+			write_timeout: 2s # 写超时
+			conn_min_idle: 10 # 连接池最小空闲连接数
+			conn_max_open: 20 # 连接池最大连接数
+			conn_max_lifetime: 1h # 连接数最大生命周期
+			conn_max_idletime: 1h # 连接数空闲时长
+		```
+**/
+
 const RedisKey = "gob:redis"
 
 // RedisService 表示一个redis服务

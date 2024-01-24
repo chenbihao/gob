@@ -1,0 +1,10 @@
+timeout: 1s
+network: tcp
+host: 192.168.159.128
+port: 22
+username: demo
+web-pwd:
+  password: "123456"
+web-key:
+  rsa_key: "C:/Users/99452/.ssh/id_rsa_manjarovm_demo_key"
+  known_hosts: "C:/Users/99452/.ssh/known_hosts"

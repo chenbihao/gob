@@ -127,7 +127,7 @@ func (conf *ConfigService) loadConfigFile(folder string, file string) error {
 	if len(s) == 2 && (s[1] == "yaml" || s[1] == "yml") {
 		name := s[0]
 		// 读取文件内容
-		bf, err := ioutil.ReadFile(filepath.Join(folder, file))
+		bf, err := os.ReadFile(filepath.Join(folder, file))
 		if err != nil {
 			return err
 		}
