@@ -2,15 +2,13 @@ package orm
 
 import (
 	"github.com/chenbihao/gob/framework/contract"
-	"github.com/chenbihao/gob/framework/provider/config"
 	tests "github.com/chenbihao/gob/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 func TestGobConfig_Load(t *testing.T) {
-	container := tests.InitBaseContainer()
-	container.Bind(&config.ConfigProvider{})
+	container := tests.InitBaseConfLogContainer()
 
 	Convey("test config", t, func() {
 		configService := container.MustMake(contract.ConfigKey).(contract.Config)

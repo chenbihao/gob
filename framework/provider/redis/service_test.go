@@ -2,8 +2,6 @@ package redis
 
 import (
 	"context"
-	"github.com/chenbihao/gob/framework/provider/config"
-	"github.com/chenbihao/gob/framework/provider/log"
 	tests "github.com/chenbihao/gob/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
@@ -11,9 +9,7 @@ import (
 )
 
 func TestRedisService_Load(t *testing.T) {
-	container := tests.InitBaseContainer()
-	container.Bind(&config.ConfigProvider{})
-	container.Bind(&log.LogProvider{})
+	container := tests.InitBaseConfLogContainer()
 
 	Convey("test get client", t, func() {
 		redis, err := NewRedisService(container)
