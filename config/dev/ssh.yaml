@@ -8,3 +8,7 @@ web-pwd:
 web-key:
   rsa_key: "C:/Users/99452/.ssh/id_rsa_manjarovm_demo_key"
   known_hosts: "C:/Users/99452/.ssh/known_hosts"
+web-ubuntu:
+  host: 192.168.159.129
+  username: cbh
+  password: "5233"

@@ -54,11 +54,12 @@ import (
 		ssh 支持配置：详见 contract/redis.go
 **/
 
-//var skipBuild = false // 跳过构建环节
+var deploySkipBuild = false // 跳过编译环节
 
 // initDeployCommand 为自动化部署的命令
 func initDeployCommand() *cobra.Command {
-	//deployCommand.Flags().BoolVarP(&appDaemon, "skipbuild", "s", false, "跳过构建环节")
+	deployFrontendCommand.Flags().BoolVarP(&deploySkipBuild, "skip-build", "s", false, "跳过构建环节")
+	deployAllCommand.Flags().BoolVarP(&deploySkipBuild, "skip-build", "s", false, "跳过构建环节")
 	deployCommand.AddCommand(deployFrontendCommand)
 	deployCommand.AddCommand(deployBackendCommand)
 	deployCommand.AddCommand(deployAllCommand)
@@ -183,7 +184,6 @@ func deployBuildBackend(c *cobra.Command, deployFolder string) error {
 		log.Fatalln("gob go: 请在Path路径中先安装go")
 	}
 
-	// 组装命令
 	deployBinFile := filepath.Join(deployFolder, binFile)
 	cmd := exec.Command(path, "build", "-o", deployBinFile, "./")
 	cmd.Env = os.Environ()
@@ -423,10 +423,13 @@ func deployBuildFrontend(c *cobra.Command, deployFolder string) error {
 	container := c.GetContainer()
 	appService := container.MustMake(contract.AppKey).(contract.App)
 
-	// 编译前端
-	if err := buildFrontendCommand.RunE(c, []string{}); err != nil {
-		return err
+	if !deploySkipBuild {
+		// 编译前端
+		if err := buildFrontendCommand.RunE(c, []string{}); err != nil {
+			return err
+		}
 	}
+
 	// 复制前端文件到deploy文件夹
 	frontendFolder := filepath.Join(deployFolder, "dist")
 	if err := os.Mkdir(frontendFolder, os.ModePerm); err != nil {

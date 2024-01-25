@@ -1,7 +1,7 @@
 connections: # 要自动化部署的连接
-  - ssh.web-key
+  - ssh.web-ubuntu
 
-remote_folder: "/home/demo/deploy/gobweb/"  # 远端的部署文件夹
+remote_folder: "/home/cbh/deploy/gobweb/"  # 远端的部署文件夹
 
 frontend: # 前端部署配置
   pre_action: # 部署前置命令
@@ -13,8 +13,8 @@ backend: # 后端部署配置
   goos: linux # 部署目标操作系统
   goarch: amd64 # 部署目标cpu架构
   pre_action: # 部署前置命令
-    - "mkdir -p /home/demo/deploy/gobweb 2>/dev/null"
-    - "rm /home/demo/deploy/gobweb/gob"
+    - "mkdir -p /home/cbh/deploy/gobweb 2>/dev/null"
+    - "rm /home/cbh/deploy/gobweb/gob"
   post_action: # 部署后置命令
-    - "chmod 777 /home/demo/deploy/gobweb/gob"
-    - "cd /home/demo/deploy/gobweb && ./gob app restart"
+    - "chmod 777 /home/cbh/deploy/gobweb/gob"
+    - "cd /home/cbh/deploy/gobweb && ./gob app restart"
