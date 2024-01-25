@@ -81,6 +81,7 @@ func (s *AppService) StorageFolder() string {
 	return filepath.Join(s.BaseFolder(), "storage")
 }
 
+// TestFolder 定义测试需要的信息
 func (s *AppService) TestFolder() string {
 	if val, ok := s.configMap["test_folder"]; ok {
 		return val
@@ -88,7 +89,7 @@ func (s *AppService) TestFolder() string {
 	return filepath.Join(s.BaseFolder(), "test")
 }
 
-// DeployFolder 定义测试需要的信息
+// DeployFolder 存放部署的时候创建的文件夹
 func (s AppService) DeployFolder() string {
 	if val, ok := s.configMap["deploy_folder"]; ok {
 		return val

@@ -25,8 +25,10 @@ import (
 		app
 	支持命令：
 		./gob deploy frontend`	// 部署前端
+			-s --skip-build      	// 跳过前端构建
 		./gob deploy backend`	// 部署后端
 		./gob deploy all`		// 同时部署前后端
+			-s --skip-build      	// 跳过前端构建
 		./gob deploy rollback`	// 部署回滚
 	支持配置：
 		deploy 支持配置：

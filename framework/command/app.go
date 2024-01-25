@@ -222,7 +222,7 @@ var appRestartCommand = &cobra.Command{
 			return err
 		}
 
-		if content != nil && len(content) != 0 {
+		if len(content) != 0 {
 			pid, err := strconv.Atoi(string(content))
 			if err != nil {
 				return err
@@ -240,13 +240,13 @@ var appRestartCommand = &cobra.Command{
 				}
 				// 确认进程已经关闭,每秒检测一次， 最多检测 closeWait * 2秒
 				for i := 0; i < closeWait*2; i++ {
-					if util.CheckProcessExist(pid) == false {
+					if !util.CheckProcessExist(pid) {
 						break
 					}
 					time.Sleep(1 * time.Second)
 				}
 				// 如果进程等待了 2*closeWait 之后还没结束，返回错误，不进行后续的操作
-				if util.CheckProcessExist(pid) == true {
+				if util.CheckProcessExist(pid) {
 					fmt.Println("结束进程失败:"+strconv.Itoa(pid), "请查看原因")
 					return errors.New("结束进程失败")
 				}
@@ -280,7 +280,7 @@ var appStopCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if content != nil && len(content) != 0 {
+		if len(content) != 0 {
 			pid, err := strconv.Atoi(string(content))
 			if err != nil {
 				return err
@@ -312,7 +312,7 @@ var appStateCommand = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if content != nil && len(content) > 0 {
+		if len(content) > 0 {
 			pid, err := strconv.Atoi(string(content))
 			if err != nil {
 				return err

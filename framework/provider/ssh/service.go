@@ -33,14 +33,12 @@ func (app *SSHService) GetClient(option ...contract.SSHOption) (*ssh.Client, err
 	logService := app.container.MustMake(contract.LogKey).(contract.Log)
 	// 读取默认配置
 	config := GetBaseConfig(app.container)
-
 	// option对opt进行修改
 	for _, opt := range option {
 		if err := opt(app.container, config); err != nil {
 			return nil, err
 		}
 	}
-
 	// 如果最终的config没有设置dsn,就生成dsn
 	key := config.UniqKey()
 
@@ -65,9 +63,7 @@ func (app *SSHService) GetClient(option ...contract.SSHOption) (*ssh.Client, err
 			"addr": addr,
 		})
 	}
-
 	// 挂载到map中，结束配置
 	app.clients[key] = client
-
 	return client, nil
 }
