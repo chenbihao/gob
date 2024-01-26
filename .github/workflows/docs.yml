@@ -27,14 +27,14 @@ jobs:
           cache-dependency-path: "docs"
 
       - name: 安装依赖
-        run: cd ./docs && npm ci
+        run: npm ci
         working-directory: ./docs
 
       - name: 构建文档
         env:
           NODE_OPTIONS: --max_old_space_size=8192
         run: |-
-          cd ./docs && npm run docs:build
+          npm run docs:build
           > ./src/.vuepress/dist/.nojekyll
         working-directory: ./docs
 
