@@ -1,10 +1,8 @@
-
 name: 部署文档
 
 on:
   push:
     branches:
-      # 确保这是你正在使用的分支名称
       - main
 
 permissions:
@@ -24,22 +22,22 @@ jobs:
       - name: 设置 Node.js
         uses: actions/setup-node@v3
         with:
-          path: './docs'
           node-version: 20
           cache: npm
+        run: pwd
+        working-directory: ./docs
 
       - name: 安装依赖
-        run: |-
-          cd ./docs
-          npm ci
+        run: cd ./docs && npm ci
+        working-directory: ./docs
 
       - name: 构建文档
         env:
           NODE_OPTIONS: --max_old_space_size=8192
         run: |-
-          cd ./docs
-          npm run docs:build
+          cd ./docs && npm run docs:build
           > ./src/.vuepress/dist/.nojekyll
+        working-directory: ./docs
 
       - name: 部署文档
         uses: JamesIves/github-pages-deploy-action@v4
