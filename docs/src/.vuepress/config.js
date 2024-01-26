@@ -4,11 +4,11 @@ import { viteBundler } from '@vuepress/bundler-vite'
 
 export default defineUserConfig({
   lang: 'en-US',
-
   title: 'Gob 框架',
   description: '一个支持前后端开发的基于协议的框架',
 
   sidebarDepth: 2,
+  base: '/gob/',
 
   theme: defaultTheme({
 

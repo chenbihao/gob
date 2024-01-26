@@ -4,6 +4,7 @@
   "description": "A VuePress project",
   "license": "MIT",
   "type": "module",
+  "homepage":"https://chenbihao.github.io/gob",
   "scripts": {
     "docs:build": "vuepress build src",
     "docs:clean-dev": "vuepress dev src --clean-cache",
