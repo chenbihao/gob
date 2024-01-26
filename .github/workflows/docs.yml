@@ -24,8 +24,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-        run: pwd
-        working-directory: ./docs
+          path: './docs'
 
       - name: 安装依赖
         run: cd ./docs && npm ci
