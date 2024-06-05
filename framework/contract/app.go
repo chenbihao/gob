@@ -1,6 +1,11 @@
 package contract
 
-// 接口说明文件 contract.go
+/**
+	## 服务介绍：
+		提供基础的 app 框架目录结构
+	## 支持命令：无
+	## 支持配置：无
+**/
 
 // AppKey 定义字符串凭证
 const AppKey = "gob:app"
