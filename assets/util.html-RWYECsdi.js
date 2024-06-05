@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-2d19daaa","path":"/guide/util.html","title":"辅助函数","lang":"zh-CN","frontmatter":{"lang":"zh-CN","title":"辅助函数","description":null},"headers":[],"git":{"updatedTime":1717589281000,"contributors":[{"name":"陈壁浩","email":"chenbihao@qljy.com","commits":1}]},"filePathRelative":"guide/util.md"}');export{t as data};

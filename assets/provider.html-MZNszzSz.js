@@ -1,0 +1,1 @@
+import{_ as o,o as r,c as t,b as e}from"./app-SHUsDq-_.js";const c={},s=e("h1",{id:"服务提供者",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#服务提供者"},[e("span",null,"服务提供者")])],-1),a=[s];function n(_,d){return r(),t("div",null,a)}const i=o(c,[["render",n],["__file","provider.html.vue"]]);export{i as default};

@@ -1,0 +1,2 @@
+import{_ as e,o as a,c as s,a as n}from"./app-SHUsDq-_.js";const o={},t=n(`<h1 id="gob-app" tabindex="-1"><a class="header-anchor" href="#gob-app"><span>gob:app</span></a></h1><p>提供基础的 app 框架目录结构</p><div class="language-go line-numbers-mode" data-ext="go" data-title="go"><pre class="language-go"><code>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div></div></div>`,3),c=[t];function d(i,p){return a(),s("div",null,c)}const l=e(o,[["render",d],["__file","app.html.vue"]]);export{l as default};

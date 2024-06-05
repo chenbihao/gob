@@ -1,0 +1,1 @@
+import{_ as t,o as s,c as a,b as e}from"./app-SHUsDq-_.js";const n={},c=e("h1",{id:"安装",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#安装"},[e("span",null,"安装")])],-1),o=[c];function l(_,r){return s(),a("div",null,o)}const d=t(n,[["render",l],["__file","install.html.vue"]]);export{d as default};

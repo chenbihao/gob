@@ -1,0 +1,1 @@
+import{_ as c,o as r,c as t,b as e}from"./app-SHUsDq-_.js";const s={},a=e("h1",{id:"grpc支持",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#grpc支持"},[e("span",null,"grpc支持")])],-1),n=[a];function o(_,l){return r(),t("div",null,n)}const p=c(s,[["render",o],["__file","grpc.html.vue"]]);export{p as default};

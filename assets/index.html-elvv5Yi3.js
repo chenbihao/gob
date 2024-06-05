@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-445de4f6","path":"/provider/","title":"服务提供者","lang":"zh-CN","frontmatter":{"lang":"zh-CN","title":"服务提供者","description":"服务提供者"},"headers":[],"git":{"updatedTime":1717589281000,"contributors":[{"name":"陈壁浩","email":"chenbihao@qljy.com","commits":1}]},"filePathRelative":"provider/README.md"}');export{e as data};

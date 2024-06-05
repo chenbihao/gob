@@ -1,0 +1,1 @@
+import{_ as o,o as t,c,b as e}from"./app-SHUsDq-_.js";const s={},a=e("h1",{id:"模型",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#模型"},[e("span",null,"模型")])],-1),n=[a];function _(r,l){return t(),c("div",null,n)}const h=o(s,[["render",_],["__file","model.html.vue"]]);export{h as default};

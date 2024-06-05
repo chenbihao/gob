@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-e6d8a19c","path":"/guide/structure.html","title":"目录结构","lang":"zh-CN","frontmatter":{"lang":"zh-CN","title":"目录结构","description":null},"headers":[],"git":{"updatedTime":1717589281000,"contributors":[{"name":"陈壁浩","email":"chenbihao@qljy.com","commits":1}]},"filePathRelative":"guide/structure.md"}');export{t as data};

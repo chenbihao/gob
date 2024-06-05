@@ -1,0 +1,2 @@
+import{_ as e,o as a,c as n,a as s}from"./app-SHUsDq-_.js";const o={},t=s(`<h1 id="gob-env" tabindex="-1"><a class="header-anchor" href="#gob-env"><span>gob:env</span></a></h1><p>提供环境变量相关方法</p><div class="language-go line-numbers-mode" data-ext="go" data-title="go"><pre class="language-go"><code>
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div></div></div>`,3),c=[t];function d(i,r){return a(),n("div",null,c)}const _=e(o,[["render",d],["__file","env.html.vue"]]);export{_ as default};

@@ -1,0 +1,1 @@
+import{_ as n,o as t,c as o,b as e}from"./app-SHUsDq-_.js";const s={},c=e("h1",{id:"服务提供者",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#服务提供者"},[e("span",null,"服务提供者")])],-1),_=e("p",null,"这里列出了 gob 框架自带的服务提供者接口和协议说明",-1),a=[c,_];function r(l,d){return t(),o("div",null,a)}const h=n(s,[["render",r],["__file","index.html.vue"]]);export{h as default};
