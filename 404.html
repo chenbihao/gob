@@ -1,34 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en-US">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="generator" content="VuePress 2.0.0-rc.2">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="generator" content="VuePress 2.0.0-rc.13" />
     <style>
       :root {
         --c-bg: #fff;
       }
+
       html.dark {
         --c-bg: #22272e;
       }
-      html, body {
+
+      html,
+      body {
         background-color: var(--c-bg);
       }
     </style>
     <script>
-      const userMode = localStorage.getItem('vuepress-color-scheme');
-			const systemDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-			if (userMode === 'dark' || (userMode !== 'light' && systemDarkMode)) {
-				document.documentElement.classList.toggle('dark', true);
-			}
+      const userMode = localStorage.getItem('vuepress-color-scheme')
+      const systemDarkMode =
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches
+      if (userMode === 'dark' || (userMode !== 'light' && systemDarkMode)) {
+        document.documentElement.classList.toggle('dark', true)
+      }
     </script>
-    <title>Gob 框架</title><meta name="description" content="一个支持前后端开发的基于协议的框架">
-    <link rel="preload" href="/gob/assets/style-Jzc4YpTl.css" as="style"><link rel="stylesheet" href="/gob/assets/style-Jzc4YpTl.css">
-    <link rel="modulepreload" href="/gob/assets/app-SHUsDq-_.js"><link rel="modulepreload" href="/gob/assets/404.html-el21wxyY.js"><link rel="modulepreload" href="/gob/assets/404.html-6Yl8cQE3.js">
-    <link rel="prefetch" href="/gob/assets/index.html-8-XxX7Pg.js" as="script"><link rel="prefetch" href="/gob/assets/TODO.html-OIxSZ2e1.js" as="script"><link rel="prefetch" href="/gob/assets/index.html-E2uvVuiL.js" as="script"><link rel="prefetch" href="/gob/assets/app.html-Fdtv1B8l.js" as="script"><link rel="prefetch" href="/gob/assets/build.html-tTTRGs4i.js" as="script"><link rel="prefetch" href="/gob/assets/command.html--_dR8_pu.js" as="script"><link rel="prefetch" href="/gob/assets/cron.html-ioyr3XPF.js" as="script"><link rel="prefetch" href="/gob/assets/deploy.html-LH1k6vMi.js" as="script"><link rel="prefetch" href="/gob/assets/dev.html-_hRQSZ27.js" as="script"><link rel="prefetch" href="/gob/assets/env.html-UHHgT-j4.js" as="script"><link rel="prefetch" href="/gob/assets/grpc.html-x8RlP7bT.js" as="script"><link rel="prefetch" href="/gob/assets/install.html-qRS5Hehy.js" as="script"><link rel="prefetch" href="/gob/assets/introduce.html-shdEE5Tw.js" as="script"><link rel="prefetch" href="/gob/assets/middleware.html-WGy7IeBX.js" as="script"><link rel="prefetch" href="/gob/assets/model.html-6NhylLWd.js" as="script"><link rel="prefetch" href="/gob/assets/provider.html-CJsSqU57.js" as="script"><link rel="prefetch" href="/gob/assets/structure.html-Wvq0EYZ3.js" as="script"><link rel="prefetch" href="/gob/assets/swagger.html-CrRfuOTP.js" as="script"><link rel="prefetch" href="/gob/assets/todo.html-ibu5p2SJ.js" as="script"><link rel="prefetch" href="/gob/assets/util.html-RWYECsdi.js" as="script"><link rel="prefetch" href="/gob/assets/version.html-3WxVXaQS.js" as="script"><link rel="prefetch" href="/gob/assets/index.html-elvv5Yi3.js" as="script"><link rel="prefetch" href="/gob/assets/app.html-ZcgzqVHn.js" as="script"><link rel="prefetch" href="/gob/assets/cache.html---f7N5GO.js" as="script"><link rel="prefetch" href="/gob/assets/config.html-YFzUziMU.js" as="script"><link rel="prefetch" href="/gob/assets/distributed.html-eAVQ5Hq5.js" as="script"><link rel="prefetch" href="/gob/assets/env.html-CnHIL_9q.js" as="script"><link rel="prefetch" href="/gob/assets/id.html-fw_Hx055.js" as="script"><link rel="prefetch" href="/gob/assets/kernel.html-1WkEqv-f.js" as="script"><link rel="prefetch" href="/gob/assets/log.html-q51__PvA.js" as="script"><link rel="prefetch" href="/gob/assets/orm.html-RO4kMSY1.js" as="script"><link rel="prefetch" href="/gob/assets/redis.html-0lIQTSYR.js" as="script"><link rel="prefetch" href="/gob/assets/sls.html-4YYvh5FC.js" as="script"><link rel="prefetch" href="/gob/assets/ssh.html-wLfx7RCk.js" as="script"><link rel="prefetch" href="/gob/assets/trace.html-ppwLc-4C.js" as="script"><link rel="prefetch" href="/gob/assets/index.html-ebJJ7O_V.js" as="script"><link rel="prefetch" href="/gob/assets/TODO.html-DG_KdoIR.js" as="script"><link rel="prefetch" href="/gob/assets/index.html-OrDrI5R4.js" as="script"><link rel="prefetch" href="/gob/assets/app.html-gQmRMacX.js" as="script"><link rel="prefetch" href="/gob/assets/build.html-itwZRmkg.js" as="script"><link rel="prefetch" href="/gob/assets/command.html-YMqbzurU.js" as="script"><link rel="prefetch" href="/gob/assets/cron.html-LTKbgImz.js" as="script"><link rel="prefetch" href="/gob/assets/deploy.html-BQRbqLz4.js" as="script"><link rel="prefetch" href="/gob/assets/dev.html-0SkV-X4R.js" as="script"><link rel="prefetch" href="/gob/assets/env.html-xPimTBV0.js" as="script"><link rel="prefetch" href="/gob/assets/grpc.html-L5rVFJc0.js" as="script"><link rel="prefetch" href="/gob/assets/install.html-QAteP8aq.js" as="script"><link rel="prefetch" href="/gob/assets/introduce.html-wMxEstcN.js" as="script"><link rel="prefetch" href="/gob/assets/middleware.html-MGWB6av1.js" as="script"><link rel="prefetch" href="/gob/assets/model.html-ZJfFanND.js" as="script"><link rel="prefetch" href="/gob/assets/provider.html-MZNszzSz.js" as="script"><link rel="prefetch" href="/gob/assets/structure.html-v3y5Wh2a.js" as="script"><link rel="prefetch" href="/gob/assets/swagger.html-XN9aQ-1j.js" as="script"><link rel="prefetch" href="/gob/assets/todo.html-znKpVu0g.js" as="script"><link rel="prefetch" href="/gob/assets/util.html-YPuBFCmo.js" as="script"><link rel="prefetch" href="/gob/assets/version.html-7GRO9eT2.js" as="script"><link rel="prefetch" href="/gob/assets/index.html-jg1ZTeAL.js" as="script"><link rel="prefetch" href="/gob/assets/app.html-fT4ASHtG.js" as="script"><link rel="prefetch" href="/gob/assets/cache.html-AA7-P3zc.js" as="script"><link rel="prefetch" href="/gob/assets/config.html-kYoG1jir.js" as="script"><link rel="prefetch" href="/gob/assets/distributed.html-sTzFqDYY.js" as="script"><link rel="prefetch" href="/gob/assets/env.html-Yl__pEQR.js" as="script"><link rel="prefetch" href="/gob/assets/id.html-Ec2dV-bY.js" as="script"><link rel="prefetch" href="/gob/assets/kernel.html-Ix4fBP1S.js" as="script"><link rel="prefetch" href="/gob/assets/log.html-dgQnOodn.js" as="script"><link rel="prefetch" href="/gob/assets/orm.html-d_4szkHR.js" as="script"><link rel="prefetch" href="/gob/assets/redis.html-ygoFRozK.js" as="script"><link rel="prefetch" href="/gob/assets/sls.html-RG4FTGAX.js" as="script"><link rel="prefetch" href="/gob/assets/ssh.html-jBAzz6Fo.js" as="script"><link rel="prefetch" href="/gob/assets/trace.html-w25qoFl2.js" as="script">
+    <link rel="icon" href="/images/logo.png"><title>Gob 框架</title><meta name="description" content="一个支持前后端开发的基于协议的框架">
+    <link rel="preload" href="/gob/assets/style-Bc7vRPHa.css" as="style"><link rel="stylesheet" href="/gob/assets/style-Bc7vRPHa.css">
+    <link rel="modulepreload" href="/gob/assets/app-yBQH3CcA.js"><link rel="modulepreload" href="/gob/assets/404.html-Du4U_ZAs.js">
+    <link rel="prefetch" href="/gob/assets/index.html-CmyUroLa.js" as="script"><link rel="prefetch" href="/gob/assets/TODO.html-BDRddFp8.js" as="script"><link rel="prefetch" href="/gob/assets/index.html-DrwAUgwV.js" as="script"><link rel="prefetch" href="/gob/assets/app.html-BmBVQ1a7.js" as="script"><link rel="prefetch" href="/gob/assets/cache.html-4DqQHnEU.js" as="script"><link rel="prefetch" href="/gob/assets/config.html-CD88kQQh.js" as="script"><link rel="prefetch" href="/gob/assets/distributed.html-B8rZmo2G.js" as="script"><link rel="prefetch" href="/gob/assets/env.html-Ifo2CSaJ.js" as="script"><link rel="prefetch" href="/gob/assets/id.html-DY6R01pQ.js" as="script"><link rel="prefetch" href="/gob/assets/kernel.html-CZ5wAwJg.js" as="script"><link rel="prefetch" href="/gob/assets/log.html-DD57btdL.js" as="script"><link rel="prefetch" href="/gob/assets/orm.html-D4gTOazZ.js" as="script"><link rel="prefetch" href="/gob/assets/redis.html-Ca9F7fBG.js" as="script"><link rel="prefetch" href="/gob/assets/sls.html-DTLbFEIk.js" as="script"><link rel="prefetch" href="/gob/assets/ssh.html-BxyNWYlg.js" as="script"><link rel="prefetch" href="/gob/assets/trace.html-Fs0fOLI3.js" as="script"><link rel="prefetch" href="/gob/assets/index.html-BPmyzOx7.js" as="script"><link rel="prefetch" href="/gob/assets/app.html-CNBnnZ4I.js" as="script"><link rel="prefetch" href="/gob/assets/build.html-BU2COeXT.js" as="script"><link rel="prefetch" href="/gob/assets/command.html-DELMMFGO.js" as="script"><link rel="prefetch" href="/gob/assets/cron.html-JqipmKtN.js" as="script"><link rel="prefetch" href="/gob/assets/deploy.html-Z8z4__4p.js" as="script"><link rel="prefetch" href="/gob/assets/dev.html-CVtOBj2R.js" as="script"><link rel="prefetch" href="/gob/assets/env.html-QIg8i-nx.js" as="script"><link rel="prefetch" href="/gob/assets/grpc.html-CCSdQf6I.js" as="script"><link rel="prefetch" href="/gob/assets/install.html-CreGHpIS.js" as="script"><link rel="prefetch" href="/gob/assets/introduce.html-HaazauIF.js" as="script"><link rel="prefetch" href="/gob/assets/middleware.html-CjfU02oP.js" as="script"><link rel="prefetch" href="/gob/assets/model.html-DKwLtwCR.js" as="script"><link rel="prefetch" href="/gob/assets/provider.html-D6IAkre4.js" as="script"><link rel="prefetch" href="/gob/assets/structure.html--L536RHv.js" as="script"><link rel="prefetch" href="/gob/assets/swagger.html-BJm8yAik.js" as="script"><link rel="prefetch" href="/gob/assets/todo.html-BPZFFZxn.js" as="script"><link rel="prefetch" href="/gob/assets/util.html-DS2QGkKT.js" as="script"><link rel="prefetch" href="/gob/assets/version.html-OQHqurw4.js" as="script">
   </head>
   <body>
-    <div id="app"><!--[--><div class="theme-container"><main class="page"><div class="theme-default-content"><h1>404</h1><blockquote>Looks like we&#39;ve got some broken links.</blockquote><a href="/gob/" class="">Take me home</a></div></main></div><!----><!--]--></div>
-    <script type="module" src="/gob/assets/app-SHUsDq-_.js" defer></script>
+    <div id="app"><!--[--><div class="theme-container"><main class="page"><div class="theme-default-content"><h1>404</h1><blockquote>There&#39;s nothing here.</blockquote><a class="route-link" href="/gob/">Take me home</a></div></main></div><!--[--><!----><!--]--><!--]--></div>
+    <script type="module" src="/gob/assets/app-yBQH3CcA.js" defer></script>
   </body>
 </html>

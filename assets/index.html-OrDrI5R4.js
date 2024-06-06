@@ -1,1 +1,0 @@
-import{_ as n,o as t,c,b as e}from"./app-SHUsDq-_.js";const s={},a=e("h1",{id:"快速开始",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#快速开始"},[e("span",null,"快速开始")])],-1),o=[a];function _(r,d){return t(),c("div",null,o)}const i=n(s,[["render",_],["__file","index.html.vue"]]);export{i as default};

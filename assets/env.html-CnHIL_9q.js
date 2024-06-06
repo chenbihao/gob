@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-fe4a06de","path":"/provider/env.html","title":"gob:env","lang":"zh-CN","frontmatter":{"lang":"zh-CN","title":"gob:env","description":null},"headers":[],"git":{"updatedTime":1717589281000,"contributors":[{"name":"陈壁浩","email":"chenbihao@qljy.com","commits":1}]},"filePathRelative":"provider/env.md"}');export{e as data};

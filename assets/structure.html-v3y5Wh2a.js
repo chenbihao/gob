@@ -1,1 +1,0 @@
-import{_ as t,o as c,c as s,b as e}from"./app-SHUsDq-_.js";const r={},a=e("h1",{id:"目录结构",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#目录结构"},[e("span",null,"目录结构")])],-1),n=[a];function o(_,l){return c(),s("div",null,n)}const u=t(r,[["render",o],["__file","structure.html.vue"]]);export{u as default};

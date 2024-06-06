@@ -1,2 +1,0 @@
-import{_ as e,o as a,c as n,a as o}from"./app-SHUsDq-_.js";const c={},s=o(`<h1 id="gob-config" tabindex="-1"><a class="header-anchor" href="#gob-config"><span>gob:config</span></a></h1><p>提供基础的配置文件获取方法</p><div class="language-go line-numbers-mode" data-ext="go" data-title="go"><pre class="language-go"><code>
-</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div></div></div>`,3),i=[s];function t(d,r){return a(),n("div",null,i)}const g=e(c,[["render",t],["__file","config.html.vue"]]);export{g as default};

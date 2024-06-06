@@ -1,1 +1,0 @@
-const t=JSON.parse('{"key":"v-e45cc9ec","path":"/guide/install.html","title":"安装","lang":"zh-CN","frontmatter":{"lang":"zh-CN","title":"安装","description":null},"headers":[],"git":{"updatedTime":1717589281000,"contributors":[{"name":"陈壁浩","email":"chenbihao@qljy.com","commits":1}]},"filePathRelative":"guide/install.md"}');export{t as data};

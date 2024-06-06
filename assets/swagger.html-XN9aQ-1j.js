@@ -1,1 +1,0 @@
-import{_ as s,o as a,c as r,b as e}from"./app-SHUsDq-_.js";const t={},c=e("h1",{id:"swagger",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#swagger"},[e("span",null,"swagger")])],-1),n=[c];function o(_,l){return a(),r("div",null,n)}const g=s(t,[["render",o],["__file","swagger.html.vue"]]);export{g as default};

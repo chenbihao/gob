@@ -1,1 +1,0 @@
-import{_ as a,o as t,c,b as e}from"./app-SHUsDq-_.js";const s={},n=e("h1",{id:"中间件",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#中间件"},[e("span",null,"中间件")])],-1),o=[n];function r(_,d){return t(),c("div",null,o)}const i=a(s,[["render",r],["__file","middleware.html.vue"]]);export{i as default};

@@ -1,2 +1,0 @@
-import{_ as e,o as a,c as o,a as s}from"./app-SHUsDq-_.js";const n={},t=s(`<h1 id="gob-log" tabindex="-1"><a class="header-anchor" href="#gob-log"><span>gob:log</span></a></h1><p>提供日志记录相关操作</p><div class="language-go line-numbers-mode" data-ext="go" data-title="go"><pre class="language-go"><code>
-</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div></div></div>`,3),c=[t];function l(d,i){return a(),o("div",null,c)}const g=e(n,[["render",l],["__file","log.html.vue"]]);export{g as default};

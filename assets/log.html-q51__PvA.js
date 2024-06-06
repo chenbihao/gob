@@ -1,1 +1,0 @@
-const t=JSON.parse('{"key":"v-7350c09a","path":"/provider/log.html","title":"gob:log","lang":"zh-CN","frontmatter":{"lang":"zh-CN","title":"gob:log","description":null},"headers":[],"git":{"updatedTime":1717589281000,"contributors":[{"name":"陈壁浩","email":"chenbihao@qljy.com","commits":1}]},"filePathRelative":"provider/log.md"}');export{t as data};

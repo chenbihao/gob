@@ -1,1 +1,0 @@
-import{_ as c,o as a,c as n,b as e}from"./app-SHUsDq-_.js";const o={},t=e("h1",{id:"命令",tabindex:"-1"},[e("a",{class:"header-anchor",href:"#命令"},[e("span",null,"命令")])],-1),s=[t];function _(r,d){return a(),n("div",null,s)}const m=c(o,[["render",_],["__file","command.html.vue"]]);export{m as default};
