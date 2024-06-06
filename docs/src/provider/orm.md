@@ -1,16 +1,18 @@
 ---
 lang: zh-CN
 title: gob:orm
-description: 
+description:
 ---
 # gob:orm
 
-## 说明
-
-gob:orm 是提供ORM服务的服务，可以用于获取数据库连接，获取表结构等。
+## 服务介绍：
+提供ORM服务的服务，可以用于获取数据库连接，获取表结构等。
+## 支持命令：无
+## 支持配置：无
 
 ## 使用方法
-
-```go
-
+```go 
+type ORM interface {
+	GetDB(option ...DBOption) (*gorm.DB, error)
+}
 ```

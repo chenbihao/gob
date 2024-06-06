@@ -10,6 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
+/*
+## 服务介绍：
+提供ORM服务的服务，可以用于获取数据库连接，获取表结构等。
+## 支持命令：无
+## 支持配置：无
+*/
+
 // ORMKey 代表 ORM的服务
 const ORMKey = "gob:orm"
 

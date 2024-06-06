@@ -131,9 +131,6 @@ var appStartCommand = &cobra.Command{
 
 		runtimeFolder := appService.RuntimeFolder()
 		serverPidFile := filepath.Join(runtimeFolder, "app.pid")
-		if err := util.CreateFolderIfNotExists(runtimeFolder); err != nil {
-			return err
-		}
 
 		logFolder := appService.LogFolder()
 		serverLogFile := filepath.Join(logFolder, "app.log")

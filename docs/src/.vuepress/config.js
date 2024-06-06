@@ -1,6 +1,8 @@
 import {defaultTheme} from '@vuepress/theme-default'
 import {defineUserConfig} from 'vuepress/cli'
 import {viteBundler} from '@vuepress/bundler-vite'
+import {searchPlugin} from '@vuepress/plugin-search'
+import {mdEnhancePlugin} from "vuepress-plugin-md-enhance"
 
 export default defineUserConfig({
     lang: 'en-US',
@@ -10,12 +12,11 @@ export default defineUserConfig({
     sidebarDepth: 2,
     base: '/gob/',
 
-    // head: [["link", {rel: "icon", href: "/assets/img/head.png"}]],
-
+    head: [["link", {rel: "icon", href: "/images/logo.png"}]],
     theme: defaultTheme({
 
         // logo
-        logo: 'https://vuejs.press/images/hero.png',
+        logo: '/images/logo.png',
 
         // 添加导航栏
         navbar: [
@@ -75,7 +76,15 @@ export default defineUserConfig({
             ],
         },
     }),
-    plugins: [],
+    plugins: [
+        searchPlugin({
+            // 配置项
+        }),
+        mdEnhancePlugin({
+            codetabs: true,
+            mermaid: true,
+        }),
+    ],
 
     bundler: viteBundler(),
 })

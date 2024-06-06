@@ -5,6 +5,14 @@ import (
 	"net/http"
 )
 
+/*
+## 服务介绍：
+提供分布式链路追踪服务，可以用于跟踪分布式服务调用链路。
+## 支持命令：无
+## 支持配置：无
+*/
+
+// TraceKey 定义字符串凭证
 const TraceKey = "gob:trace"
 
 const (

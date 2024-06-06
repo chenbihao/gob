@@ -6,17 +6,25 @@ import (
 	"time"
 )
 
-/**
-	服务介绍：
-		缓存服务
-	支持命令：无
-	支持配置：
-		```cache.yaml
-			driver: redis 	# 连接驱动，可选 redis/memory
-			... 			# 如果driver选择redis，则可配置项与redis服务一致
-		```
-**/
+/*
+## 服务介绍：
 
+cache 服务提供丰富的接口，可以通过接口来操作缓存，目前支持的缓存驱动有两种：
+- redis
+- memory
+
+## 支持命令：无
+## 支持配置：
+
+通过配置文件 `config/[env]/cache.yaml` 可以配置缓存服务的驱动和参数，如下是一个配置示例：
+
+```yaml
+driver: memory 	# 连接驱动，可选 redis/memory
+... 			# 如果 driver: redis，则可配置项与redis服务一致
+```
+*/
+
+// CacheKey 定义字符串凭证
 const CacheKey = "gob:cache"
 
 // RememberFunc 缓存的Remember方法使用，Cache-Aside模式对应的对象生成方法

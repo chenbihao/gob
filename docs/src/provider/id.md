@@ -1,16 +1,18 @@
 ---
 lang: zh-CN
 title: gob:id
-description: 
+description:
 ---
 # gob:id
 
-## 说明
-
-gob:id 是提供分布式 ID 生成服务，可以为当前服务生成唯一 id。
+## 服务介绍：
+提供分布式 ID 生成服务，可以为当前服务生成唯一id
+## 支持命令：无
+## 支持配置：无
 
 ## 使用方法
-
-```go
-
+```go 
+type ID interface {
+	NewID() string
+}
 ```

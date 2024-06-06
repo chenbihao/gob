@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+/*
+## 服务介绍：
+提供日志记录相关操作
+## 支持命令：无
+## 支持配置：无
+*/
+
 // LogKey 定义字符串凭证
 const LogKey = "gob:log"
 

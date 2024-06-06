@@ -1,5 +1,15 @@
 package contract
 
+/*
+## 服务介绍：
+提供环境变量相关方法
+## 支持命令：无
+## 支持配置：无
+*/
+
+// EnvKey 是环境变量服务字符串凭证
+const EnvKey = "gob:env"
+
 const (
 	// EnvProd 代表生产环境
 	EnvProd = "prod"
@@ -7,8 +17,6 @@ const (
 	EnvTest = "test"
 	// EnvDev 代表开发环境
 	EnvDev = "dev"
-	// EnvKey 是环境变量服务字符串凭证
-	EnvKey = "gob:env"
 )
 
 // Env 定义环境变量服务
