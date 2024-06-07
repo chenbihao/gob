@@ -18,6 +18,7 @@
     "vuepress": "2.0.0-rc.13",
 
     "@vuepress/plugin-search": "^2.0.0-rc.34",
-    "vuepress-plugin-md-enhance": "^2.0.0-rc.48"
+    "vuepress-plugin-md-enhance": "^2.0.0-rc.48",
+    "vuepress-plugin-mermaid": "^0.0.1"
   }
 }

@@ -7,6 +7,21 @@ import (
 	"github.com/kr/pretty"
 )
 
+/*
+## 命令介绍：
+获取配置相关信息
+## 前置需求：无
+## 支持命令：
+```sh
+./gob config get
+```
+## 支持配置：无
+## 支持环境变量：无
+*/
+
+// 用于生成文档定位说明
+const ConfigCommandKey = "配置命令"
+
 // initConfigCommand 获取配置相关的命令
 func initConfigCommand() *cobra.Command {
 	configCommand.AddCommand(configGetCommand)

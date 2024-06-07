@@ -1,18 +1,5 @@
 package command
 
-/**
-	命令介绍：
-		command 生成
-	前置需求：
-		app
-	支持命令：
-		./gob command  		// 打印帮助信息
-		./gob command list  // 列出所有控制台命令
-		./gob command new  	// 创建一个控制台命令
-	支持配置：
-		无
-**/
-
 import (
 	"errors"
 	"fmt"
@@ -27,6 +14,25 @@ import (
 	"syscall"
 	"time"
 )
+
+/*
+## 命令介绍：
+定时任务相关命令
+## 前置需求：无
+## 支持命令：
+```sh
+./gob cron list
+./gob cron state
+./gob cron start
+./gob cron stop
+./gob cron restart
+```
+## 支持配置：无
+## 支持环境变量：无
+*/
+
+// 用于生成文档定位说明
+const CronCommandKey = "定时任务命令"
 
 var cronDaemon = false
 

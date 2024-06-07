@@ -7,6 +7,22 @@ import (
 	"github.com/chenbihao/gob/framework/util"
 )
 
+/*
+## 命令介绍：
+获取当前的App环境
+## 前置需求：
+app
+## 支持命令：
+```sh
+./gob env list
+```
+## 支持配置：无
+## 支持环境变量：无
+*/
+
+// 用于生成文档定位说明
+const EnvCommandKey = "环境变量命令"
+
 // initEnvCommand 获取env相关的命令
 func initEnvCommand() *cobra.Command {
 	envCommand.AddCommand(envListCommand)

@@ -14,18 +14,22 @@ import (
 	"text/template"
 )
 
-/**
-	命令介绍：
-		command 生成
-	前置需求：
-		app
-	支持命令：
-		./gob command  		// 打印帮助信息
-		./gob command list  // 列出所有控制台命令
-		./gob command new  	// 创建一个控制台命令
-	支持配置：
-		无
-**/
+/*
+## 命令介绍：
+command 命令
+## 前置需求：
+app
+## 支持命令：
+```sh
+./gob command  		// 打印帮助信息
+./gob command list  // 列出所有控制台命令
+./gob command new  	// 创建一个控制台命令
+```
+## 支持配置：无
+*/
+
+// 用于生成文档定位说明
+const CmdCommandKey = "命令"
 
 // 初始化command相关命令
 func initCmdCommand() *cobra.Command {

@@ -33,7 +33,7 @@ write:
 	conn_max_idletime: 1h # 连接数空闲时长
 ```
 
-## 使用方法
+## 提供方法：
 ```go 
 type RedisService interface {
 	// GetClient 获取redis连接实例

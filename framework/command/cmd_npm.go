@@ -8,6 +8,20 @@ import (
 	"os/exec"
 )
 
+/*
+## 命令介绍：
+挂载 npm 命令
+## 前置需求：无
+## 支持命令：
+```sh
+./gob npm
+```
+## 支持配置：无
+*/
+
+// 用于生成文档定位说明
+const NpmGoCommandKey = "npm 命令"
+
 func initNpmCommand() *cobra.Command {
 	return npmCommand
 }

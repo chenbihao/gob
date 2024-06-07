@@ -9,20 +9,20 @@ import (
 )
 
 /*
-*
-
-	命令介绍：
-		swagger 生成
-	前置需求：
-		app
-	支持命令：
-		./gob swagger  			// 打印帮助信息
-		./gob swagger gen  		// 生成swagger文件
-	支持配置：
-		无
-
-*
+## 命令介绍：
+swagger 生成
+## 前置需求：
+app
+## 支持命令：
+```sh
+./gob swagger  			// 打印帮助信息
+./gob swagger gen  		// 生成swagger文件
+```
+## 支持配置：无
 */
+
+// 用于生成文档定位说明
+const SwaggerCommandKey = "swagger命令"
 
 func initSwaggerCommand() *cobra.Command {
 	swaggerCommand.AddCommand(swaggerGenCommand)

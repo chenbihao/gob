@@ -27,7 +27,7 @@ web-key:
   known_hosts: "C:/Users/99452/.ssh/known_hosts"
 ```
 
-## 使用方法
+## 提供方法：
 ```go 
 type SSHService interface {
 	// GetClient 获取ssh连接实例

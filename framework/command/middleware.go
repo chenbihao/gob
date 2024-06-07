@@ -21,19 +21,23 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-/**
-	命令介绍：
-		middleware 生成
-	前置需求：
-		app
-	支持命令：
-		./gob middleware  			// 打印帮助信息
-		./gob middleware list  		// 列出所有的业务中间件
-		./gob middleware new  		// 创建一个新的业务中间件
-		./gob middleware migrate 	// 迁移 Gin 已有的中间件
-	支持配置：
-		无
-**/
+/*
+## 命令介绍：
+middleware 生成
+## 前置需求：
+app
+## 支持命令：
+```sh
+./gob middleware  			// 打印帮助信息
+./gob middleware list  		// 列出所有的业务中间件
+./gob middleware new  		// 创建一个新的业务中间件
+./gob middleware migrate 	// 迁移 Gin 已有的中间件
+```
+## 支持配置：无
+*/
+
+// 用于生成文档定位说明
+const MiddlewareCommandKey = "中间件命令"
 
 // 初始化中间件相关命令
 func initMiddlewareCommand() *cobra.Command {

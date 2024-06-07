@@ -19,14 +19,19 @@ import (
 	"github.com/spf13/cast"
 )
 
-/**
-	命令介绍：
-		new 拉取最新的gob框架内容
-	前置需求：无
-	支持命令：
-		./gob new		// 拉取框架并创建一个新的应用
-	支持配置：无
-**/
+/*
+## 命令介绍：
+拉取最新的 gob 框架内容
+## 前置需求：无
+## 支持命令：
+```sh
+./gob new		// 拉取框架并创建一个新的应用
+```
+## 支持配置：无
+*/
+
+// 用于生成文档定位说明
+const NewCommandKey = "创建命令"
 
 // new相关的名称
 func initNewCommand() *cobra.Command {

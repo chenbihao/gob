@@ -10,7 +10,7 @@ description:
 ## 支持命令：无
 ## 支持配置：无
 
-## 使用方法
+## 提供方法：
 ```go 
 type Kernel interface {
 	// HttpEngine http.Handler结构，作为net/http框架使用, 实际上是gin.Engine

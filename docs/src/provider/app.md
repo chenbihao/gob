@@ -10,7 +10,7 @@ description:
 ## 支持命令：无
 ## 支持配置：无
 
-## 使用方法
+## 提供方法：
 ```go 
 type App interface {
 	// AppID 表示当前这个app的唯一id, 可以用于分布式锁等

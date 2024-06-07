@@ -21,7 +21,7 @@ driver: memory 	# 连接驱动，可选 redis/memory
 ... 			# 如果 driver: redis，则可配置项与redis服务一致
 ```
 
-## 使用方法
+## 提供方法：
 ```go 
 type CacheService interface {
 	// Get 获取某个key对应的值

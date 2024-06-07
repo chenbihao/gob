@@ -17,18 +17,22 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 )
 
-/**
-	命令介绍：
-		provider 生成
-	前置需求：
-		app
-	支持命令：
-		./gob provider  		// 打印帮助信息
-		./gob provider list  	// 列出容器内的所有服务的字符串凭证
-		./gob provider new  	// 创建一个服务
-	支持配置：
-		无
-**/
+/*
+## 命令介绍：
+provider 生成
+## 前置需求：
+app
+## 支持命令：
+```sh
+./gob provider  		// 打印帮助信息
+./gob provider list  	// 列出容器内的所有服务的字符串凭证
+./gob provider new  	// 创建一个服务
+```
+## 支持配置：无
+*/
+
+// 用于生成文档定位说明
+const ProviderCommandKey = "服务提供者命令"
 
 // 初始化provider相关服务
 func initProviderCommand() *cobra.Command {

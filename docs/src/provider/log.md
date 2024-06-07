@@ -10,7 +10,7 @@ description:
 ## 支持命令：无
 ## 支持配置：无
 
-## 使用方法
+## 提供方法：
 ```go 
 type Log interface {
 	// Panic 表示会导致整个程序出现崩溃的日志信息
