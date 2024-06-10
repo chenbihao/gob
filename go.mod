@@ -13,6 +13,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/goccy/go-json v0.10.2
 	github.com/google/go-github/v58 v58.0.0
+	github.com/google/go-github/v62 v62.0.0
 	github.com/google/uuid v1.5.0
 	github.com/inconshreveable/mousetrap v1.1.0
 	github.com/json-iterator/go v1.1.12
