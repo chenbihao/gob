@@ -13,6 +13,23 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 )
 
+/*
+## 命令介绍：
+查看版本
+## 前置需求：
+无
+## 支持命令：
+```sh
+./gob version  			// 查看当前版本
+./gob version list  	// 获取最新版本日志
+```
+## 支持配置：
+无
+*/
+
+// 用于生成文档定位说明
+const VersionCommandKey = "version命令"
+
 // initEnvCommand 获取env相关的命令
 func initVersionCommand() *cobra.Command {
 	versionCommand.AddCommand(versionListCommand)

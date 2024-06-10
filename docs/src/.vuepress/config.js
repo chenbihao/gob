@@ -36,21 +36,23 @@ export default defineUserConfig({
                         "",             // 介绍
                         "introduce",    // 快速上手
                         "install",      // 安装
-                        "structure",    // 目录结构
                         "app",          // 运行
-                        "version",      // 版本
-                        "build",        // 编译
-                        "env",          // 环境变量
-                        "dev",          // 调试模式
-                        "command",      // 命令
-                        "cron",         // 定时任务
-                        "middleware",   // 中间件
-                        "swagger",      // swagger
+
+                        "structure",    // 目录结构
                         "provider",     // 服务提供者
+                        "middleware",   // 中间件
+
+                        "command",      // 命令
+                        "build",        // 编译
+                        "dev",          // 调试模式
+                        "env",          // 环境变量
+                        "version",      // 版本
                         "model",        // 模型
-                        "deploy",       // 自动部署
-                        "util",         // 辅助函数
+                        "swagger",      // swagger
                         "grpc",         // grpc 支持
+                        "deploy",       // 自动部署
+                        "cron",         // 定时任务
+                        "util",         // 辅助函数
                         "TODO",         // 代办
                     ],
                 },
@@ -60,9 +62,10 @@ export default defineUserConfig({
                     title: "提供命令",
                     collapsable: false,
                     children: [
+                        "",
+                        "new",
                         "app",
                         "config",
-                        "new",
                         "build",
                         "env",
                         "dev",
@@ -73,9 +76,9 @@ export default defineUserConfig({
                         "middleware",
                         "swagger",
                         "provider",
+                        "model",
                         "deploy",
                         "version",
-                        "model",
                     ],
                 },
             ],
