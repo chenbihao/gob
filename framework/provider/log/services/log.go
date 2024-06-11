@@ -48,7 +48,7 @@ func (log *LogService) logf(level contract.LogLevel, ctx context.Context, msg st
 	}
 
 	//如果绑定了trace服务，获取trace信息
-	if log.c.IsBind(contract.TraceKey) {
+	if log.c != nil && log.c.IsBind(contract.TraceKey) {
 		tracer := log.c.MustMake(contract.TraceKey).(contract.Trace)
 		tc := tracer.GetTrace(ctx)
 		if tc != nil {
