@@ -1,6 +1,7 @@
 package contract
 
 import (
+	"context"
 	"github.com/chenbihao/gob/framework"
 	"net"
 	"strconv"
@@ -20,9 +21,27 @@ import (
 // ORMKey 代表 ORM的服务
 const ORMKey = "gob:orm"
 
+type TableColumn struct {
+	Field   string `gorm:"column:Field"`
+	Type    string `gorm:"column:Type"`
+	Null    string `gorm:"column:Null"`
+	Key     string `gorm:"column:key"`
+	Default string `gorm:"column:Default"`
+	Extra   string `gorm:"column:Extra"`
+}
+
 // ORM 表示传入的参数
 type ORM interface {
+	// 获取 DB
 	GetDB(option ...DBOption) (*gorm.DB, error)
+
+	// CanConnect 是否可以连接
+	CanConnect(ctx context.Context, db *gorm.DB) (bool, error)
+
+	// Table 相关
+	GetTables(ctx context.Context, db *gorm.DB) ([]string, error)
+	HasTable(ctx context.Context, db *gorm.DB, table string) (bool, error)
+	GetTableColumns(ctx context.Context, db *gorm.DB, table string) ([]TableColumn, error)
 }
 
 // DBOption 代表初始化的时候的选项
