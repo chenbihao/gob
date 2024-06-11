@@ -37,6 +37,16 @@ type IResponse interface {
 
 var _ IResponse = new(Context) // 确保类型实现接口
 
+func (ctx *Context) IJson(obj interface{}) IResponse {
+	byt, err := json.Marshal(obj)
+	if err != nil {
+		return ctx.ISetStatus(http.StatusInternalServerError)
+	}
+	ctx.ISetHeader("Content-Type", "application/json")
+	ctx.Writer.Write(byt)
+	return ctx
+}
+
 // Jsonp输出
 func (ctx *Context) IJsonp(obj interface{}) IResponse {
 	// 获取请求参数callback
@@ -102,7 +112,7 @@ func (ctx *Context) IHtml(file string, obj interface{}) IResponse {
 // string
 func (ctx *Context) IText(format string, values ...interface{}) IResponse {
 	out := fmt.Sprintf(format, values...)
-	ctx.ISetHeader("Content-Type", "application/text")
+	ctx.ISetHeader("Content-Type", "application/json; charset=UTF-8")
 	ctx.Writer.Write([]byte(out))
 	return ctx
 }
@@ -146,15 +156,5 @@ func (ctx *Context) ISetStatus(code int) IResponse {
 // 设置200状态
 func (ctx *Context) ISetOkStatus() IResponse {
 	ctx.Writer.WriteHeader(http.StatusOK)
-	return ctx
-}
-
-func (ctx *Context) IJson(obj interface{}) IResponse {
-	byt, err := json.Marshal(obj)
-	if err != nil {
-		return ctx.ISetStatus(http.StatusInternalServerError)
-	}
-	ctx.ISetHeader("Content-Type", "application/json")
-	ctx.Writer.Write(byt)
 	return ctx
 }

@@ -1,9 +1,13 @@
 package command
 
-import "github.com/chenbihao/gob/framework/cobra"
+import (
+	"github.com/chenbihao/gob/framework/cobra"
+	"github.com/robfig/cron/v3"
+)
 
 // AddKernelCommands will add all command/* to root command
 func AddKernelCommands(root *cobra.Command) {
+	InitCronCommands(root)
 
 	root.AddCommand(initAppCommand())        // 挂载 app 命令
 	root.AddCommand(initCronCommand())       // 挂载 cron 命令
@@ -24,6 +28,15 @@ func AddKernelCommands(root *cobra.Command) {
 
 // AddNewCommands will add new command to root command
 func AddNewCommands(root *cobra.Command) {
-	// 挂载 new 命令
-	root.AddCommand(initNewCommand())
+	root.AddCommand(initNewCommand()) // 挂载 new 命令
+}
+
+// InitCronCommands 初始化Cron相关的命令
+func InitCronCommands(root *cobra.Command) {
+	// 初始化cron相关命令
+	if root.Cron == nil {
+		// 初始化cron
+		root.Cron = cron.New(cron.WithParser(cron.NewParser(cron.SecondOptional | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)))
+		root.CronSpecs = []cobra.CronSpec{}
+	}
 }

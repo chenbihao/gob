@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
-	"gorm.io/gorm"
 )
 
 // GetBaseConfig 读取database.yaml根目录结构
@@ -35,12 +34,9 @@ func WithConfigPath(configPath string) contract.DBOption {
 }
 
 // WithGormConfig 表示自行配置Gorm的配置信息
-func WithGormConfig(gormConfig *gorm.Config) contract.DBOption {
+func WithGormConfig(f func(options *contract.DBConfig)) contract.DBOption {
 	return func(container framework.Container, config *contract.DBConfig) error {
-		if gormConfig.Logger == nil {
-			gormConfig.Logger = config.Logger
-		}
-		config.Config = gormConfig
+		f(config)
 		return nil
 	}
 }
