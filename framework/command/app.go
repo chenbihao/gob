@@ -235,7 +235,7 @@ var appRestartCommand = &cobra.Command{
 			}
 			if util.CheckProcessExist(pid) {
 				// 杀死进程
-				if err := util.KillProcess(pid, syscall.SIGTERM); err != nil {
+				if err := util.KillProcess(pid); err != nil {
 					return err
 				}
 				// 获取closeWait
@@ -292,7 +292,7 @@ var appStopCommand = &cobra.Command{
 				return err
 			}
 			// 发送SIGTERM命令
-			if err := util.KillProcess(pid, syscall.SIGTERM); err != nil {
+			if err := util.KillProcess(pid); err != nil {
 				return err
 			}
 			if err := os.WriteFile(serverPidFile, []byte{}, 0644); err != nil {

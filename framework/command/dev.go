@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"syscall"
 	"time"
 
 	"github.com/chenbihao/gob/framework"
@@ -302,7 +301,7 @@ func (p *Proxy) firstBuildBackend() error {
 func (p *Proxy) restartBackend() error {
 	// 杀死之前的进程
 	if p.backendPid != 0 {
-		util.KillProcess(p.backendPid, syscall.SIGKILL)
+		util.KillProcess(p.backendPid)
 		p.backendPid = 0
 	}
 
@@ -327,7 +326,7 @@ func (p *Proxy) restartBackend() error {
 func (p *Proxy) restartFrontend() error {
 	// 杀死之前的进程
 	if p.frontendPid != 0 {
-		util.KillProcess(p.frontendPid, syscall.SIGKILL)
+		util.KillProcess(p.frontendPid)
 		p.frontendPid = 0
 	}
 

@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -57,7 +57,7 @@ func (s LocalDistributedService) Select(serviceName string, appID string, holdTi
 	r0, _, _ := syscall.Syscall6(addr, 5, lock.Fd(), 0, 0, 0, 1, 0)
 	if 0 == int(r0) {
 		// 加锁失败，只读的形式读取占用中的appid
-		selectAppIDByt, readErr := ioutil.ReadAll(lock)
+		selectAppIDByt, readErr := io.ReadAll(lock)
 		if readErr != nil {
 			if strings.Contains(readErr.Error(), "another process has locked a portion of the file.") {
 				return "ReadFileFailed", nil
@@ -79,6 +79,8 @@ func (s LocalDistributedService) Select(serviceName string, appID string, holdTi
 
 			// 释放文件
 			lock.Close()
+			// 删除文件锁对应的文件
+			os.Remove(lockFile)
 		}()
 		// 创建选举结果有效的计时器
 		timer := time.NewTimer(holdTime)

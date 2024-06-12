@@ -5,8 +5,6 @@ package util
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"syscall"
 )
 
 // SetProcessTitle 设置进程名
@@ -25,21 +23,12 @@ func CheckProcessExist(pid int) bool {
 }
 
 // KillProcess
-func KillProcess(pid int, signal syscall.Signal) (err error) {
+func KillProcess(pid int) (err error) {
 	// 获取进程信息
-	if _, err = os.FindProcess(pid); err != nil {
-		fmt.Printf("Failed to find process: %v\n", err)
-		return
-	}
-	return WinKillProcess(pid)
-}
-
-func WinKillProcess(pid int) error {
-	cmd := exec.Command("taskkill", "/F", "/PID", fmt.Sprintf("%d", pid))
-	out, err := cmd.CombinedOutput()
+	p, err := os.FindProcess(pid)
 	if err != nil {
-		fmt.Println(string(out))
+		fmt.Printf("Failed to find process: %v\n", err)
 		return err
 	}
-	return nil
+	return p.Kill()
 }
