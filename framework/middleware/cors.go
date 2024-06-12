@@ -91,7 +91,6 @@ func NewCORS(opts ...CORSOption) *CORS {
 	for _, opt := range opts {
 		opt(&cors)
 	}
-
 	return &cors
 }
 

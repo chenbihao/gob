@@ -5,7 +5,6 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/gin"
 	"github.com/chenbihao/gob/framework/middleware"
-	"github.com/chenbihao/gob/framework/middleware/cors"
 	"github.com/chenbihao/gob/framework/middleware/gzip"
 	"github.com/chenbihao/gob/framework/middleware/static"
 
@@ -27,9 +26,9 @@ func Routes(r *gin.Engine) {
 	r.Use(static.Serve("/", static.LocalFile("./gob_frontend/dist", false)))
 
 	// 使用全链路追踪
-	r.Use(middleware.Trace())
+	r.Use(middleware.NewTrace().Func())
 	// 使用中间件迁移工具迁移下来的 cors 中间件
-	r.Use(cors.Default())
+	r.Use(middleware.NewCORS().Func())
 	// 使用中间件迁移工具迁移下来的 gzip 中间件
 	r.Use(gzip.Gzip(gzip.BestSpeed))
 

@@ -9,6 +9,7 @@ require (
 	github.com/bytedance/sonic v1.10.2
 	github.com/cpuguy83/go-md2man/v2 v2.0.3
 	github.com/dave/jennifer v1.7.0
+	github.com/disiqueira/gotree v1.0.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-contrib/sse v0.1.0
 	github.com/go-git/go-git/v5 v5.11.0
