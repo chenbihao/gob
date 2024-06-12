@@ -13,6 +13,15 @@ description:
 ## 提供方法：
 ```go 
 type ORM interface {
+	// 获取 DB
 	GetDB(option ...DBOption) (*gorm.DB, error)
+
+	// CanConnect 是否可以连接
+	CanConnect(ctx context.Context, db *gorm.DB) (bool, error)
+
+	// Table 相关
+	GetTables(ctx context.Context, db *gorm.DB) ([]string, error)
+	HasTable(ctx context.Context, db *gorm.DB, table string) (bool, error)
+	GetTableColumns(ctx context.Context, db *gorm.DB, table string) ([]TableColumn, error)
 }
 ```
