@@ -6,8 +6,12 @@ import (
 	"time"
 )
 
-// 计时
-func Cost() gin.HandlerFunc {
+// Cost struct
+type Cost struct {
+}
+
+// Func 计时
+func (c *Cost) Func() gin.HandlerFunc {
 	// 使用函数回调
 	return func(c *gin.Context) {
 		// 记录开始时间

@@ -5,8 +5,16 @@ import (
 	"github.com/chenbihao/gob/framework/gin"
 )
 
-// Trace 机制，全链路ID
-func Trace() gin.HandlerFunc {
+// Trace ...
+type Trace struct{}
+
+// NewTrace ...
+func NewTrace() *Trace {
+	return &Trace{}
+}
+
+// Func 全链路ID
+func (t *Trace) Func() gin.HandlerFunc {
 	// 使用函数回调
 	return func(c *gin.Context) {
 		tracer := c.MustMake(contract.TraceKey).(contract.Trace)
