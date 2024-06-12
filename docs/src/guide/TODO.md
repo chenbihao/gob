@@ -44,6 +44,7 @@ description:
 
 - [ ] 将过时或停止维护的三方库换掉
     - [ ] survey 换成 bubbletea
+    - [ ] github 的调用限制重构复用
     - [ ] gspt 构建出错 ， 需要交叉编译
 
 - [ ] 业务单测的构建

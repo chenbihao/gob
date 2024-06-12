@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -57,6 +58,7 @@ var newCommand = &cobra.Command{
 			}
 			err := survey.AskOne(prompt, &name)
 			if err != nil {
+				fmt.Println("任务终止：" + err.Error())
 				return err
 			}
 
@@ -69,11 +71,13 @@ var newCommand = &cobra.Command{
 				}
 				err := survey.AskOne(prompt2, &isForce)
 				if err != nil {
+					fmt.Println("任务终止：" + err.Error())
 					return err
 				}
 
 				if isForce {
 					if err := os.RemoveAll(folder); err != nil {
+						fmt.Println("任务终止：" + err.Error())
 						return err
 					}
 				} else {
@@ -88,6 +92,7 @@ var newCommand = &cobra.Command{
 			}
 			err := survey.AskOne(prompt, &mod)
 			if err != nil {
+				fmt.Println("任务终止：" + err.Error())
 				return err
 			}
 			if mod == "" {
@@ -96,24 +101,98 @@ var newCommand = &cobra.Command{
 		}
 		{
 			// 获取gob的版本
-			client := github.NewClient(nil)
-			prompt := &survey.Input{
-				Message: "请输入版本名称(参考 https://github.com/chenbihao/gob/releases，默认为最新版本)：",
-			}
-			err := survey.AskOne(prompt, &version)
+			// 检测到github的连接
+			fmt.Println("gob源码从github.com中下载，正在检测到github.com的连接")
+			var client *github.Client
+			client = github.NewClient(nil)
+			perPage := 10
+			opts := &github.ListOptions{Page: 1, PerPage: perPage}
+			releases, rsp, err := client.Repositories.ListReleases(context.Background(), Owner, Repo, opts)
+			fmt.Println(rsp.Rate.String())
 			if err != nil {
+				if _, ok := err.(*github.RateLimitError); ok {
+					fmt.Println("错误提示：" + err.Error())
+					fmt.Println("说明你的出口ip遇到github的调用限制，可以使用github.com帐号登录方式来增加调用次数")
+					githubUserName := ""
+					prompt := &survey.Input{
+						Message: "请输入github帐号用户名：",
+					}
+					if err := survey.AskOne(prompt, &githubUserName); err != nil {
+						fmt.Println("任务终止：" + err.Error())
+						return nil
+					}
+					githubPassword := ""
+					promptPwd := &survey.Password{
+						Message: "请输入github帐号密码：",
+					}
+					if err := survey.AskOne(promptPwd, &githubPassword); err != nil {
+						fmt.Println("任务终止：" + err.Error())
+						return nil
+					}
+
+					httpClient := &http.Client{
+						Transport: &http.Transport{
+							Proxy: func(req *http.Request) (*url.URL, error) {
+								req.SetBasicAuth(githubUserName, githubPassword)
+								return nil, nil
+							},
+						},
+					}
+					client = github.NewClient(httpClient)
+					releases, rsp, err = client.Repositories.ListReleases(context.Background(), Owner, Repo, opts)
+					if err != nil {
+						fmt.Println("错误提示：" + err.Error())
+						fmt.Println("用户名密码错误，请重新开始")
+						return nil
+					}
+					if len(releases) == 0 {
+						fmt.Println("用户名密码错误，请重新开始")
+						return nil
+					}
+					fmt.Println(rsp.Rate.String())
+				} else {
+					fmt.Println("github.com的连接异常：" + err.Error())
+					return nil
+				}
+			}
+			fmt.Println("gob源码从github.com中下载，github.com的连接正常")
+
+			// 这里下面的client都是可用的了
+			if rsp.LastPage != 0 {
+				opts = &github.ListOptions{Page: rsp.LastPage, PerPage: perPage}
+				releases, rsp, err = client.Repositories.ListReleases(context.Background(), Owner, Repo, opts)
+				if err != nil {
+					fmt.Println("任务终止：" + err.Error())
+					return nil
+				}
+				fmt.Println(rsp.Rate.String())
+			}
+			fmt.Printf("最新的%v个版本\n", len(releases))
+			for _, releaseTmp := range releases {
+				fmt.Println(releaseTmp.GetTagName())
+			}
+
+			prompt := &survey.Input{
+				Message: "请输入一个版本(更多可以参考 " + GitHubReleasesUrl + "，默认为最新版本)：",
+			}
+			if err = survey.AskOne(prompt, &version); err != nil {
+				fmt.Println("任务终止：" + err.Error())
 				return err
 			}
 			if version != "" {
 				// 确认版本是否正确
-				release, _, err = client.Repositories.GetReleaseByTag(context.Background(), "chenbihao", "gob", version)
+				release, _, err = client.Repositories.GetReleaseByTag(context.Background(), Owner, Repo, version)
 				if err != nil || release == nil {
-					fmt.Println("版本不存在，创建应用失败，请参考 https://github.com/chenbihao/gob/releases")
+					fmt.Println("版本不存在，创建应用失败，请参考 " + GitHubReleasesUrl)
 					return nil
 				}
 			}
 			if version == "" {
-				release, _, err = client.Repositories.GetLatestRelease(context.Background(), "chenbihao", "gob")
+				release, _, err = client.Repositories.GetLatestRelease(context.Background(), Owner, Repo)
+				if err != nil {
+					fmt.Println("获取最新版本失败 " + err.Error())
+					return nil
+				}
 				version = release.GetTagName()
 			}
 		}
@@ -151,7 +230,7 @@ var newCommand = &cobra.Command{
 		}
 
 		// 获取folder下的gob-xxx相关解压目录
-		fInfos, err := ioutil.ReadDir(templateFolder)
+		fInfos, err := os.ReadDir(templateFolder)
 		if err != nil {
 			return err
 		}
@@ -184,7 +263,7 @@ var newCommand = &cobra.Command{
 				fmt.Println("更新文件:" + path)
 				b = bytes.ReplaceAll(b, []byte("module github.com/chenbihao/gob"), []byte("module "+mod))
 				b = bytes.ReplaceAll(b, []byte("require ("), []byte("require (\n\tgithub.com/chenbihao/gob "+version))
-				err = ioutil.WriteFile(path, b, 0644)
+				err = os.WriteFile(path, b, 0644)
 				if err != nil {
 					return err
 				}
@@ -194,12 +273,11 @@ var newCommand = &cobra.Command{
 			if isContain {
 				fmt.Println("更新文件:" + path)
 				b = bytes.ReplaceAll(b, []byte("github.com/chenbihao/gob/app"), []byte(mod+"/app"))
-				err = ioutil.WriteFile(path, b, 0644)
+				err = os.WriteFile(path, b, 0644)
 				if err != nil {
 					return err
 				}
 			}
-
 			return nil
 		})
 		fmt.Println("创建应用结束")
