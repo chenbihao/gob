@@ -50,7 +50,7 @@ var buildCommand = &cobra.Command{
 
 var buildSelfCommand = &cobra.Command{
 	Use:   "self",
-	Short: "编译 gob 命令",
+	Short: "编译应用命令",
 	RunE: func(c *cobra.Command, args []string) error {
 		fmt.Println("=============  后端编译开始 ============")
 		path, err := exec.LookPath("go")
@@ -65,7 +65,6 @@ var buildSelfCommand = &cobra.Command{
 			fmt.Println("=============  后端编译失败 ============")
 			return err
 		}
-		fmt.Println("build success please run ./gob direct")
 		fmt.Println("=============  后端编译成功 ============")
 		return nil
 	},

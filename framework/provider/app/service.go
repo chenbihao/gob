@@ -8,7 +8,9 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
 	"github.com/google/uuid"
+	"os"
 	"path/filepath"
+	"strings"
 )
 
 // AppService 代表 gob 框架的 App 实现
@@ -18,6 +20,8 @@ type AppService struct {
 	appID      string              // 表示当前这个app的唯一id, 可以用于分布式锁等
 
 	configMap map[string]string // 配置加载
+	envMap    map[string]string // 环境变量加载
+	argsMap   map[string]string // 参数加载
 }
 
 var _ contract.App = (*AppService)(nil)
@@ -32,7 +36,13 @@ func NewGobApp(params ...interface{}) (interface{}, error) {
 	baseFolder := params[1].(string)
 
 	appID := uuid.New().String()
-	return &AppService{baseFolder: baseFolder, container: container, appID: appID}, nil
+	configMap := map[string]string{}
+
+	gobApp := &AppService{baseFolder: baseFolder, container: container, appID: appID, configMap: configMap}
+	_ = gobApp.loadEnvMaps()
+	_ = gobApp.loadArgsMaps()
+	return gobApp, nil
+
 }
 
 // AppID 表示当前这个app的唯一id, 可以用于分布式锁等
@@ -42,7 +52,7 @@ func (s *AppService) AppID() string {
 
 // Version 实现版本
 func (s *AppService) Version() string {
-	return "0.1.11"
+	return "0.1.12"
 }
 
 // BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
@@ -50,7 +60,10 @@ func (s *AppService) BaseFolder() string {
 	if s.baseFolder != "" {
 		return s.baseFolder
 	}
-
+	baseFolder := s.getConfigBySequence("base_folder", "BASE_FOLDER", "app.path.base_folder")
+	if baseFolder != "" {
+		return baseFolder
+	}
 	// 如果参数也没有，使用默认的当前路径
 	return util.GetExecDirectory()
 }
@@ -59,7 +72,8 @@ func (s *AppService) BaseFolder() string {
 
 // AppFolder 定义业务代码所在的目录，用于监控文件变更使用
 func (s *AppService) AppFolder() string {
-	if val, ok := s.configMap["app_folder"]; ok {
+	val := s.getConfigBySequence("app_folder", "APP_FOLDER", "app.path.app_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.BaseFolder(), "app")
@@ -67,7 +81,8 @@ func (s *AppService) AppFolder() string {
 
 // ConfigFolder  表示配置文件地址
 func (s *AppService) ConfigFolder() string {
-	if val, ok := s.configMap["config_folder"]; ok {
+	val := s.getConfigBySequence("config_folder", "CONFIG_FOLDER", "app.path.config_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.BaseFolder(), "config")
@@ -75,7 +90,8 @@ func (s *AppService) ConfigFolder() string {
 
 // StorageFolder 存储文件地址
 func (s *AppService) StorageFolder() string {
-	if val, ok := s.configMap["storage_folder"]; ok {
+	val := s.getConfigBySequence("storage_folder", "STORAGE_FOLDER", "app.path.storage_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.BaseFolder(), "storage")
@@ -83,7 +99,8 @@ func (s *AppService) StorageFolder() string {
 
 // TestFolder 定义测试需要的信息
 func (s *AppService) TestFolder() string {
-	if val, ok := s.configMap["test_folder"]; ok {
+	val := s.getConfigBySequence("test_folder", "TEST_FOLDER", "app.path.test_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.BaseFolder(), "test")
@@ -91,7 +108,8 @@ func (s *AppService) TestFolder() string {
 
 // DeployFolder 存放部署的时候创建的文件夹
 func (s AppService) DeployFolder() string {
-	if val, ok := s.configMap["deploy_folder"]; ok {
+	val := s.getConfigBySequence("deploy_folder", "DEPLOY_FOLDER", "app.path.deploy_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.BaseFolder(), "deploy")
@@ -101,7 +119,8 @@ func (s AppService) DeployFolder() string {
 
 // ConsoleFolderr 定义业务自己的命令行服务提供者地址
 func (s *AppService) ConsoleFolder() string {
-	if val, ok := s.configMap["console_folder"]; ok {
+	val := s.getConfigBySequence("console_folder", "CONSOLE_FOLDER", "app.path.console_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.AppFolder(), "console")
@@ -109,7 +128,8 @@ func (s *AppService) ConsoleFolder() string {
 
 // HttpFolderr 定义业务自己的web服务提供者地址
 func (s *AppService) HttpFolder() string {
-	if val, ok := s.configMap["http_folder"]; ok {
+	val := s.getConfigBySequence("http_folder", "HTTP_FOLDER", "app.path.http_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.AppFolder(), "http")
@@ -117,7 +137,8 @@ func (s *AppService) HttpFolder() string {
 
 // ProviderFolder 定义业务自己的通用服务提供者地址
 func (s *AppService) ProviderFolder() string {
-	if val, ok := s.configMap["provider_folder"]; ok {
+	val := s.getConfigBySequence("provider_folder", "PROVIDER_FOLDER", "app.path.provider_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.AppFolder(), "provider")
@@ -125,7 +146,8 @@ func (s *AppService) ProviderFolder() string {
 
 // CommandFolder 定义业务定义的命令
 func (s *AppService) CommandFolder() string {
-	if val, ok := s.configMap["command_folder"]; ok {
+	val := s.getConfigBySequence("command_folder", "COMMAND_FOLDER", "app.path.command_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.ConsoleFolder(), "command")
@@ -133,7 +155,8 @@ func (s *AppService) CommandFolder() string {
 
 // MiddlewareFolder 定义业务自己定义的中间件
 func (s *AppService) MiddlewareFolder() string {
-	if val, ok := s.configMap["middleware_folder"]; ok {
+	val := s.getConfigBySequence("middleware_folder", "MIDDLEWARE_FOLDER", "app.path.middleware_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.HttpFolder(), "middleware")
@@ -144,7 +167,8 @@ func (s *AppService) MiddlewareFolder() string {
 // ---------------- storage 目录下
 
 func (s *AppService) LogFolder() string {
-	if val, ok := s.configMap["log_folder"]; ok {
+	val := s.getConfigBySequence("log_folder", "LOG_FOLDER", "app.path.log_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.StorageFolder(), "log")
@@ -152,10 +176,60 @@ func (s *AppService) LogFolder() string {
 
 // RuntimeFolder 定义业务的运行中间态信息
 func (s *AppService) RuntimeFolder() string {
-	if val, ok := s.configMap["runtime_folder"]; ok {
+	val := s.getConfigBySequence("runtime_folder", "RUNTIME_FOLDER", "app.path.runtime_folder")
+	if val != "" {
 		return val
 	}
 	return filepath.Join(s.StorageFolder(), "runtime")
+}
+
+// GetConfigByDefault 默认获取配置项的方法
+// 配置优先级：参数>环境变量>配置文件
+func (s *AppService) getConfigBySequence(argsKey string, envKey string, configKey string) string {
+	if s.argsMap != nil {
+		if val, ok := s.argsMap[argsKey]; ok {
+			return val
+		}
+	}
+	if s.envMap != nil {
+		if val, ok := s.envMap[envKey]; ok {
+			return val
+		}
+	}
+	if s.configMap != nil {
+		if val, ok := s.configMap[configKey]; ok {
+			return val
+		}
+	}
+	return ""
+}
+
+func (s *AppService) loadEnvMaps() error {
+	if s.envMap == nil {
+		s.envMap = map[string]string{}
+	}
+	// 读取环境变量
+	for _, env := range os.Environ() {
+		pair := strings.SplitN(env, "=", 2)
+		s.envMap[pair[0]] = pair[1]
+	}
+	return nil
+}
+
+func (s *AppService) loadArgsMaps() error {
+	if s.argsMap == nil {
+		s.argsMap = map[string]string{}
+	}
+	// load args, must format : --key=value
+	for _, arg := range os.Args {
+		if strings.HasPrefix(arg, "--") {
+			pair := strings.SplitN(strings.TrimPrefix(arg, "--"), "=", 2)
+			if len(pair) == 2 {
+				s.argsMap[pair[0]] = pair[1]
+			}
+		}
+	}
+	return nil
 }
 
 // LoadAppConfig 加载配置map
