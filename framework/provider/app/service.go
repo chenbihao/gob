@@ -52,7 +52,7 @@ func (s *AppService) AppID() string {
 
 // Version 实现版本
 func (s *AppService) Version() string {
-	return "0.1.12"
+	return GobVersion
 }
 
 // BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录

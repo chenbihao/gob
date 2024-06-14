@@ -22,12 +22,12 @@ import (
 const ORMKey = "gob:orm"
 
 type TableColumn struct {
-	Field   string `gorm:"column:Field"`
-	Type    string `gorm:"column:Type"`
-	Null    string `gorm:"column:Null"`
-	Key     string `gorm:"column:key"`
-	Default string `gorm:"column:Default"`
-	Extra   string `gorm:"column:Extra"`
+	Field   string `gorm:"column:Field"`   // 列名
+	Type    string `gorm:"column:Type"`    // 数据类型
+	Null    bool   `gorm:"column:Null"`    // 是否为空
+	Key     bool   `gorm:"column:key"`     // 主键类型
+	Default string `gorm:"column:Default"` // 默认值
+	Comment string `json:"Comment"`        // 注释信息
 }
 
 // ORM 表示传入的参数

@@ -13,7 +13,7 @@ import (
 // SafeGo 进行安全的goroutine调用
 // 第一个参数是context接口，如果还实现了Container接口，且绑定了日志服务，则使用日志服务
 // 第二个参数是匿名函数handler, 进行最终的业务逻辑
-// SafeGo 函数并不会返回error，panic都会进入hade的日志服务
+// SafeGo 函数并不会返回error，panic都会进入gob的日志服务
 func SafeGo(ctx context.Context, handler func()) {
 	var logger contract.Log
 	if container, ok := ctx.(framework.Container); ok {

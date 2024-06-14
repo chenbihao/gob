@@ -59,6 +59,7 @@ func (gen *ApiGenerator) GenModelFile(ctx context.Context, file string) error {
 			field.String()
 		}
 		field.Tag(map[string]string{"gorm": column.Field, "json": column.Field + ",omitempty"})
+		//field.Comment(column.Comment)
 		structs = append(structs, field)
 	}
 

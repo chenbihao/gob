@@ -10,7 +10,7 @@ import (
 	"github.com/jianfengye/collection"
 	"github.com/pkg/errors"
 	"gorm.io/gen"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -52,7 +52,8 @@ var modelGenCommand = &cobra.Command{
 		tables = append(tables, dbTables...)
 
 		genTables := make([]string, 0, len(dbTables)+1)
-		{
+
+		if table == "" {
 			// 第一步是一个交互命令行工具，首先展示要生成的表列表选择：
 			prompt := &survey.MultiSelect{
 				Message: "请选择要生成模型的表格：",
@@ -63,15 +64,24 @@ var modelGenCommand = &cobra.Command{
 			if collection.NewStrCollection(genTables).Contains("*") {
 				genTables = dbTables
 			}
-		}
-		if len(genTables) == 0 {
-			return errors.New("未选择任何需要生成模型的数据表")
+			if len(genTables) == 0 {
+				return errors.New("未选择任何需要生成模型的数据表")
+			}
+		} else {
+			hasTable, err := gormService.HasTable(c.Context(), db, table)
+			if err != nil {
+				return fmt.Errorf("数据库连接失败，表格 %v, 错误 %v", table, err)
+			}
+			if hasTable == false {
+				return fmt.Errorf("表格 %v 不存在", table)
+			}
+			genTables = append(genTables, table)
 		}
 
 		// 第二步确认要生成的目录和文件，以及覆盖提示：
 		existFileNames := []string{}
 		if util.Exists(output) {
-			files, err := ioutil.ReadDir(output)
+			files, err := os.ReadDir(output)
 			if err != nil {
 				return err
 			}
@@ -136,16 +146,13 @@ var modelGenCommand = &cobra.Command{
 		}
 
 		// 生成模型文件
-
 		g := gen.NewGenerator(gen.Config{
-			ModelPkgPath: output,
-
+			ModelPkgPath:      output,
 			FieldNullable:     isSelectRule("FieldNullable", selectRuleTips, ruleTips),
 			FieldCoverable:    isSelectRule("FieldCoverable", selectRuleTips, ruleTips),
 			FieldWithIndexTag: isSelectRule("FieldWithIndexTag", selectRuleTips, ruleTips),
 			FieldWithTypeTag:  isSelectRule("FieldWithTypeTag", selectRuleTips, ruleTips),
-
-			Mode: gen.WithDefaultQuery,
+			Mode:              gen.WithDefaultQuery,
 		})
 
 		g.UseDB(db)

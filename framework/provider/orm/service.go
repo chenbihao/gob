@@ -4,6 +4,7 @@ package orm
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"sync"
 	"time"
 
@@ -38,6 +39,17 @@ func NewGormService(params ...interface{}) (interface{}, error) {
 	}, nil
 }
 
+func (app *GormService) CanConnect(ctx context.Context, db *gorm.DB) (bool, error) {
+	sqlDb, err := db.DB()
+	if err != nil {
+		return false, errors.Wrap(err, "CanConnect")
+	}
+	if err := sqlDb.Ping(); err != nil {
+		return false, errors.Wrap(err, "CanConnect Ping error")
+	}
+	return true, nil
+}
+
 // GetDB 获取DB实例
 func (app *GormService) GetDB(option ...contract.DBOption) (*gorm.DB, error) {
 
@@ -47,9 +59,8 @@ func (app *GormService) GetDB(option ...contract.DBOption) (*gorm.DB, error) {
 	config := GetBaseConfig(app.container)
 
 	// 设置 Logger
-	ormLogger := NewOrmLogger(logService)
 	config.Config = &gorm.Config{
-		Logger: ormLogger,
+		Logger: NewOrmLogger(logService),
 	}
 
 	// option 对 opt 进行修改
@@ -95,6 +106,9 @@ func (app *GormService) GetDB(option ...contract.DBOption) (*gorm.DB, error) {
 	case "clickhouse":
 		db, err = gorm.Open(clickhouse.Open(config.Dsn), config)
 	}
+	if err != nil {
+		return db, err
+	}
 
 	// 设置对应的连接池配置
 	sqlDB, err := db.DB()
@@ -130,8 +144,6 @@ func (app *GormService) GetDB(option ...contract.DBOption) (*gorm.DB, error) {
 	}
 
 	// 挂载到map中，结束配置
-	if err == nil {
-		app.dbs[config.Dsn] = db
-	}
+	app.dbs[config.Dsn] = db
 	return db, err
 }

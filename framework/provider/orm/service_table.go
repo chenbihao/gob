@@ -22,12 +22,29 @@ func (app *GormService) HasTable(ctx context.Context, db *gorm.DB, table string)
 }
 
 func (app *GormService) GetTableColumns(ctx context.Context, db *gorm.DB, table string) ([]contract.TableColumn, error) {
-	// 执行原始的SQL语句
-	var columns []contract.TableColumn
-	result := db.Raw("SHOW COLUMNS FROM " + table).Scan(&columns)
-	if result.Error != nil {
-		// 处理错误
-		return nil, result.Error
+	columnTypes, err := db.Migrator().ColumnTypes(table)
+	if err != nil {
+		return nil, err
 	}
+
+	var columns []contract.TableColumn
+	for _, ct := range columnTypes {
+		name := ct.Name()
+		columnType, _ := ct.ColumnType()
+		nullable, _ := ct.Nullable()
+		primaryKey, _ := ct.PrimaryKey()
+		defaultValue, _ := ct.DefaultValue()
+		comment, _ := ct.Comment()
+		c := contract.TableColumn{
+			Field:   name,
+			Type:    columnType,
+			Null:    nullable,
+			Key:     primaryKey,
+			Default: defaultValue,
+			Comment: comment,
+		}
+		columns = append(columns, c)
+	}
+
 	return columns, nil
 }

@@ -44,8 +44,7 @@ var modelApiCommand = &cobra.Command{
 			return errors.Wrap(err, "获取数据库表格失败")
 		}
 
-		table := ""
-		{
+		if table == "" {
 			// 第一步是一个交互命令行工具，首先展示要生成的表列表选择：
 			prompt := &survey.Select{
 				Message: "请选择要生成模型的表格：",
@@ -58,7 +57,6 @@ var modelApiCommand = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("数据库连接失败，表格 %v, 错误 %v", table, err)
 		}
-
 		if hasTable == false {
 			return fmt.Errorf("表格 %v 不存在", table)
 		}
@@ -159,7 +157,7 @@ var modelApiCommand = &cobra.Command{
 
 		fmt.Println("=======================")
 		fmt.Println("生成结束，请记得挂载路由到route.go中")
-		fmt.Println("!!! hade代码生成器按照既定程序生成文件，请自行仔细检查代码逻辑 !!!")
+		fmt.Println("!!! 代码生成器按照既定程序生成文件，请自行仔细检查代码逻辑 !!!")
 		fmt.Println("=======================")
 		return nil
 	},

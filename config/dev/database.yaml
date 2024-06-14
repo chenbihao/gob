@@ -18,6 +18,7 @@ default:
   database: demo # 数据库
   username: demo # 用户名
   password: "123456" # 密码
+  allow_native_passwords: true
   charset: utf8mb4 # 字符集
   collation: utf8mb4_unicode_ci # 字符序
   timeout: 10s # 连接超时
@@ -29,6 +30,10 @@ default:
   conn_max_idle: 10 # 连接池最大空闲连接数
   conn_max_open: 20 # 连接池最大连接数
   conn_max_lifetime: 1h # 连接数最大生命周期
+
+#default:
+#  driver: sqlite # 连接驱动
+#  dsn: D:\dev-project\0.demo\out\box.db
 
 read:
   driver: mysql # 连接驱动

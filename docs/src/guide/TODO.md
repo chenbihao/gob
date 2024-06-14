@@ -12,8 +12,9 @@ description:
     - [ ] 梳理三方库引入
 - [ ] 梳理新版本 go 废弃 API，换成新的
 - [ ] 统一 provider 注册方法 （`func (provider *GormProvider) Register` 里的调用 new 命名）
-- [ ] 补充 command 、contract 文件开头说明文档，方便查看（甚至改成支持 doc）
-    - [ ] 包括命令说明、可选配置项
+- [x] 补充 command 、contract 文件开头说明文档，方便查看（甚至改成支持 doc）
+    - [x] command：包括命令说明、可选配置项
+    - [ ] contract：包括对应命令、配置项说明
 - [ ] 部分 linux 内容未测试
     - [ ] 条件编译
     - [ ] 守护进程模式 `app start --daemon=true`
@@ -44,6 +45,7 @@ description:
 
 - [ ] 将过时或停止维护的三方库换掉
     - [ ] survey 换成 bubbletea
+      - [ ] 命令行支持静默运行参数
     - [ ] github 的调用限制重构复用
     - [ ] gspt 构建出错 ， 需要交叉编译
 
@@ -53,6 +55,10 @@ description:
     - [ ] 抽取配置等魔术编码，例如 `"app.pid"` 等
     - [ ] 获取各类 Folder 时就校验并判断，而不是分散在 app 或者 cron 服务里判断
     - [ ] win 下不支持 Daemon，兼容成后台运行（appDaemon）
+
+- [ ] mode 代码生成功能优化
+  - [ ] 生成更符合业务调用场景
+  - [ ] 其他数据源如sqlite的字段优化
 
 - [ ] 数据库重连重试机制
 - [ ] cache 服务当配置了 redis，并且有 redis 相关配置时，优先读取 redis 配置
