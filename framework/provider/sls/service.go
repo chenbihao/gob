@@ -2,17 +2,17 @@ package sls
 
 import (
 	"github.com/aliyun/aliyun-log-go-sdk/producer"
-	"github.com/gohade/hade/framework"
-	"github.com/gohade/hade/framework/contract"
+	"github.com/chenbihao/gob/framework"
+	"github.com/chenbihao/gob/framework/contract"
 )
 
-type HadeSLSService struct {
+type SLSService struct {
 	producerInstance *producer.Producer
 	project          string // SLS 日志项目
 	logstore         string // SLS 日志库
 }
 
-func NewHadeSLSService(params ...interface{}) (interface{}, error) {
+func NewSLSService(params ...interface{}) (interface{}, error) {
 	container := params[0].(framework.Container)
 	configService := container.MustMake(contract.ConfigKey).(contract.Config)
 
@@ -30,21 +30,21 @@ func NewHadeSLSService(params ...interface{}) (interface{}, error) {
 	producerInstance := producer.InitProducer(producerConfig)
 
 	producerInstance.Start()
-	return &HadeSLSService{
+	return &SLSService{
 		producerInstance: producerInstance,
 		project:          project,
 		logstore:         logstore,
 	}, nil
 }
 
-func (sls *HadeSLSService) GetSLSInstance() (*producer.Producer, error) {
+func (sls *SLSService) GetSLSInstance() (*producer.Producer, error) {
 	return sls.producerInstance, nil
 }
 
-func (sls *HadeSLSService) GetProject() (string, error) {
+func (sls *SLSService) GetProject() (string, error) {
 	return sls.project, nil
 }
 
-func (sls *HadeSLSService) GetLogstore() (string, error) {
+func (sls *SLSService) GetLogstore() (string, error) {
 	return sls.logstore, nil
 }

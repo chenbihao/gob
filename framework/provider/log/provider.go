@@ -46,6 +46,8 @@ func (provider *LogProvider) Register(container framework.Container) framework.N
 		return services.NewConsoleLogService
 	case "custom":
 		return services.NewCustomLogService
+	case "aliyun_sls":
+		return services.NewSlsLog
 	default:
 		return services.NewConsoleLogService
 	}

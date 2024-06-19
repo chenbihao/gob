@@ -3,14 +3,14 @@ package services
 import (
 	"fmt"
 	"github.com/aliyun/aliyun-log-go-sdk/producer"
-	"github.com/gohade/hade/framework"
-	"github.com/gohade/hade/framework/contract"
+	"github.com/chenbihao/gob/framework"
+	"github.com/chenbihao/gob/framework/contract"
 	"io"
 	"time"
 )
 
-type HadeSlsLog struct {
-	HadeLog
+type SlsLog struct {
+	LogService
 }
 
 type SlsWriter struct {
@@ -19,17 +19,17 @@ type SlsWriter struct {
 	c framework.Container
 }
 
-// NewHadeSlsLog params sequence: level, ctxFielder, Formatter, map[string]interface(folder/file) aliyun sls log
-func NewHadeSlsLog(params ...interface{}) (interface{}, error) {
+// NewSlsLog params sequence: level, ctxFielder, Formatter, map[string]interface(folder/file) aliyun sls log
+func NewSlsLog(params ...interface{}) (interface{}, error) {
 	c := params[0].(framework.Container)
 	level := params[1].(contract.LogLevel)
 	ctxFielder := params[2].(contract.CtxFielder)
-	fomatter := params[3].(contract.Formatter)
+	formatter := params[3].(contract.Formatter)
 
-	log := &HadeSlsLog{}
+	log := &SlsLog{}
 	log.SetLevel(level)
 	log.SetCtxFielder(ctxFielder)
-	log.SetFormatter(fomatter)
+	log.SetFormatter(formatter)
 	slsWriter, err := NewSlsWriter(c)
 	if err != nil {
 		fmt.Println(err)

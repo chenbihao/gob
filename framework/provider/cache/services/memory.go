@@ -140,7 +140,7 @@ func (m *MemoryCache) Remember(ctx context.Context, key string, timeout time.Dur
 	if err := m.SetObj(ctx, key, objNew, timeout); err != nil {
 		return err
 	}
-	if err := m.GetObj(ctx, key, &obj); err != nil {
+	if err := m.GetObj(ctx, key, obj); err != nil {
 		return err
 	}
 	return nil

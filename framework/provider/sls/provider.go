@@ -1,34 +1,29 @@
 package sls
 
 import (
-	"github.com/gohade/hade/framework"
-	"github.com/gohade/hade/framework/contract"
+	"github.com/chenbihao/gob/framework"
+	"github.com/chenbihao/gob/framework/contract"
 )
 
-type HadeSLSProvider struct {
+type SLSProvider struct {
 }
 
-// Register registe a new function for make a service instance
-func (provider *HadeSLSProvider) Register(c framework.Container) framework.NewInstance {
-	return NewHadeSLSService
+func (provider *SLSProvider) Name() string {
+	return contract.SLSKey
 }
 
-// Boot will called when the service instantiate
-func (provider *HadeSLSProvider) Boot(c framework.Container) error {
-	return nil
+func (provider *SLSProvider) Register(c framework.Container) framework.NewInstance {
+	return NewSLSService
 }
 
-// IsDefer define whether the service instantiate when first make or register
-func (provider *HadeSLSProvider) IsDefer() bool {
+func (provider *SLSProvider) IsDefer() bool {
 	return true
 }
 
-// Params define the necessary params for NewInstance
-func (provider *HadeSLSProvider) Params(c framework.Container) []interface{} {
+func (provider *SLSProvider) Params(c framework.Container) []interface{} {
 	return []interface{}{c}
 }
 
-// Name define the name for this service
-func (provider *HadeSLSProvider) Name() string {
-	return contract.SLSKey
+func (provider *SLSProvider) Boot(c framework.Container) error {
+	return nil
 }
