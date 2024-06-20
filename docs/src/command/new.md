@@ -15,4 +15,4 @@ description:
 ## 支持配置：无
 
 ## 使用方法：
-
+稍后补全，可以使用`gob [command] help`命令获取相关帮助

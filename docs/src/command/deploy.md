@@ -44,4 +44,4 @@ backend: # 后端部署配置
 ssh 支持配置：详见 contract/redis.go
 
 ## 使用方法：
-
+稍后补全，可以使用`gob [command] help`命令获取相关帮助

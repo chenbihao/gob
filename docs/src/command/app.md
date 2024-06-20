@@ -28,4 +28,4 @@ ADDRESS				// 地址格式需符合 http.Server 的 Addr 格式
 ```
 
 ## 使用方法：
-
+稍后补全，可以使用`gob [command] help`命令获取相关帮助
