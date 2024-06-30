@@ -19,8 +19,9 @@ cache 服务提供丰富的接口，可以通过接口来操作缓存，目前�
 通过配置文件 `config/[env]/cache.yaml` 可以配置缓存服务的驱动和参数，如下是一个配置示例：
 
 ```yaml
-driver: memory 	# 连接驱动，可选 redis/memory
-... 			# 如果 driver: redis，则可配置项与redis服务一致
+# 连接驱动，可选 redis/memory
+# 如果 driver=redis，则可配置项与redis服务一致
+driver: memory
 ```
 */
 
