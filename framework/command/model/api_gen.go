@@ -2,12 +2,12 @@ package model
 
 import (
 	"context"
+	"github.com/chenbihao/gob/framework/util"
 	"github.com/dave/jennifer/jen"
 	"os"
 	"strings"
 
 	"github.com/chenbihao/gob/framework/contract"
-	"github.com/chenbihao/gob/framework/util/word"
 	_ "github.com/dave/jennifer/jen"
 	"github.com/pkg/errors"
 )
@@ -33,7 +33,7 @@ func (gen *ApiGenerator) GenModelFile(ctx context.Context, file string) error {
 	// table lower case
 	tableLower := strings.ToLower(gen.table)
 	// table camel title case
-	tableCamel := strings.Title(tableLower)
+	tableCamel := util.ToTitle(tableLower)
 	// model struct
 	tableModel := tableCamel + "Model"
 
@@ -41,7 +41,7 @@ func (gen *ApiGenerator) GenModelFile(ctx context.Context, file string) error {
 
 	structs := make([]jen.Code, 0, len(gen.columns)+1)
 	for _, column := range gen.columns {
-		field := jen.Id(word.ToTitleCamel(column.Field))
+		field := jen.Id(util.ToTitleCamel(column.Field))
 		switch column.Type {
 		case "int", "tinyint", "smallint", "mediumint", "bigint":
 			field.Int64()
@@ -83,7 +83,7 @@ func (gen *ApiGenerator) GenRouterFile(ctx context.Context, file string) error {
 	// table lower case
 	tableLower := strings.ToLower(gen.table)
 	// table camel title case
-	tableCamel := strings.Title(tableLower)
+	tableCamel := util.ToTitle(tableLower)
 	// Api struct
 	tableApi := tableCamel + "Api"
 
@@ -134,7 +134,7 @@ func (gen *ApiGenerator) GenApiCreateFile(ctx context.Context, file string) erro
 	table := gen.table
 	tableLower := strings.ToLower(gen.table)
 	// table camel title case
-	tableCamel := strings.Title(tableLower)
+	tableCamel := util.ToTitle(tableLower)
 	// Api struct
 	tableApi := tableCamel + "Api"
 	tableModel := tableCamel + "Model"
@@ -213,7 +213,7 @@ func (gen *ApiGenerator) GenApiDeleteFile(ctx context.Context, file string) erro
 	// table lower case
 	tableLower := strings.ToLower(gen.table)
 	// table camel title case
-	tableCamel := strings.Title(tableLower)
+	tableCamel := util.ToTitle(tableLower)
 	// Api struct
 	tableApi := tableCamel + "Api"
 	tableModel := tableCamel + "Model"
@@ -294,7 +294,7 @@ func (gen *ApiGenerator) GenApiListFile(ctx context.Context, file string) error 
 	// table lower case
 	tableLower := strings.ToLower(gen.table)
 	// table camel title case
-	tableCamel := strings.Title(tableLower)
+	tableCamel := util.ToTitle(tableLower)
 	// Api struct
 	tableApi := tableCamel + "Api"
 	tableModel := tableCamel + "Model"
@@ -373,7 +373,7 @@ func (gen *ApiGenerator) GenApiShowFile(ctx context.Context, file string) error 
 	// table lower case
 	tableLower := strings.ToLower(gen.table)
 	// table camel title case
-	tableCamel := strings.Title(tableLower)
+	tableCamel := util.ToTitle(tableLower)
 	// Api struct
 	tableApi := tableCamel + "Api"
 	tableModel := tableCamel + "Model"
@@ -445,7 +445,7 @@ func (gen *ApiGenerator) GenApiUpdateFile(ctx context.Context, file string) erro
 	// table lower case
 	tableLower := strings.ToLower(gen.table)
 	// table camel title case
-	tableCamel := strings.Title(tableLower)
+	tableCamel := util.ToTitle(tableLower)
 	// Api struct
 	tableApi := tableCamel + "Api"
 	tableModel := tableCamel + "Model"

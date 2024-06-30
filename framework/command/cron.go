@@ -7,7 +7,6 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
 	"github.com/sevlyar/go-daemon"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -160,7 +159,7 @@ var cronRestartCommand = &cobra.Command{
 		// GetPid
 		serverPidFile := filepath.Join(appService.RuntimeFolder(), "cron.pid")
 
-		content, err := ioutil.ReadFile(serverPidFile)
+		content, err := os.ReadFile(serverPidFile)
 		if err != nil {
 			return err
 		}
@@ -199,7 +198,7 @@ var cronStopCommand = &cobra.Command{
 		// GetPid
 		serverPidFile := filepath.Join(appService.RuntimeFolder(), "cron.pid")
 
-		content, err := ioutil.ReadFile(serverPidFile)
+		content, err := os.ReadFile(serverPidFile)
 		if err != nil {
 			return err
 		}
@@ -212,7 +211,7 @@ var cronStopCommand = &cobra.Command{
 			if err := util.KillProcess(pid); err != nil {
 				return err
 			}
-			if err := ioutil.WriteFile(serverPidFile, []byte{}, 0644); err != nil {
+			if err := os.WriteFile(serverPidFile, []byte{}, 0644); err != nil {
 				return err
 			}
 			fmt.Println("stop pid:", pid)
@@ -231,7 +230,7 @@ var cronStateCommand = &cobra.Command{
 		// GetPid
 		serverPidFile := filepath.Join(appService.RuntimeFolder(), "cron.pid")
 
-		content, err := ioutil.ReadFile(serverPidFile)
+		content, err := os.ReadFile(serverPidFile)
 		if err != nil {
 			return err
 		}

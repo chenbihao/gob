@@ -2,6 +2,7 @@ package framework
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 )
 
@@ -63,6 +64,7 @@ func (container *GobContainer) Bind(provider ServiceProvider) error {
 		method := provider.Register(container)
 		instance, err := method(params...)
 		if err != nil {
+			fmt.Println("bind service provider ", key, " error: ", err)
 			return errors.New(err.Error())
 		}
 		container.instances[key] = instance

@@ -5,23 +5,12 @@ description:
 ---
 # 待办
 
-## 梳理
+## 功能优化
 
-- [ ] 梳理引入包
-    - [ ] 梳理源码引入
-    - [ ] 梳理三方库引入
-- [ ] 梳理新版本 go 废弃 API，换成新的
-- [ ] 统一 provider 注册方法 （`func (provider *GormProvider) Register` 里的调用 new 命名）
-- [x] 补充 command 、contract 文件开头说明文档，方便查看（甚至改成支持 doc）
-    - [x] command：包括命令说明、可选配置项
-    - [ ] contract：包括对应命令、配置项说明
 - [ ] 部分 linux 内容未测试
     - [ ] 条件编译
     - [ ] 守护进程模式 `app start --daemon=true`
     - [ ] gspt 库（CGO_ENABLED=1）
-- [ ] 全部代码过一遍，看看有什么问题
-
-## 功能优化
 
 - [ ] 脚手架优化
     - [ ] 构建后读取配置问题（生产部署时如何读取配置问题）
@@ -69,10 +58,41 @@ description:
     - [ ] 远程配置中心
 
 - [ ] 蓝图模块功能
+    - [ ] 初始化蓝图流程（拉取蓝图模块、建表等）
     - [ ] 后台管理基础
     - [ ] 用户注册登录
         - [ ] RBAC 权限
         - [ ] 多租户模块
     - [ ] 博客
-  - [ ] ...
-  - [ ] ...
+    - [ ] ...
+    - [ ] ...
+
+## 已完成归档
+
+- [x] 梳理使用框架
+    - [x] 梳理源码引入
+        - cobra
+        - gin v1.9.1 + middleware
+    - [x] 梳理三方库引入
+        - fsnotify、go-daemon、goconvey、swaggo、cast
+        - survey/v2、go-git/v5、go-github/v62、go-redis/v9、cron/v3、gorm + gen
+        - gotree、uuid、xid、ratelimit、file-rotatelogs、mapstructure
+        - jennifer/jen、jianfengye/collection、kr/pretty
+    - [x] 梳理三方框架使用
+        - vue、vuepress
+
+- [x] 统一 provider 注册方法 （`func (provider *GormProvider) Register` 里的调用 new 命名）
+- [x] 补充 command 、contract 文件开头说明文档，方便查看（甚至改成支持 doc）
+    - [x] command：包括命令说明、可选配置项
+    - [x] contract：包括对应命令、配置项说明
+
+- [x] 梳理新版本 go 废弃 API，换成新的
+    - `io/ioutil` -> `os`、`io`
+    - `strings.Title` -> `cases.Title`
+    - `math/rand` -> `rand.Rand`
+
+
+
+
+
+

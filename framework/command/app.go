@@ -50,11 +50,46 @@ const AppCommandKey = "运行命令"
 var appAddress = ""   // app 启动地址
 var appDaemon = false // app 守护模式
 
+// appBaseArgs对应AppService中可以配置的参数
+var appStartArgs = []string{
+	"base_folder",
+	"config_folder",
+	"log_folder",
+	"http_folder",
+	"console_folder",
+	"storage_folder",
+	"provider_folder",
+	"middleware_folder",
+	"command_folder",
+	"runtime_folder",
+	"test_folder",
+	"deploy_folder",
+	"app_folder",
+}
+
+var appOtherArgs = []string{
+	"runtime_folder",
+	"storage_folder",
+	"base_folder",
+}
+
 // initAppCommand 初始化app命令和其子命令
 func initAppCommand() *cobra.Command {
 
 	appStartCommand.Flags().StringVar(&appAddress, "address", ":8080", "设置app启动的地址，默认为:8080端口")
 	appStartCommand.Flags().BoolVarP(&appDaemon, "daemon", "d", false, "以守护进程方式启动")
+
+	for _, arg := range appStartArgs {
+		tmp := ""
+		appStartCommand.Flags().StringVar(&tmp, arg, "", "base config for app service: "+arg)
+	}
+
+	for _, arg := range appOtherArgs {
+		tmp := ""
+		appRestartCommand.Flags().StringVar(&tmp, arg, "", "base config for app service: "+arg)
+		appStateCommand.Flags().StringVar(&tmp, arg, "", "base config for app service: "+arg)
+		appStopCommand.Flags().StringVar(&tmp, arg, "", "base config for app service: "+arg)
+	}
 
 	appCommand.AddCommand(appStartCommand)
 	appCommand.AddCommand(appRestartCommand)
@@ -117,6 +152,7 @@ var appStartCommand = &cobra.Command{
 		// 从kernel服务实例中获取引擎
 		core := kernelService.HttpEngine()
 
+		// 先读取参数，然后读取Env，然后读取配置文件
 		if appAddress == "" {
 			envService := container.MustMake(contract.EnvKey).(contract.Env)
 			if envService.Get("ADDRESS") != "" {
@@ -136,17 +172,14 @@ var appStartCommand = &cobra.Command{
 			Addr:    appAddress,
 		}
 
-		processName := "gob app"
-		if len(os.Args) > 0 {
-			processName = filepath.Base(os.Args[0]) + " app"
-		}
-
 		// 设置app的日志地址和进程id地址
 		appService := container.MustMake(contract.AppKey).(contract.App)
 
-		runtimeFolder := appService.RuntimeFolder()
-		serverPidFile := filepath.Join(runtimeFolder, "app.pid")
-
+		pidFolder := appService.RuntimeFolder()
+		serverPidFile := filepath.Join(pidFolder, "app.pid")
+		if err := util.CreateFolderIfNotExists(pidFolder); err != nil {
+			return err
+		}
 		logFolder := appService.LogFolder()
 		serverLogFile := filepath.Join(logFolder, "app.log")
 		if err := util.CreateFolderIfNotExists(logFolder); err != nil {
@@ -154,12 +187,29 @@ var appStartCommand = &cobra.Command{
 		}
 		currentFolder := util.GetExecDirectory()
 
+		processName := "gob app"
+		if len(os.Args) > 0 {
+			processName = filepath.Base(os.Args[0]) + " app"
+		}
+
 		// daemon 模式
 		if appDaemon {
 			// win不支持 daemon 模式
 			if util.IsWindows() {
 				return errors.New("daemon: Non-POSIX OS is not supported")
 			}
+
+			parentArgs := make([]string, 0, len(os.Args))
+			for _, arg := range os.Args {
+				if strings.HasPrefix(arg, "--") {
+					if strings.Contains(arg, "--daemon=") {
+						continue
+					}
+					parentArgs = append(parentArgs, arg)
+				}
+			}
+			subArgs := []string{filepath.Base(os.Args[0]), "app", "start", "--daemon=true"}
+			subArgs = append(subArgs, parentArgs...)
 			// 创建一个Context
 			cntxt := &daemon.Context{
 				// 设置pid文件
@@ -173,7 +223,9 @@ var appStartCommand = &cobra.Command{
 				// 设置所有设置文件的mask，默认为750
 				Umask: 027,
 				// 子进程的参数，按照这个参数设置，子进程的命令为 ./gob app start --daemon=true
-				Args: []string{"", "app", "start", "--daemon=true"},
+				Args: subArgs,
+				// 环境变量和父进程一样
+				Env: os.Environ(),
 			}
 			// 启动子进程，d不为空表示当前是父进程，d为空表示当前是子进程
 			// 这里可以把 Reborn 理解成 fork，当调用这个函数的时候，父进程会继续往下走，但是返回值 d 不为空，它的信息是子进程的进程号等信息。
@@ -210,14 +262,12 @@ var appStartCommand = &cobra.Command{
 
 		// 非 daemon 模式，直接执行
 		content := strconv.Itoa(os.Getpid())
-		fmt.Println("[PID]", content)
 		err := os.WriteFile(serverPidFile, []byte(content), 0644)
 		if err != nil {
 			return err
 		}
 
 		util.SetProcessTitle(processName)
-
 		fmt.Println("成功启动进程:", processName)
 		fmt.Println("进程pid:", content)
 		showAppAddress := appAddress
@@ -271,7 +321,7 @@ var appRestartCommand = &cobra.Command{
 				if configService.IsExist("app.close_wait") {
 					closeWait = configService.GetInt("app.close_wait")
 				}
-				// 确认进程已经关闭,每秒检测一次， 最多检测 closeWait * 2秒
+				// 确认进程已经关闭,每秒检测一次， 最多检测 closeWait * 2 秒
 				for i := 0; i < closeWait*2; i++ {
 					if !util.CheckProcessExist(pid) {
 						break

@@ -43,7 +43,7 @@ type CtxFielder func(ctx context.Context) map[string]interface{}
 // Formatter 定义了将日志信息组织成字符串的通用方法
 type Formatter func(level LogLevel, t time.Time, msg string, fields map[string]interface{}) ([]byte, error)
 
-// Log define interface for log
+// Log 定义了日志服务协议
 type Log interface {
 	// Panic 表示会导致整个程序出现崩溃的日志信息
 	Panic(ctx context.Context, msg string, fields map[string]interface{})

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/chenbihao/gob/framework/contract"
+	"github.com/chenbihao/gob/framework/util"
 	"os"
 	"strconv"
 	"strings"
@@ -54,7 +55,7 @@ func TestApiGenerator_GenModelFile(t *testing.T) {
 
 	// Check that the code contains the expected fields
 	for _, column := range gen.columns {
-		expectedFieldName := strings.Title(column.Field)
+		expectedFieldName := util.ToTitle(column.Field)
 		if !strings.Contains(code, ""+expectedFieldName+" ") {
 			t.Errorf("Generated code does not contain expected field name %q", expectedFieldName)
 		}

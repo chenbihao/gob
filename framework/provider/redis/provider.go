@@ -13,22 +13,22 @@ type RedisProvider struct {
 
 var _ framework.ServiceProvider = (*RedisProvider)(nil)
 
-func (sp *RedisProvider) Name() string {
+func (provider *RedisProvider) Name() string {
 	return contract.RedisKey
 }
 
-func (sp *RedisProvider) Register(c framework.Container) framework.NewInstance {
+func (provider *RedisProvider) Register(container framework.Container) framework.NewInstance {
 	return NewRedisService
 }
 
-func (sp *RedisProvider) IsDefer() bool {
+func (provider *RedisProvider) IsDefer() bool {
 	return true
 }
 
-func (sp *RedisProvider) Params(c framework.Container) []interface{} {
-	return []interface{}{c}
+func (provider *RedisProvider) Params(container framework.Container) []interface{} {
+	return []interface{}{container}
 }
 
-func (sp *RedisProvider) Boot(c framework.Container) error {
+func (provider *RedisProvider) Boot(container framework.Container) error {
 	return nil
 }

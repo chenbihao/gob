@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -70,7 +67,7 @@ var middlewareAllCommand = &cobra.Command{
 		middlewarePath := path.Join(appService.BaseFolder(), "app", "http", "middleware")
 
 		// 读取文件夹
-		files, err := ioutil.ReadDir(middlewarePath)
+		files, err := os.ReadDir(middlewarePath)
 		if err != nil {
 			return err
 		}
@@ -135,7 +132,7 @@ var middlewareMigrateCommand = &cobra.Command{
 			if isContain {
 				fmt.Println("更新文件:" + path)
 				c = bytes.ReplaceAll(c, []byte("github.com/gin-gonic/gin"), []byte("github.com/chenbihao/gob/framework/gin"))
-				err = ioutil.WriteFile(path, c, 0644)
+				err = os.WriteFile(path, c, 0644)
 				if err != nil {
 					return err
 				}
@@ -225,7 +222,7 @@ var middlewareCreateCommand = &cobra.Command{
 		if err := os.Mkdir(filepath.Join(pFolder, folder), 0700); err != nil {
 			return err
 		}
-		funcs := template.FuncMap{"title": cases.Title(language.Und, cases.NoLower).String}
+		funcs := template.FuncMap{"title": util.ToTitle}
 		{
 			//  创建
 			file := filepath.Join(pFolder, folder, "middleware.go")

@@ -17,20 +17,20 @@ type CacheProvider struct {
 var _ framework.ServiceProvider = (*CacheProvider)(nil)
 
 // Register 注册一个服务实例
-func (l *CacheProvider) Register(c framework.Container) framework.NewInstance {
-	if l.Driver == "" {
-		tcs, err := c.Make(contract.ConfigKey)
+func (provider *CacheProvider) Register(container framework.Container) framework.NewInstance {
+	if provider.Driver == "" {
+		tcs, err := container.Make(contract.ConfigKey)
 		if err != nil {
 			// 默认使用 内存模式
 			return services.NewMemoryCache
 		}
 
 		cs := tcs.(contract.Config)
-		l.Driver = strings.ToLower(cs.GetString("cache.driver"))
+		provider.Driver = strings.ToLower(cs.GetString("cache.driver"))
 	}
 
 	// 根据driver的配置项确定
-	switch l.Driver {
+	switch provider.Driver {
 	case "redis":
 		return services.NewRedisCache
 	case "memory":
@@ -41,21 +41,21 @@ func (l *CacheProvider) Register(c framework.Container) framework.NewInstance {
 }
 
 // Boot 启动的时候注入
-func (l *CacheProvider) Boot(c framework.Container) error {
+func (provider *CacheProvider) Boot(container framework.Container) error {
 	return nil
 }
 
 // IsDefer 是否延迟加载
-func (l *CacheProvider) IsDefer() bool {
+func (provider *CacheProvider) IsDefer() bool {
 	return true
 }
 
 // Params 定义要传递给实例化方法的参数
-func (l *CacheProvider) Params(c framework.Container) []interface{} {
-	return []interface{}{c}
+func (provider *CacheProvider) Params(container framework.Container) []interface{} {
+	return []interface{}{container}
 }
 
 // Name 定义对应的服务字符串凭证
-func (l *CacheProvider) Name() string {
+func (provider *CacheProvider) Name() string {
 	return contract.CacheKey
 }

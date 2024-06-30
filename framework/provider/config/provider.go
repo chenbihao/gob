@@ -14,22 +14,22 @@ type ConfigProvider struct {
 
 var _ framework.ServiceProvider = (*ConfigProvider)(nil)
 
-// Register 注册 GobAppService 方法
+// Register 注册一个服务实例
 func (provider *ConfigProvider) Register(container framework.Container) framework.NewInstance {
 	return NewGobConfigService
 }
 
-// Boot 启动调用
+// Boot 启动的时候注入
 func (provider *ConfigProvider) Boot(container framework.Container) error {
 	return nil
 }
 
-// IsDefer 是否延迟初始化
+// IsDefer 是否延迟加载
 func (provider *ConfigProvider) IsDefer() bool {
 	return false
 }
 
-// Params 获取初始化参数
+// Params 定义要传递给实例化方法的参数
 func (provider *ConfigProvider) Params(container framework.Container) []interface{} {
 	appService := container.MustMake(contract.AppKey).(contract.App)
 	envService := container.MustMake(contract.EnvKey).(contract.Env)
@@ -40,7 +40,7 @@ func (provider *ConfigProvider) Params(container framework.Container) []interfac
 	return []interface{}{container, envFolder, envService.All()}
 }
 
-// Name 获取字符串凭证
+// Name 定义对应的服务字符串凭证
 func (provider *ConfigProvider) Name() string {
 	return contract.ConfigKey
 }

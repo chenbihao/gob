@@ -7,8 +7,6 @@ import (
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
 	"github.com/pkg/errors"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -126,7 +124,7 @@ var providerCreateCommand = &cobra.Command{
 			return err
 		}
 		// 创建title这个模版方法
-		funcs := template.FuncMap{"title": cases.Title(language.Und, cases.NoLower).String}
+		funcs := template.FuncMap{"title": util.ToTitle}
 		{
 			//  创建contract.go
 			file := filepath.Join(pFolder, folder, "contract.go")

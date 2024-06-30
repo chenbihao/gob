@@ -144,10 +144,7 @@ var deployAllCommand = &cobra.Command{
 			return err
 		}
 		// 上传前端+后端，并执行对应的shell
-		if err := deployUploadAction(deployFolder, container, "all"); err != nil {
-			return err
-		}
-		return nil
+		return deployUploadAction(deployFolder, container, "all")
 	},
 }
 
@@ -191,6 +188,7 @@ func deployBuildBackend(c *cobra.Command, deployFolder string) error {
 		log.Fatalln("gob go: 请在Path路径中先安装go")
 	}
 
+	// 组装命令
 	deployBinFile := filepath.Join(deployFolder, binFile)
 	cmd := exec.Command(path, "build", "-o", deployBinFile, "./")
 	cmd.Env = os.Environ()
@@ -320,11 +318,6 @@ func deployUploadAction(deployFolder string, container framework.Container, end 
 			})
 			bts, err := session.CombinedOutput(action)
 			if err != nil {
-				logger.Info(context.Background(), "execute post action err", map[string]interface{}{
-					"cmd":        action,
-					"connection": node,
-					"out":        strings.ReplaceAll(string(bts), "\n", ""),
-				})
 				session.Close()
 				return err
 			}

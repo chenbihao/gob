@@ -271,7 +271,8 @@ func (p *Proxy) startProxy(startFrontend, startBackend bool) (err error) {
 // rebuildBackend 重新编译后端
 func (p *Proxy) rebuildBackend() error {
 	// 重新编译
-	cmdBuild := exec.Command("./gob", "build", "backend")
+	bin := os.Args[0]
+	cmdBuild := exec.Command(bin, "build", "backend")
 	cmdBuild.Stdout = os.Stdout
 	cmdBuild.Stderr = os.Stderr
 	if err := cmdBuild.Start(); err == nil {
@@ -308,8 +309,9 @@ func (p *Proxy) restartBackend() error {
 	// 设置随机端口，真实后端的端口
 	port := p.devConfig.Backend.Port
 	gobAddress := fmt.Sprintf(":" + port)
+	bin := os.Args[0]
 	// 使用命令行启动后端进程
-	cmd := exec.Command("./gob", "app", "start", "--address="+gobAddress)
+	cmd := exec.Command(bin, "app", "start", "--address="+gobAddress)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -408,6 +410,7 @@ func (p *Proxy) monitorBackend() (err error) {
 			if !ok {
 				continue
 			}
+			// 如果有文件监听错误，则停止计时器
 			fmt.Println("监听文件夹错误：", err.Error())
 			t.Reset(time.Duration(refreshTime) * time.Second)
 		}

@@ -16,7 +16,7 @@ import (
 	"github.com/chenbihao/gob/framework/util"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/google/go-github/v58/github"
+	"github.com/google/go-github/v62/github"
 	"github.com/spf13/cast"
 )
 

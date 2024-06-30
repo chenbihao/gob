@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -47,7 +46,7 @@ func (s LocalDistributedService) Select(serviceName string, appID string, holdTi
 	// 抢不到文件锁
 	if err != nil {
 		// 读取被选择的appid
-		selectAppIDByt, err := ioutil.ReadAll(lock)
+		selectAppIDByt, err := os.ReadAll(lock)
 		if err != nil {
 			return "", err
 		}
