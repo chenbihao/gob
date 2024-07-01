@@ -22,7 +22,7 @@ type EnvService struct {
 // NewGobEnv 有一个参数，.env文件所在的目录
 // example: NewGobEnv("/envfolder/") 会读取文件: /envfolder/.env
 // .env的文件格式 FOO_ENV=BAR
-func NewGobEnvService(params ...interface{}) (interface{}, error) {
+func NewEnvService(params ...interface{}) (interface{}, error) {
 	if len(params) != 1 {
 		return nil, errors.New("NewGobEnv param error")
 	}

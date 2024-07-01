@@ -34,8 +34,8 @@ type ConfigService struct {
 
 var _ contract.Config = (*ConfigService)(nil)
 
-// NewGobConfigService 初始化Config方法
-func NewGobConfigService(params ...interface{}) (interface{}, error) {
+// NewConfigService 初始化Config方法
+func NewConfigService(params ...interface{}) (interface{}, error) {
 	container := params[0].(framework.Container)
 	envFolder := params[1].(string)
 	envMaps := params[2].(map[string]string)

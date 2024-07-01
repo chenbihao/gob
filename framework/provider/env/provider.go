@@ -16,7 +16,7 @@ var _ framework.ServiceProvider = (*EnvProvider)(nil)
 
 // Register 注册服务提供者
 func (provider *EnvProvider) Register(container framework.Container) framework.NewInstance {
-	return NewGobEnvService
+	return NewEnvService
 }
 
 // Boot 启动调用

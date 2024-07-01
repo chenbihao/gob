@@ -16,7 +16,7 @@ var _ framework.ServiceProvider = (*ConfigProvider)(nil)
 
 // Register 注册一个服务实例
 func (provider *ConfigProvider) Register(container framework.Container) framework.NewInstance {
-	return NewGobConfigService
+	return NewConfigService
 }
 
 // Boot 启动的时候注入

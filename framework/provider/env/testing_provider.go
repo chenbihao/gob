@@ -11,7 +11,7 @@ type GobTestingEnvProvider struct {
 
 // Register registe a new function for make a service instance
 func (provider *GobTestingEnvProvider) Register(c framework.Container) framework.NewInstance {
-	return NewGobTestingEnv
+	return NewTestingEnv
 }
 
 // Boot will called when the service instantiate

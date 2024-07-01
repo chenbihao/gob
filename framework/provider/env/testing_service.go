@@ -11,7 +11,7 @@ type GobTestingEnv struct {
 // NewGobEnv 有一个参数，.env文件所在的目录
 // example: NewGobEnv("/envfolder/") 会读取文件: /envfolder/.env
 // .env的文件格式 FOO_ENV=BAR
-func NewGobTestingEnv(params ...interface{}) (interface{}, error) {
+func NewTestingEnv(params ...interface{}) (interface{}, error) {
 	// 返回实例
 	return &GobTestingEnv{}, nil
 }
