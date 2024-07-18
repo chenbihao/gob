@@ -12,7 +12,7 @@ type DemoApi struct {
 
 func Register(r *gin.Engine) error {
 	api := NewDemoApi()
-	r.Bind(&demoService.DemoProvider{})
+	_ = r.Bind(&demoService.DemoProvider{})
 
 	r.GET("/demo/demo", api.Demo)
 	r.GET("/demo/demo2", api.Demo2)
@@ -72,7 +72,7 @@ func (api *DemoApi) DemoPost(c *gin.Context) {
 	foo := &Foo{}
 	err := c.BindJSON(&foo)
 	if err != nil {
-		c.AbortWithError(500, err)
+		_ = c.AbortWithError(500, err)
 	}
 	c.JSON(200, nil)
 }

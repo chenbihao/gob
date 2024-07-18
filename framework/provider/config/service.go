@@ -86,10 +86,7 @@ func NewConfigService(params ...interface{}) (interface{}, error) {
 		for {
 			select {
 			case ev := <-watch.Events:
-				// 判断事件发生的类型
-				// Create 创建
-				// Write 写入
-				// Remove 删除
+				// 判断事件发生的类型 Create 创建 Write 写入 Remove 删除
 				path, _ := filepath.Abs(ev.Name)
 				index := strings.LastIndex(path, string(os.PathSeparator))
 				folder := path[:index]

@@ -12,7 +12,7 @@ type ConsoleLogService struct {
 	LogService
 }
 
-// NewConsoleLog 实例化 ConsoleLog
+// NewConsoleLogService 实例化 ConsoleLog
 func NewConsoleLogService(params ...interface{}) (interface{}, error) {
 	c := params[0].(framework.Container)
 	level := params[1].(contract.LogLevel)

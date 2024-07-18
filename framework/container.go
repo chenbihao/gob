@@ -55,7 +55,7 @@ func (container *GobContainer) Bind(provider ServiceProvider) error {
 	container.lock.Unlock()
 
 	// if provider is not defer
-	if provider.IsDefer() == false {
+	if !provider.IsDefer() {
 		if err := provider.Boot(container); err != nil {
 			return err
 		}
@@ -151,7 +151,7 @@ func (container *GobContainer) make(key string, params []interface{}, forceNew b
 
 // NameList 列出容器中所有服务提供者的字符串凭证
 func (container *GobContainer) NameList() []string {
-	ret := []string{}
+	var ret []string
 	for _, provider := range container.providers {
 		name := provider.Name()
 		ret = append(ret, name)

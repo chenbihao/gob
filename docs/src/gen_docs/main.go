@@ -63,7 +63,7 @@ func genProviderDocs(targetPath, genPath string, selectFiles []string) {
 			var key, remark, code string
 
 			// 获取说明
-			remark = getProviderRemark(filePath, fset, astFile)
+			remark = getRemark(filePath, fset, astFile)
 			remark = strings.Trim(remark, "/*\n")
 			remark = strings.Trim(remark, "\n*/")
 
@@ -148,7 +148,7 @@ func genCommandDocs(targetPath, genPath string, genCommandSub map[string]string,
 		var key, remark string
 
 		// 获取说明
-		remark = getCommandRemark(filePath, fset, astFile)
+		remark = getRemark(filePath, fset, astFile)
 		remark = strings.Trim(remark, "/*\n")
 		remark = strings.Trim(remark, "\n*/")
 

@@ -19,6 +19,8 @@ func Prefix(level contract.LogLevel) string {
 		prefix = "[Debug]"
 	case contract.TraceLevel:
 		prefix = "[Trace]"
+	default:
+		prefix = "[UnknownLevel]"
 	}
 	return prefix
 }

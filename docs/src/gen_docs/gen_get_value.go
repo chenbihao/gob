@@ -65,7 +65,7 @@ func getProviderSourceCode(filePath string, fset *token.FileSet, d *ast.TypeSpec
 	return sb.String()
 }
 
-func getProviderRemark(filePath string, fset *token.FileSet, astFile *ast.File) (s string) {
+func getRemark(filePath string, fset *token.FileSet, astFile *ast.File) (s string) {
 	objects := astFile.Scope.Objects
 	var object *ast.Object
 	for k, o := range objects {
@@ -117,44 +117,4 @@ func getCommandKey(astFile *ast.File, key string) string {
 		}
 	}
 	return key
-}
-
-func getCommandRemark(filePath string, fset *token.FileSet, astFile *ast.File) (s string) {
-	objects := astFile.Scope.Objects
-	var object *ast.Object
-	for k, o := range objects {
-		if object == nil && strings.HasSuffix(k, "Key") {
-			object = o
-		}
-	}
-	if object == nil {
-		return
-	}
-
-	startLine := 0
-	endLine := fset.Position(object.Pos()).Line - 1
-
-	if len(astFile.Imports) != 0 {
-		startLine = fset.Position(astFile.Imports[len(astFile.Imports)-1].End()).Line + 1
-	} else {
-		startLine = fset.Position(astFile.Package).Line + 1
-	}
-
-	f, _ := os.OpenFile(filePath, os.O_RDONLY, 0666)
-	defer f.Close()
-
-	buf := make([]byte, 1024*4)
-	f.Read(buf)
-	reader := bufio.NewReader(bytes.NewReader(buf))
-	sb := strings.Builder{}
-	for i := 1; i < endLine; i++ {
-		line, _, _ := reader.ReadLine()
-		if i > startLine {
-			sb.Write(line)
-			if i != endLine {
-				sb.Write([]byte("\n"))
-			}
-		}
-	}
-	return sb.String()
 }
