@@ -12,6 +12,9 @@ type Container interface {
 	// Bind 绑定一个服务提供者，如果关键字凭证已经存在，会进行替换操作，返回 error
 	Bind(provider ServiceProvider) error
 
+	// MustBind 绑定一个服务提供者，如果关键字凭证已经存在，会进行替换操作，如果绑定失败，那么会 panic。
+	MustBind(provider ServiceProvider)
+
 	// IsBind 关键字凭证是否已经绑定服务提供者
 	IsBind(key string) bool
 
@@ -70,6 +73,14 @@ func (container *GobContainer) Bind(provider ServiceProvider) error {
 		container.instances[key] = instance
 	}
 	return nil
+}
+
+// MustBind 将服务容器和关键字做了绑定
+func (container *GobContainer) MustBind(provider ServiceProvider) {
+	err := container.Bind(provider)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (container *GobContainer) IsBind(key string) bool {

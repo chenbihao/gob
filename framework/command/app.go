@@ -236,17 +236,16 @@ var appStartCommand = &cobra.Command{
 			}
 			// 父进程直接打印启动成功信息，不做任何操作
 			if child != nil {
-				fmt.Println("成功启动进程:", processName)
-				fmt.Println("进程pid:", child.Pid)
+				fmt.Println("基础路径:", appService.BaseFolder())
+				fmt.Println("配置路径:", appService.ConfigFolder())
+				fmt.Println("日志路径:", appService.LogFolder())
+				fmt.Println("运行路径:", appService.RuntimeFolder())
+				fmt.Println("成功启动进程:", processName+" 进程pid:", child.Pid)
 				showAppAddress := appAddress
 				if strings.HasPrefix(appAddress, ":") {
 					showAppAddress = "http://localhost" + showAppAddress
 				}
 				fmt.Println("监听地址:", showAppAddress)
-				fmt.Println("基础路径:", appService.BaseFolder())
-				fmt.Println("日志路径:", appService.LogFolder())
-				fmt.Println("运行路径:", appService.RuntimeFolder())
-				fmt.Println("配置路径:", appService.ConfigFolder())
 				return nil
 			}
 			defer cntxt.Release()
@@ -268,17 +267,16 @@ var appStartCommand = &cobra.Command{
 		}
 
 		util.SetProcessTitle(processName)
-		fmt.Println("成功启动进程:", processName)
-		fmt.Println("进程pid:", content)
+		fmt.Println("基础路径:", appService.BaseFolder())
+		fmt.Println("配置路径:", appService.ConfigFolder())
+		fmt.Println("日志路径:", appService.LogFolder())
+		fmt.Println("运行路径:", appService.RuntimeFolder())
+		fmt.Println("成功启动进程:", processName+" 进程pid:", content)
 		showAppAddress := appAddress
 		if strings.HasPrefix(appAddress, ":") {
 			showAppAddress = "http://localhost" + showAppAddress
 		}
 		fmt.Println("监听地址:", showAppAddress)
-		fmt.Println("基础路径:", appService.BaseFolder())
-		fmt.Println("日志路径:", appService.LogFolder())
-		fmt.Println("运行路径:", appService.RuntimeFolder())
-		fmt.Println("配置路径:", appService.ConfigFolder())
 		if err := startAppServe(container, server); err != nil {
 			fmt.Println(err)
 		}

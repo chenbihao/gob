@@ -12,10 +12,7 @@ import (
 func Exists(path string) bool {
 	// os.Stat 获取文件信息
 	if _, err := os.Stat(path); err != nil {
-		if os.IsExist(err) {
-			return true
-		}
-		return false
+		return os.IsExist(err)
 	}
 	return true
 }
@@ -81,7 +78,6 @@ func SubDir(folder string) ([]string, error) {
 // DownloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
 func DownloadFile(filepath string, url string) error {
-
 	// Get the data
 	resp, err := http.Get(url)
 	if err != nil {

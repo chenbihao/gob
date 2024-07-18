@@ -5,6 +5,7 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"github.com/chenbihao/gob/framework/util"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
@@ -25,7 +26,8 @@ import (
 type ConfigService struct {
 	c        framework.Container    // 容器
 	folder   string                 // 文件夹
-	keyDelim string                 // 路径的分隔符，默认为点
+	keyDelim string                 // key 路径的分隔符，默认为点
+	toolMode bool                   //  工具运行模式（通过 go install 安装至 $GOPATH/bin ）
 	lock     sync.RWMutex           // 配置文件读写锁
 	envMaps  map[string]string      // 所有的环境变量
 	confMaps map[string]interface{} // 配置文件结构，key为文件名
@@ -39,21 +41,37 @@ func NewConfigService(params ...interface{}) (interface{}, error) {
 	container := params[0].(framework.Container)
 	envFolder := params[1].(string)
 	envMaps := params[2].(map[string]string)
+	toolMode := false
+
+	// 纯工具模式 ( 兼容 go install )
+	if envMaps["runMode"] == "tool" {
+		toolMode = true
+	}
 
 	// 检查文件夹是否存在
 	if _, err := os.Stat(envFolder); os.IsNotExist(err) {
-		return nil, errors.New("folder " + envFolder + " not exist: " + err.Error())
+		if toolMode || util.CheckBinaryFileInTheGOPATH() {
+			err = nil
+			toolMode = true
+			log.Println("纯工具模式，未能加载配置！")
+		} else {
+			return nil, errors.New("folder " + envFolder + " not exist: " + err.Error())
+		}
 	}
 
 	// 实例化
 	gobConf := &ConfigService{
 		c:        container,
 		folder:   envFolder,
+		keyDelim: ".",
+		toolMode: toolMode,
 		envMaps:  envMaps,
 		confMaps: map[string]interface{}{},
 		confRaws: map[string][]byte{},
-		keyDelim: ".",
 		lock:     sync.RWMutex{},
+	}
+	if toolMode {
+		return gobConf, nil
 	}
 
 	// 读取每个文件

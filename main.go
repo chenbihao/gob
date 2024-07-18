@@ -17,18 +17,16 @@ import (
 	"github.com/chenbihao/gob/framework/provider/sls"
 	"github.com/chenbihao/gob/framework/provider/ssh"
 	"github.com/chenbihao/gob/framework/provider/trace"
-	"os"
 )
 
 func main() {
 
-	// 如果仅当做脚手架来用的话，仅挂载new命令，不绑定各类服务提供者（暂时解决构建后无配置目录问题）
-	args := os.Args
-	if len(args) > 1 && args[1] == "new" {
-		container := framework.NewGobContainer()
-		_ = console.RunRootCommand(container, true)
-		return
-	}
+	//args := os.Args
+	//if len(args) > 1 && args[1] == "new" {
+	//	container := framework.NewGobContainer()
+	//	_ = console.RunRootCommand(container, true)
+	//	return
+	//}
 
 	// 初始化服务容器
 	container := framework.NewGobContainer()

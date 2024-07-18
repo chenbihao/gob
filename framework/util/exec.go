@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 func IsWindows() bool {
@@ -18,11 +19,28 @@ func IsNotWindows() bool {
 func GetExecDirectory() string {
 	file, err := os.Getwd()
 	if err == nil {
-		//return file + "/"
 		return file + string(os.PathSeparator) // Error: daemon: Non-POSIX OS is not supported
 	}
 	fmt.Println("获取执行目录失败：err=", err.Error())
 	return ""
+}
+
+// GetBinaryFileDirectory 获取当前执行程序的二进制文件目录
+func GetBinaryFileDirectory() string {
+	file, err := os.Executable()
+	if err == nil {
+		return file + string(os.PathSeparator) // Error: daemon: Non-POSIX OS is not supported
+	}
+	fmt.Println("获取二进制文件目录失败：err=", err.Error())
+	return ""
+}
+
+// 检查当前执行程序二进制是否在gopath
+func CheckBinaryFileInTheGOPATH() bool {
+	var homePath = os.Getenv("HOMEPATH")
+	binaryPath := GetBinaryFileDirectory()
+	goBinPath := filepath.Join(homePath, "go", "bin")
+	return strings.Contains(binaryPath, goBinPath)
 }
 
 // GetRootDirectory 获取当前项目根目录（根据 .go-root 文件识别）

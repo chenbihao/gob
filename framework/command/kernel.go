@@ -9,7 +9,6 @@ import (
 // AddKernelCommands will add all command/* to root command
 func AddKernelCommands(root *cobra.Command) {
 	InitCronCommands(root)
-
 	root.AddCommand(initAppCommand())         // 挂载 app 命令
 	root.AddCommand(initCronCommand())        // 挂载 cron 命令
 	root.AddCommand(initEnvCommand())         // 挂载 env 命令

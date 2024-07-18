@@ -28,6 +28,8 @@ clone git 地址：`git@github.com/chenbihao/gob.git`
 
 下载地址： [Releases](https://github.com/chenbihao/gob/releases)
 
+在 gob 目录中运行命令 `go run main.go build self`
+
 ## 初始化项目
 
 使用命令 `gob new` 在当前目录创建子项目
