@@ -27,15 +27,10 @@ func (log *LogService) IsLevelEnable(level contract.LogLevel) bool {
 }
 
 // logf 为打印日志的核心函数
-func (log *LogService) logf(level contract.LogLevel, ctx context.Context, msg string, fields map[string]interface{}) error {
+func (log *LogService) logf(ctx context.Context, level contract.LogLevel, msg string, fields map[string]interface{}) error {
 	// 先判断日志级别
 	if !log.IsLevelEnable(level) {
 		return nil
-	}
-
-	// fields 传入为 nil 时为其分配内存 否则下文会出现  [assignment to entry in nil map] 报错
-	if fields == nil {
-		fields = make(map[string]interface{})
 	}
 
 	// 使用ctxFielder 获取context中的信息
@@ -52,7 +47,7 @@ func (log *LogService) logf(level contract.LogLevel, ctx context.Context, msg st
 		}
 	}
 
-	//如果绑定了trace服务，获取trace信息
+	// 如果绑定了trace服务，获取trace信息
 	if log.c != nil && log.c.IsBind(contract.TraceKey) {
 		tracer := log.c.MustMake(contract.TraceKey).(contract.Trace)
 		tc := tracer.GetTrace(ctx)
@@ -87,37 +82,37 @@ func (log *LogService) logf(level contract.LogLevel, ctx context.Context, msg st
 
 // Panic 输出panic的日志信息
 func (log *LogService) Panic(ctx context.Context, msg string, fields map[string]interface{}) {
-	log.logf(contract.PanicLevel, ctx, msg, fields)
+	log.logf(ctx, contract.PanicLevel, msg, fields)
 }
 
 // Fatal will add fatal record which contains msg and fields
 func (log *LogService) Fatal(ctx context.Context, msg string, fields map[string]interface{}) {
-	log.logf(contract.FatalLevel, ctx, msg, fields)
+	log.logf(ctx, contract.FatalLevel, msg, fields)
 }
 
 // Error will add error record which contains msg and fields
 func (log *LogService) Error(ctx context.Context, msg string, fields map[string]interface{}) {
-	log.logf(contract.ErrorLevel, ctx, msg, fields)
+	log.logf(ctx, contract.ErrorLevel, msg, fields)
 }
 
 // Warn will add warn record which contains msg and fields
 func (log *LogService) Warn(ctx context.Context, msg string, fields map[string]interface{}) {
-	log.logf(contract.WarnLevel, ctx, msg, fields)
+	log.logf(ctx, contract.WarnLevel, msg, fields)
 }
 
 // Info 会打印出普通的日志信息
 func (log *LogService) Info(ctx context.Context, msg string, fields map[string]interface{}) {
-	log.logf(contract.InfoLevel, ctx, msg, fields)
+	log.logf(ctx, contract.InfoLevel, msg, fields)
 }
 
 // Debug will add debug record which contains msg and fields
 func (log *LogService) Debug(ctx context.Context, msg string, fields map[string]interface{}) {
-	log.logf(contract.DebugLevel, ctx, msg, fields)
+	log.logf(ctx, contract.DebugLevel, msg, fields)
 }
 
 // Trace will add trace info which contains msg and fields
 func (log *LogService) Trace(ctx context.Context, msg string, fields map[string]interface{}) {
-	log.logf(contract.TraceLevel, ctx, msg, fields)
+	log.logf(ctx, contract.TraceLevel, msg, fields)
 }
 
 // SetLevel set log level, and higher level will be recorded

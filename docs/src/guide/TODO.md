@@ -5,32 +5,14 @@ description:
 ---
 # 待办
 
-## 功能优化
-
-- [ ] 部分 linux 内容未测试
-    - [ ] 条件编译
-    - [ ] 守护进程模式 `app start --daemon=true`
-    - [ ] gspt 库（CGO_ENABLED=1）
-
-
-- [ ] 业务单测的构建
-
 ## 框架支持功能
 
 ### 框架模块优化
 
-- [ ] 脚手架优化
-    - [ ] 构建后读取配置问题（生产部署时如何读取配置问题）
-    - [ ] `go install` 使用的优化（编译后的命令行执行问题）
-    - [ ] 前端文件夹配置可选？
-        - [ ] frontendFolder 配置 可选而不是写死
-        - [ ] frontendFolder/dist 可选？
-
 - [ ] 框架
-    - [ ] 抽取配置等魔术编码，例如 `"app.pid"` 等
+    - [ ] 是否抽取配置等魔术编码，例如 `"app.pid"` 等
     - [ ] 文件创建相关（app 获取路径时，有些可以判断并创建）
     - [ ] 获取各类 Folder 时就校验并判断，而不是分散在 app 或者 cron 服务里判断
-    - [ ] win 下不支持 Daemon，兼容成后台运行（appDaemon）
 
 - [ ] 日志
     - [ ] 同时支持多个日志输出
@@ -56,9 +38,15 @@ description:
     - [ ] github 的调用限制重构复用
     - [ ] gspt 构建出错 ， 需要交叉编译
 
+- [ ] 前端文件夹配置可选？
+  - [ ] frontendFolder 配置可选
 
 - [ ] 数据库重连重试机制
-- [ ] cache 服务当配置了 redis，并且有 redis 相关配置时，优先读取 redis 配置
+
+- [ ] 其他优化
+  - [ ] 把其他命令适配到纯工具模式（`go install`）
+  - [ ] win 下不支持 Daemon，兼容成后台运行（appDaemon）
+  - [ ] cache 服务当配置了 redis，并且有 redis 相关配置时，优先读取 redis 配置
 
 ### 框架模块新增
 
@@ -71,13 +59,18 @@ description:
     - [migrate](https://github.com/golang-migrate/migrate)
   - 驱动少功能强大，有建表，有导出架构
     - [dbmate](https://github.com/amacneil/dbmate)
-  - 目前考虑 dbmate
+- [ ] 目前考虑 dbmate 
+  - 需要重新思考model生成相关逻辑
+  - 先手写model后表？
+  - 先手写sql后model和api？
+  - 都兼容？
 
 ### 蓝图模块功能
 
 - [ ] 初始化蓝图流程
-    - [ ] 定义拉取蓝图模块流程
-    - [ ] 拉取后执行表迁移工作
+  - [ ] 蓝图定义，包括依赖关系、版本等
+  - [ ] 定义拉取蓝图模块流程
+  - [ ] 拉取后执行表迁移工作
 
 
 - [ ] 后台管理基础
@@ -89,6 +82,16 @@ description:
 - [ ] ...
 - [ ] ...
 
+
+## 其他功能优化
+
+- [ ] 部分 linux 内容未测试
+  - [ ] 条件编译
+  - [ ] 守护进程模式 `app start --daemon=true`
+  - [ ] gspt 库（`CGO_ENABLED=1`）
+
+
+- [ ] 业务单测的构建
 
 
 ## 已完成归档
@@ -119,7 +122,10 @@ description:
     - [x] command：包括命令说明、可选配置项
     - [x] contract：包括对应命令、配置项说明
 
+### 框架模块优化
 
+- [x] 脚手架优化
+  - [x] `go install` 使用的优化（新增纯工具模式）
 
 
 

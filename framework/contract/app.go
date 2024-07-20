@@ -17,6 +17,9 @@ type App interface {
 	AppID() string
 	// Version 定义当前版本
 	Version() string
+	// IsToolMode 是否纯工具运行模式
+	IsToolMode() bool
+
 	// BaseFolder 定义项目基础地址
 	BaseFolder() string
 

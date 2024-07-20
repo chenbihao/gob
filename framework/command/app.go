@@ -331,7 +331,7 @@ var appRestartCommand = &cobra.Command{
 					fmt.Println("结束进程失败:"+strconv.Itoa(pid), "请查看原因")
 					return errors.New("结束进程失败")
 				}
-				//  清空 PID 文件
+				//  清空 PID 文件内容
 				if err := os.WriteFile(serverPidFile, []byte{}, 0644); err != nil {
 					return err
 				}

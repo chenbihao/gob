@@ -1,6 +1,6 @@
 {
   "name": "gob_docs",
-  "version": "0.0.1",
+  "version": "0.1.15",
   "description": "A VuePress project",
   "license": "MIT",
   "type": "module",
@@ -12,13 +12,12 @@
     "docs:update-package": "npx vp-update"
   },
   "devDependencies": {
-    "@vuepress/bundler-vite": "2.0.0-rc.13",
-    "@vuepress/theme-default": "2.0.0-rc.35",
-    "vue": "^3.4.27",
-    "vuepress": "2.0.0-rc.13",
-
-    "@vuepress/plugin-search": "^2.0.0-rc.34",
-    "vuepress-plugin-md-enhance": "^2.0.0-rc.48",
-    "vuepress-plugin-mermaid": "^0.0.1"
+    "@vuepress/bundler-vite": "2.0.0-rc.14",
+    "@vuepress/theme-default": "2.0.0-rc.39",
+    "vue": "^3.4.33",
+    "vuepress": "2.0.0-rc.14",
+    "@vuepress/plugin-search": "2.0.0-rc.39",
+    "vuepress-plugin-md-enhance": "2.0.0-rc.52",
+    "vuepress-plugin-mermaid": "0.0.1"
   }
 }

@@ -48,8 +48,8 @@ func (api *DemoApi) DemoOrm(c *gin.Context) {
 	}
 	err = db.Create(user).Error
 	logger.Info(c, "insert user", map[string]interface{}{
-		"id":  user.ID,
 		"err": err,
+		"id":  user.ID,
 	})
 
 	// 更新一条数据

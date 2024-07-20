@@ -16,20 +16,6 @@ description:
 
 使用 `go install github.com/chenbihao/gob@latest` 来安装 gob 命令。
 
-### 源码编译
-
-clone git 地址：`git@github.com/chenbihao/gob.git`
-
-在 gob 目录中运行命令 `go run main.go build self`
-
-将生成的可执行文件 gob 放到 $PATH 目录中
-
-### 下载源码
-
-下载地址： [Releases](https://github.com/chenbihao/gob/releases)
-
-在 gob 目录中运行命令 `go run main.go build self`
-
 ## 初始化项目
 
 使用命令 `gob new` 在当前目录创建子项目

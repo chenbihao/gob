@@ -12,9 +12,8 @@ export default defineUserConfig({
     sidebarDepth: 2,
     base: '/gob/',
 
-    head: [["link", {rel: "icon", href: "/images/logo.png"}]],
+    head: [['link', { rel: 'icon', href: '/gob/images/logo.png' }]],
     theme: defaultTheme({
-
         // logo
         logo: '/images/logo.png',
 

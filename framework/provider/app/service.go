@@ -18,10 +18,10 @@ type AppService struct {
 	container  framework.Container // 服务容器
 	baseFolder string              // 基础路径
 	appID      string              // 表示当前这个app的唯一id, 可以用于分布式锁等
-
-	configMap map[string]string // 配置加载
-	envMap    map[string]string // 环境变量加载
-	argsMap   map[string]string // 参数加载
+	toolMode   bool                // 工具运行模式（通过 go install 安装至 $GOPATH/bin ）
+	configMap  map[string]string   // 配置加载
+	envMap     map[string]string   // 环境变量加载
+	argsMap    map[string]string   // 参数加载
 }
 
 var _ contract.App = (*AppService)(nil)
@@ -38,7 +38,13 @@ func NewGobApp(params ...interface{}) (interface{}, error) {
 	appID := uuid.New().String()
 	configMap := map[string]string{}
 
-	gobApp := &AppService{baseFolder: baseFolder, container: container, appID: appID, configMap: configMap}
+	toolMode := false
+	// 纯工具模式 ( 兼容 go install )
+	if os.Getenv("runMode") == "tool" || util.CheckBinaryFileInTheGOPATH() {
+		toolMode = true
+	}
+
+	gobApp := &AppService{baseFolder: baseFolder, container: container, appID: appID, configMap: configMap, toolMode: toolMode}
 	_ = gobApp.loadEnvMaps()
 	_ = gobApp.loadArgsMaps()
 	return gobApp, nil
@@ -54,6 +60,13 @@ func (s *AppService) AppID() string {
 func (s *AppService) Version() string {
 	return GobVersion
 }
+
+// IsToolMode 是否纯工具运行模式
+func (s *AppService) IsToolMode() bool {
+	return s.toolMode
+}
+
+// ---------------- 目录
 
 // BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
 func (s *AppService) BaseFolder() string {

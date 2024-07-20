@@ -73,7 +73,7 @@ var newCommand = &cobra.Command{
 			}
 
 			folder = currentPath
-			if isCurrentFolder == false {
+			if !isCurrentFolder {
 				folder = filepath.Join(currentPath, name)
 			} else {
 				// 这里设置name为base
@@ -224,7 +224,7 @@ var newCommand = &cobra.Command{
 		fmt.Println("开始进行创建应用操作")
 		fmt.Println("创建目录：", folder)
 		fmt.Println("应用名称：", mod)
-		fmt.Println("gob框架版本：", release.GetTagName())
+		fmt.Println("框架版本：", release.GetTagName())
 
 		templateFolder := filepath.Join(currentPath, "template-gob-"+version+"-"+cast.ToString(time.Now().Unix()))
 		err := os.Mkdir(templateFolder, os.ModePerm)
@@ -277,8 +277,8 @@ var newCommand = &cobra.Command{
 		}
 		fmt.Println("解压zip包")
 
-		//_ = os.RemoveAll(path.Join(folder, ".git"))
-		//fmt.Println("删除.git目录")
+		_ = os.RemoveAll(path.Join(folder, ".github"))
+		fmt.Println("删除.github目录")
 
 		// 删除framework 目录
 		_ = os.RemoveAll(path.Join(folder, "framework"))
