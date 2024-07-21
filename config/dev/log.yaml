@@ -20,3 +20,31 @@ level: trace
 #driver: aliyun_sls
 #level: trace
 #formatter: json
+
+####################  改造成： https://blog.csdn.net/xmcy001122/article/details/119916227
+
+# 启用的日志通道
+enable: console,single
+
+console:
+  level: trace
+  formatter: text
+
+single:
+  level: trace
+  folder: ./storage/log/
+  file: gob_single.log
+
+rotate:
+  level: trace            # 日志级别
+  folder: ./storage/log/
+  file: gob_rotate.log    # 保存的日志文件
+  rotate_count: 10        # 最多日志文件个数
+  rotate_size: 120000     # 每个日志大小
+  rotate_time: "1m"       # 切割时间
+  max_age: "10d"          # 文件保存时间
+  date_format: "%Y-%m-%d-%H-%M" # 文件后缀格式
+
+aliyun_sls:
+  level: trace
+  formatter: json

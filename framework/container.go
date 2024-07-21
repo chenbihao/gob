@@ -64,8 +64,7 @@ func (container *GobContainer) Bind(provider ServiceProvider) error {
 		}
 		// 实例化方法
 		params := provider.Params(container)
-		method := provider.Register(container)
-		instance, err := method(params...)
+		instance, err := provider.Register(container)(params...)
 		if err != nil {
 			fmt.Println("bind service provider ", key, " error: ", err)
 			return errors.New(err.Error())

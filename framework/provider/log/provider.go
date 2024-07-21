@@ -27,12 +27,13 @@ var _ framework.ServiceProvider = (*LogProvider)(nil)
 
 // Register 注册 GobAppService 方法
 func (provider *LogProvider) Register(container framework.Container) framework.NewInstance {
+
+
+
+
+
 	if provider.Driver == "" {
-		configContainer, err := container.Make(contract.ConfigKey)
-		if err != nil {
-			// 默认使用console
-			return services.NewConsoleLogService
-		}
+		configContainer := container.MustMake(contract.ConfigKey)
 		config := configContainer.(contract.Config)
 		provider.Driver = strings.ToLower(config.GetString("log.driver"))
 	}
