@@ -9,9 +9,9 @@ dev: # 调试模式
     port: 8072 # 后端监听端口，默认 8072
     monitor_folder: "" # 监听文件夹地址，为空或者不填默认为 AppFolder
 
-sls: # 阿里云SLS服务
-  endpoint: cn-guangzhou.log.aliyuncs.com
-  access_key_id:
-  access_key_secret:
-  project: gob-test
-  logstore: gob_test_logstore
+#sls: # 阿里云SLS服务
+#  endpoint: cn-guangzhou.log.aliyuncs.com
+#  access_key_id:
+#  access_key_secret:
+#  project: gob-test
+#  logstore: gob_test_logstore

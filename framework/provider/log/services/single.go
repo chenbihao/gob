@@ -38,9 +38,8 @@ func NewSingleLogService(params ...interface{}) (interface{}, error) {
 		folder = configService.GetString("log.folder")
 	}
 	log.folder = folder
-	if !util.Exists(folder) {
-		os.MkdirAll(folder, os.ModePerm)
-	}
+	// 如果folder不存在，则创建
+	util.CreateFolderIfNotExists(folder)
 
 	log.file = "gob.log"
 	if configService.IsExist("log.file") {

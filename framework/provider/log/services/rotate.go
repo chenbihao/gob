@@ -7,7 +7,6 @@ import (
 	"github.com/chenbihao/gob/framework/util"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/pkg/errors"
-	"os"
 	"path/filepath"
 	"time"
 )
@@ -33,15 +32,18 @@ func NewRotateLogService(params ...interface{}) (interface{}, error) {
 	appService := c.MustMake(contract.AppKey).(contract.App)
 	configService := c.MustMake(contract.ConfigKey).(contract.Config)
 
+	log := &RotateLogService{}
+	log.SetLevel(level)
+	log.SetCtxFielder(ctxFielder)
+	log.SetFormatter(formatter)
+
 	// 从配置文件中获取folder信息，否则使用默认的LogFolder文件夹
 	folder := appService.LogFolder()
 	if configService.IsExist("log.folder") {
 		folder = configService.GetString("log.folder")
 	}
 	// 如果folder不存在，则创建
-	if !util.Exists(folder) {
-		os.MkdirAll(folder, os.ModePerm)
-	}
+	util.CreateFolderIfNotExists(folder)
 
 	// 从配置文件中获取file信息，否则使用默认的gob.log
 	file := "gob.log"
@@ -85,10 +87,6 @@ func NewRotateLogService(params ...interface{}) (interface{}, error) {
 	}
 
 	// 设置基础信息
-	log := &RotateLogService{}
-	log.SetLevel(level)
-	log.SetCtxFielder(ctxFielder)
-	log.SetFormatter(formatter)
 	log.folder = folder
 	log.file = file
 

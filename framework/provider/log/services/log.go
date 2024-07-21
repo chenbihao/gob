@@ -17,7 +17,7 @@ type LogService struct {
 	c          framework.Container // 容器
 	level      contract.LogLevel   // 日志级别
 	formatter  contract.Formatter  // 日志格式化方法
-	ctxFielder contract.CtxFielder // ctx获取上下文字段
+	ctxFielder contract.CtxFielder // ctx 获取上下文字段
 	output     io.Writer           // 输出
 }
 
@@ -40,10 +40,8 @@ func (log *LogService) logf(ctx context.Context, level contract.LogLevel, msg st
 	}
 	if log.ctxFielder != nil {
 		t := log.ctxFielder(ctx)
-		if t != nil {
-			for k, v := range t {
-				fs[k] = v
-			}
+		for k, v := range t {
+			fs[k] = v
 		}
 	}
 

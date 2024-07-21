@@ -58,7 +58,7 @@ func (s *AppService) AppID() string {
 
 // Version 实现版本
 func (s *AppService) Version() string {
-	return GobVersion
+	return framework.Version
 }
 
 // IsToolMode 是否纯工具运行模式
