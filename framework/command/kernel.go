@@ -1,57 +1,29 @@
 package command
 
 import (
-	"github.com/chenbihao/gob/app/console"
-	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/cobra"
 	"github.com/chenbihao/gob/framework/command/model"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/robfig/cron/v3"
 )
 
-// RunRootCommand  初始化根Command并运行
-func RunRootCommand(container framework.Container) error {
-	// 根Command
-	var rootCmd = &cobra.Command{
-		// 定义根命令的关键字
-		Use: "gob",
-		// 简短介绍
-		Short: "gob 命令",
-		// 根命令的详细介绍
-		Long: "gob 框架提供的命令行工具，使用这个命令行工具能很方便执行框架自带命令，也能很方便编写业务命令",
-		// 根命令的执行函数
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cmd.InitDefaultHelpFlag()
-			return cmd.Help()
-		},
-		// 不需要出现cobra默认的completion子命令
-		CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
-	}
-
-	// 为根Command设置服务容器
-	rootCmd.SetContainer(container)
-
-	// 绑定框架的命令
-	if container.MustMake(contract.AppKey).(contract.App).IsToolMode() {
-		AddKernelToolCommands(rootCmd)
+// AddKernelCommands will add all command/* to root command
+func AddKernelCommands(root *cobra.Command) {
+	if root.GetContainer().MustMake(contract.AppKey).(contract.App).IsToolMode() {
+		AddKernelOnlyToolCommands(root)
 	} else {
-		AddKernelCommands(rootCmd)
-		// 绑定业务的命令
-		console.AddAppCommand(rootCmd)
+		AddKernelAllCommands(root)
 	}
-
-	// 执行RootCommand
-	return rootCmd.Execute()
 }
 
-// AddKernelToolCommands will add all command/* to root command
-func AddKernelToolCommands(root *cobra.Command) {
+// AddKernelToolCommands 添加 纯工具模式支持的命令到 root （go install 时运行的全局工具命令，尚未适配）
+func AddKernelOnlyToolCommands(root *cobra.Command) {
 	root.AddCommand(initNewCommand())     // 挂载 new 命令
 	root.AddCommand(initVersionCommand()) // 挂载 version 命令
 }
 
-// AddKernelCommands will add all command/* to root command
-func AddKernelCommands(root *cobra.Command) {
+// AddKernelToolCommands 添加 command/* 到 root
+func AddKernelAllCommands(root *cobra.Command) {
 	InitCronCommands(root)
 	root.AddCommand(initAppCommand())         // 挂载 app 命令
 	root.AddCommand(initEnvCommand())         // 挂载 env 命令

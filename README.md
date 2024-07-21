@@ -30,10 +30,13 @@
 
 具备 Web 框架的基础能力
 
+- go 1.21+
+
 - gin v1.9.1
-- middleware
+- gorm v1.25.9
 - swagger
-- vue
+- vue3
+- ,,,
 
 ## 服务提供者
 

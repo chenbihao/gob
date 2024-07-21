@@ -15,7 +15,7 @@ func NewHttpEngine(container framework.Container) (*gin.Engine, error) {
 	// 默认启动一个 Web 引擎 （Default 包含 Logger and Recovery）
 	r := gin.Default()
 
-	// 设置容器
+	// 设置框架容器
 	r.SetContainer(container)
 
 	// 业务绑定路由操作

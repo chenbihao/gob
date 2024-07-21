@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/chenbihao/gob/app/console"
 	"github.com/chenbihao/gob/app/http"
 	"github.com/chenbihao/gob/framework"
-	"github.com/chenbihao/gob/framework/command"
 	"github.com/chenbihao/gob/framework/provider/app"
 	"github.com/chenbihao/gob/framework/provider/cache"
 	"github.com/chenbihao/gob/framework/provider/config"
@@ -42,5 +42,5 @@ func main() {
 		_ = container.Bind(&kernel.KernelProvider{HttpEngine: engine})
 	}
 	// 运行root命令
-	_ = command.RunRootCommand(container)
+	_ = console.RunRootCommand(container)
 }
