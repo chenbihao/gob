@@ -44,8 +44,6 @@ func (provider *LogProvider) Register(container framework.Container) framework.N
 		return services.NewRotateLogService
 	case "console":
 		return services.NewConsoleLogService
-	case "custom":
-		return services.NewCustomLogService
 	case "aliyun_sls":
 		return services.NewSlsLog
 	default:
