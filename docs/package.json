@@ -1,6 +1,6 @@
 {
   "name": "gob_docs",
-  "version": "0.1.15",
+  "version": "0.1.17",
   "description": "A VuePress project",
   "license": "MIT",
   "type": "module",

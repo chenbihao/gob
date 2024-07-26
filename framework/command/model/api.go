@@ -22,8 +22,6 @@ var modelApiCommand = &cobra.Command{
 	RunE: func(c *cobra.Command, args []string) error {
 		ctx := c.Context()
 		container := c.GetContainer()
-		logger := container.MustMake(contract.LogKey).(contract.Log)
-		logger.SetLevel(contract.ErrorLevel)
 
 		gormService := container.MustMake(contract.ORMKey).(contract.ORM)
 		db, err := gormService.GetDB(orm.WithConfigPath(database))

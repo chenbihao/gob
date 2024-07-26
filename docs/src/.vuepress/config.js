@@ -20,6 +20,7 @@ export default defineUserConfig({
         // 添加导航栏
         navbar: [
             {text: "主页", link: "/"}, // 导航条
+            {text: "快速开始", link: "/start/"},
             {text: "使用文档", link: "/guide/"},
             {text: "服务提供者", link: "/provider/"},
             {text: "提供命令", link: "/command/"},
@@ -27,13 +28,21 @@ export default defineUserConfig({
         ],
         // 为以下路由添加侧边栏
         sidebar: {
+            "/start/": [
+                {
+                    title: "快速上手",
+                    collapsable: false,
+                    children: [
+                        "",    // 快速上手
+                    ],
+                },
+            ],
             "/guide/": [
                 {
                     title: "指南",
                     collapsable: false,
                     children: [
                         "",             // 介绍
-                        "introduce",    // 快速上手
                         "install",      // 安装
                         "app",          // 运行
 

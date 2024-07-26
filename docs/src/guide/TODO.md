@@ -11,9 +11,12 @@ description:
 
 
 - [ ] 日志
-    - [ ] 同时支持多个日志输出，并且接管gin的日志输出
+    - [ ] 同时支持多个日志输出
+    - [ ] 接管gin的日志输出
     - [ ] 统一优化日志打印格式
     - [ ] 可选固定 json 字段顺序打印配置（强迫症可选）
+
+- [ ] 数据库重连重试机制
 
 - [ ] model 代码生成功能优化
     - [ ] 生成更符合业务调用场景
@@ -29,19 +32,20 @@ description:
 
 - [ ] 将过时或停止维护的三方库换掉
     - [ ] survey 换成 bubbletea
-        - [ ] 命令行支持静默运行参数
+    - [ ] 命令行支持静默运行参数
     - [ ] github 的调用限制重构复用
     - [ ] gspt 构建出错 ， 需要交叉编译
+- [ ] 日志库切换？
+  - [ ] file-rotatelogs 废弃
 
 - [ ] 前端文件夹配置可选？
   - [ ] frontendFolder 配置可选
-
-- [ ] 数据库重连重试机制
 
 - [ ] 其他优化
   - [ ] 把其他命令适配到纯工具模式（`go install`）
   - [ ] win 下不支持 Daemon，兼容成后台运行（appDaemon）
   - [ ] cache 服务当配置了 redis，并且有 redis 相关配置时，优先读取 redis 配置
+  - [ ] 注意配置读取时的存储链路，如果不是每次都调用 conf 服务读取的话，可能读不到热更新的新值
 
 ### 框架模块新增
 
@@ -100,8 +104,11 @@ description:
     - [x] 梳理三方库引入
         - fsnotify、go-daemon、goconvey、swaggo、cast
         - survey/v2、go-git/v5、go-github/v62、go-redis/v9、cron/v3、gorm + gen
-        - gotree、uuid、xid、ratelimit、file-rotatelogs、mapstructure
-        - jennifer/jen、jianfengye/collection、kr/pretty
+        - gotree、uuid、xid、ratelimit、mapstructure
+        - kr/pretty、jennifer/jen
+        - 预计移除：jianfengye/collection
+        - 预计移除：file-rotatelogs、natefinch/lumberjack
+        - 预计新增：samber/lo
     - [x] 梳理三方框架使用
         - vue、vuepress
 

@@ -14,8 +14,6 @@ var modelTestCommand = &cobra.Command{
 	SilenceUsage: true,
 	RunE: func(c *cobra.Command, args []string) error {
 		container := c.GetContainer()
-		logger := container.MustMake(contract.LogKey).(contract.Log)
-		logger.SetLevel(contract.ErrorLevel)
 
 		gormService := container.MustMake(contract.ORMKey).(contract.ORM)
 		db, err := gormService.GetDB(orm.WithConfigPath(database))

@@ -19,6 +19,10 @@ const ConfigKey = "gob:config"
 type Config interface {
 	// IsExist 检查一个属性是否存在
 	IsExist(key string) bool
+	// GetIntIfExist 如果存在的话，获取一个 int 属性
+	GetIntIfExist(key string) (exist bool, value int)
+	// GetStringIfExist 如果存在的话，获取一个 string 属性
+	GetStringIfExist(key string) (exist bool, value string)
 	// Get 获取一个属性值
 	Get(key string) interface{}
 	// GetBool 获取一个 bool 属性

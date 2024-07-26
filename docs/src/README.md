@@ -6,7 +6,7 @@ title: 开始体验
 
 actions:
   - text: 快速开始
-    link: /guide/introduce
+    link: /start/
     type: primary
 #  - text: Introduction
 #    link: https://vuejs.press/guide/introduction.html

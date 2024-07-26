@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
 	"github.com/pkg/errors"
@@ -10,48 +9,40 @@ import (
 )
 
 type SingleLogService struct {
-	LogService
+	SubLogService
 
-	folder string
-	file   string
-	fd     *os.File
+	fd *os.File
 }
 
-// NewSingleLogService 实例化 NewSingleLogService
-// params sequence: level, ctxFielder, Formatter, map[string]interface(folder/file)
-func NewSingleLogService(params ...interface{}) (interface{}, error) {
-	c := params[0].(framework.Container)
-	level := params[1].(contract.LogLevel)
-	ctxFielder := params[2].(contract.CtxFielder)
-	formatter := params[3].(contract.Formatter)
-
-	appService := c.MustMake(contract.AppKey).(contract.App)
-	configService := c.MustMake(contract.ConfigKey).(contract.Config)
+// NewSingleLogService 实例化 SingleLog
+func NewSingleLogService(parent *LogService) (interface{}, error) {
 
 	log := &SingleLogService{}
-	log.SetLevel(level)
-	log.SetCtxFielder(ctxFielder)
-	log.SetFormatter(formatter)
+	log.level = parent.parentLevel
+	log.formatter = parent.parentFormatter
+	log.folder = parent.parentFolder
+	log.file = "app.log"
 
-	folder := appService.LogFolder()
-	if configService.IsExist("log.folder") {
-		folder = configService.GetString("log.folder")
+	config := parent.c.MustMake(contract.ConfigKey).(contract.Config)
+
+	if exist, value := config.GetStringIfExist("log.single.level"); exist {
+		log.level = GetLogLevel(value)
 	}
-	log.folder = folder
-	// 如果folder不存在，则创建
-	util.CreateFolderIfNotExists(folder)
-
-	log.file = "gob.log"
-	if configService.IsExist("log.file") {
-		log.file = configService.GetString("log.file")
+	if exist, value := config.GetStringIfExist("log.single.formatter"); exist {
+		log.formatter = GetLogFormatter(value)
+	}
+	if exist, value := config.GetStringIfExist("log.single.folder"); exist {
+		log.folder = value
+		_ = util.CreateFolderIfNotExists(log.folder)
+	}
+	if exist, value := config.GetStringIfExist("log.single.file"); exist {
+		log.file = value
 	}
 
 	fd, err := os.OpenFile(filepath.Join(log.folder, log.file), os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		return nil, errors.Wrap(err, "open log file err")
 	}
-
-	log.SetOutput(fd)
-	log.c = c
+	log.output = fd
 	return log, nil
 }

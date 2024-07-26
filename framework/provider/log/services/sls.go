@@ -10,32 +10,35 @@ import (
 )
 
 type SlsLog struct {
-	LogService
+	SubLogService
 }
 
 type SlsWriter struct {
+	c framework.Container
 	producer.Producer
 	io.Writer
-	c framework.Container
 }
 
-// NewSlsLog params sequence: level, ctxFielder, Formatter, map[string]interface(folder/file) aliyun sls log
-func NewSlsLog(params ...interface{}) (interface{}, error) {
-	c := params[0].(framework.Container)
-	level := params[1].(contract.LogLevel)
-	ctxFielder := params[2].(contract.CtxFielder)
-	formatter := params[3].(contract.Formatter)
-
+// NewSlsLog
+func NewSlsLog(parent *LogService) (interface{}, error) {
 	log := &SlsLog{}
-	log.SetLevel(level)
-	log.SetCtxFielder(ctxFielder)
-	log.SetFormatter(formatter)
-	slsWriter, err := NewSlsWriter(c)
+	log.level = parent.parentLevel
+	log.formatter = parent.parentFormatter
+
+	config := parent.c.MustMake(contract.ConfigKey).(contract.Config)
+
+	if exist, value := config.GetStringIfExist("log.sls.level"); exist {
+		log.level = GetLogLevel(value)
+	}
+	if exist, value := config.GetStringIfExist("log.sls.formatter"); exist {
+		log.formatter = GetLogFormatter(value)
+	}
+
+	slsWriter, err := NewSlsWriter(parent.c)
 	if err != nil {
 		fmt.Println(err)
 	}
-	log.SetOutput(slsWriter)
-	log.c = c
+	log.output = slsWriter
 	return log, nil
 }
 
@@ -56,7 +59,6 @@ func (s *SlsWriter) Write(p []byte) (int, error) {
 	if err != nil {
 		panic(err)
 	}
-
 	logstore, err := slsService.GetLogstore()
 	if err != nil {
 		panic(err)

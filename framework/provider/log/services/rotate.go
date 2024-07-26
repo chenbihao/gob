@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/util"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
@@ -13,88 +12,67 @@ import (
 
 // RotateLogService 代表会进行切割的日志文件存储
 type RotateLogService struct {
-	LogService
-
-	// 日志文件存储目录
-	folder string
-	// 日志文件名
-	file string
+	SubLogService
 }
 
 // NewRotateLogService 实例化 RotateLogService
-func NewRotateLogService(params ...interface{}) (interface{}, error) {
-	// 参数解析
-	c := params[0].(framework.Container)
-	level := params[1].(contract.LogLevel)
-	ctxFielder := params[2].(contract.CtxFielder)
-	formatter := params[3].(contract.Formatter)
-
-	appService := c.MustMake(contract.AppKey).(contract.App)
-	configService := c.MustMake(contract.ConfigKey).(contract.Config)
+func NewRotateLogService(parent *LogService) (interface{}, error) {
 
 	log := &RotateLogService{}
-	log.SetLevel(level)
-	log.SetCtxFielder(ctxFielder)
-	log.SetFormatter(formatter)
+	log.level = parent.parentLevel
+	log.formatter = parent.parentFormatter
+	log.folder = parent.parentFolder
+	log.file = "app.log"
 
-	// 从配置文件中获取folder信息，否则使用默认的LogFolder文件夹
-	folder := appService.LogFolder()
-	if configService.IsExist("log.folder") {
-		folder = configService.GetString("log.folder")
+	config := parent.c.MustMake(contract.ConfigKey).(contract.Config)
+
+	if exist, value := config.GetStringIfExist("log.rotate.level"); exist {
+		log.level = GetLogLevel(value)
 	}
-	// 如果folder不存在，则创建
-	util.CreateFolderIfNotExists(folder)
-
-	// 从配置文件中获取file信息，否则使用默认的gob.log
-	file := "gob.log"
-	if configService.IsExist("log.file") {
-		file = configService.GetString("log.file")
+	if exist, value := config.GetStringIfExist("log.rotate.formatter"); exist {
+		log.formatter = GetLogFormatter(value)
 	}
-
-	// 从配置文件获取date_format信息
-	dateFormat := "%Y%m%d%H"
-	if configService.IsExist("log.date_format") {
-		dateFormat = configService.GetString("log.date_format")
+	if exist, value := config.GetStringIfExist("log.rotate.folder"); exist {
+		log.folder = value
+		_ = util.CreateFolderIfNotExists(log.folder)
+	}
+	if exist, value := config.GetStringIfExist("log.rotate.file"); exist {
+		log.file = value
 	}
 
-	linkName := rotatelogs.WithLinkName(filepath.Join(folder, file))
+	linkName := rotatelogs.WithLinkName(filepath.Join(log.folder, log.file))
 	options := []rotatelogs.Option{linkName}
 
-	// 从配置文件获取rotate_count信息
-	if configService.IsExist("log.rotate_count") {
-		rotateCount := configService.GetInt("log.rotate_count")
-		options = append(options, rotatelogs.WithRotationCount(uint(rotateCount)))
+	// 从配置文件获取date_format信息
+	dateFormat := "%Y%m%d"
+	if exist, value := config.GetStringIfExist("log.rotate.date_format"); exist {
+		dateFormat = value
 	}
-
-	// 从配置文件获取rotate_size信息
-	if configService.IsExist("log.rotate_size") {
-		rotateSize := configService.GetInt("log.rotate_size")
-		options = append(options, rotatelogs.WithRotationSize(int64(rotateSize)))
+	// 从配置文件获取 rotate_count 信息
+	if exist, value := config.GetIntIfExist("log.rotate.rotate_count"); exist {
+		options = append(options, rotatelogs.WithRotationCount(uint(value)))
 	}
-
-	// 从配置文件获取max_age信息
-	if configService.IsExist("log.max_age") {
-		if maxAgeParse, err := time.ParseDuration(configService.GetString("log.max_age")); err == nil {
+	// 从配置文件获取 rotate_size 信息
+	if exist, value := config.GetIntIfExist("log.rotate.rotate_size"); exist {
+		options = append(options, rotatelogs.WithRotationSize(int64(value)))
+	}
+	// 从配置文件获取 max_age 信息
+	if exist, value := config.GetStringIfExist("log.rotate.max_age"); exist {
+		if maxAgeParse, err := time.ParseDuration(value); err == nil {
 			options = append(options, rotatelogs.WithMaxAge(maxAgeParse))
 		}
 	}
-
 	// 从配置文件获取rotate_time信息
-	if configService.IsExist("log.rotate_time") {
-		if rotateTimeParse, err := time.ParseDuration(configService.GetString("log.rotate_time")); err == nil {
+	if exist, value := config.GetStringIfExist("log.rotate.rotate_time"); exist {
+		if rotateTimeParse, err := time.ParseDuration(value); err == nil {
 			options = append(options, rotatelogs.WithRotationTime(rotateTimeParse))
 		}
 	}
 
-	// 设置基础信息
-	log.folder = folder
-	log.file = file
-
 	w, err := rotatelogs.New(fmt.Sprintf("%s.%s", filepath.Join(log.folder, log.file), dateFormat), options...)
 	if err != nil {
-		return nil, errors.Wrap(err, "new rotatelogs error")
+		return nil, errors.Wrap(err, "new rotate logs error")
 	}
-	log.SetOutput(w)
-	log.c = c
+	log.output = w
 	return log, nil
 }

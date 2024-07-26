@@ -21,6 +21,8 @@ func Register(r *gin.Engine) error {
 	r.GET("/demo/orm", api.DemoOrm)
 	r.GET("/demo/redis", api.DemoRedis)
 	r.GET("/demo/cache", api.DemoCache)
+
+	r.GET("/demo/logs", api.DemoLogs)
 	return nil
 }
 
@@ -75,4 +77,18 @@ func (api *DemoApi) DemoPost(c *gin.Context) {
 		_ = c.AbortWithError(500, err)
 	}
 	c.JSON(200, nil)
+}
+
+func (api *DemoApi) DemoLogs(c *gin.Context) {
+	log := c.MustMakeLog()
+	count, _ := c.DefaultQueryInt("count", 1)
+	for i := 0; i < count; i++ {
+		log.Error(c, "Error( ErrorErrorError )", nil)
+		log.Warn(c, "Warn( WarnWarnWarn )", nil)
+		log.Info(c, "Info( InfoInfoInfo )", nil)
+		log.Info(c, "Info( InfoInfoInfo )", map[string]interface{}{"info": "xxxxxxxxxxxxx"})
+		log.Debug(c, "Debug( DebugDebugDebug )", nil)
+		log.Trace(c, "Trace( TraceTraceTrace )", nil)
+	}
+	c.JSON(200, "已打印测试日志")
 }

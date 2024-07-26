@@ -1,32 +1,32 @@
 package services
 
 import (
-	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
 	"os"
 )
 
 // ConsoleLogService 代表控制台输出
 type ConsoleLogService struct {
-	// 类型嵌套 LogService
-	LogService
+	SubLogService
 }
 
 // NewConsoleLogService 实例化 ConsoleLog
-func NewConsoleLogService(params ...interface{}) (interface{}, error) {
-	c := params[0].(framework.Container)
-	level := params[1].(contract.LogLevel)
-	ctxFielder := params[2].(contract.CtxFielder)
-	formatter := params[3].(contract.Formatter)
+func NewConsoleLogService(parent *LogService) (interface{}, error) {
 
 	log := &ConsoleLogService{}
+	log.level = parent.parentLevel
+	log.formatter = parent.parentFormatter
 
-	log.SetLevel(level)
-	log.SetCtxFielder(ctxFielder)
-	log.SetFormatter(formatter)
+	config := parent.c.MustMake(contract.ConfigKey).(contract.Config)
+
+	if exist, value := config.GetStringIfExist("log.console.level"); exist {
+		log.level = GetLogLevel(value)
+	}
+	if exist, value := config.GetStringIfExist("log.console.formatter"); exist {
+		log.formatter = GetLogFormatter(value)
+	}
 
 	// 最重要的将内容输出到控制台
-	log.SetOutput(os.Stdout)
-	log.c = c
+	log.output = os.Stdout
 	return log, nil
 }

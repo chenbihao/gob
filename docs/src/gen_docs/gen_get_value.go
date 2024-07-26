@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"go/ast"
 	"go/token"
 	"os"
@@ -48,9 +47,7 @@ func getProviderSourceCode(filePath string, fset *token.FileSet, d *ast.TypeSpec
 	f, _ := os.OpenFile(filePath, os.O_RDONLY, 0666)
 	defer f.Close()
 
-	buf := make([]byte, 1024*4)
-	f.Read(buf)
-	reader := bufio.NewReader(bytes.NewReader(buf))
+	reader := bufio.NewReader(f)
 
 	sb := strings.Builder{}
 	for i := 1; i <= endLine; i++ {
@@ -89,9 +86,7 @@ func getRemark(filePath string, fset *token.FileSet, astFile *ast.File) (s strin
 	f, _ := os.OpenFile(filePath, os.O_RDONLY, 0666)
 	defer f.Close()
 
-	buf := make([]byte, 1024*4)
-	f.Read(buf)
-	reader := bufio.NewReader(bytes.NewReader(buf))
+	reader := bufio.NewReader(f)
 	sb := strings.Builder{}
 	for i := 1; i < endLine; i++ {
 		line, _, _ := reader.ReadLine()

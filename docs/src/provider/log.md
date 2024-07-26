@@ -6,9 +6,67 @@ description:
 # gob:log
 
 ## 服务介绍：
-提供日志记录相关操作
+
+提供日志记录相关操作，目前支持控制台、单文件、切割文件、阿里云SLS 等日志输出通道
+
+> 阿里云SLS 需要配置对应的 sls 服务 [sls](./sls)
+
 ## 支持命令：无
-## 支持配置：无
+## 支持配置：
+
+通过配置文件 `config/[env]/log.yaml` 可以配置缓存服务的驱动和参数，如下是一个配置示例：
+
+> 注意：rotate库已于21年存档，寻找替代品准备移除
+
+```yaml
+## drivers（启用的日志通道）默认值: [console]
+## level（日志等级）默认值: info
+## formatter（格式化器）默认值: text
+## folder（文件目录）默认值取 app 的 LogFolder地址
+## file（文件名）默认值：app.log
+
+# 启用的日志通道
+drivers: [console,single,rotate,rolling]
+level: trace
+formatter: text
+folder: ./storage/log/
+
+# 控制台输出
+console:
+  level: info
+  formatter: text
+
+# 单文件输出
+single:
+  level: info
+  folder: ./storage/log/
+  file: app_single.log
+
+# 按日期切割（rotate库已于21年存档，寻找替代品准备移除）
+rotate:
+  level: info               # 日志级别
+  folder: ./storage/log/    # 日志文件
+  file: app_rotate.log      # 保存的日志文件
+  rotate_count: 10          # 最多日志文件个数
+  rotate_size: 1048576      # 每个日志大小（byte）
+  rotate_time: "1d"         # 切割时间
+  max_age: "90d"            # 文件保存时间
+  date_format: "%Y-%m-%d"   # 文件后缀格式
+
+# 按容量切割（缺少按日切割功能）
+rolling:
+  level: info             # 日志级别
+  folder: ./storage/log/  # 日志文件
+  file: app_rolling.log   # 保存的日志文件
+  maxSize: 1              # 文件大小（mb） 0为不限制
+  maxAge: 0               # 保留旧日志文件的最大天数 0为不限制
+  maxBackups: 0           # 保留旧日志文件的最大数量 0为不限制
+
+# 阿里云的 SLS 日志
+aliyun_sls:
+  level: info
+  formatter: json
+```
 
 ## 提供方法：
 ```go 
@@ -27,13 +85,5 @@ type Log interface {
 	Debug(ctx context.Context, msg string, fields map[string]interface{})
 	// Trace 表示最详细的信息，一般信息量比较大，可能包含调用堆栈等信息
 	Trace(ctx context.Context, msg string, fields map[string]interface{})
-	// SetLevel 设置日志级别
-	SetLevel(level LogLevel)
-	// SetCtxFielder 从context中获取上下文字段field
-	SetCtxFielder(handler CtxFielder)
-	// SetFormatter 设置输出格式
-	SetFormatter(formatter Formatter)
-	// SetOutput 设置输出管道
-	SetOutput(out io.Writer)
 }
 ```

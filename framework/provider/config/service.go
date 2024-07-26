@@ -103,15 +103,15 @@ func NewConfigService(params ...interface{}) (interface{}, error) {
 				fileName := path[index+1:]
 
 				if ev.Op&fsnotify.Create == fsnotify.Create {
-					log.Println("创建文件 : ", ev.Name)
+					log.Println("配置监听-创建文件 : ", ev.Name)
 					_ = gobConf.loadConfigFile(folder, fileName)
 				}
 				if ev.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("写入文件 : ", ev.Name)
+					log.Println("配置监听-写入文件 : ", ev.Name)
 					_ = gobConf.loadConfigFile(folder, fileName)
 				}
 				if ev.Op&fsnotify.Remove == fsnotify.Remove {
-					log.Println("删除文件 : ", ev.Name)
+					log.Println("配置监听-删除文件 : ", ev.Name)
 					_ = gobConf.removeConfigFile(folder, fileName)
 				}
 			case err := <-watch.Errors:
@@ -223,6 +223,20 @@ func (conf *ConfigService) find(key string) interface{} {
 // IsExist check setting is exist
 func (conf *ConfigService) IsExist(key string) bool {
 	return conf.find(key) != nil
+}
+
+func (conf *ConfigService) GetIntIfExist(key string) (exist bool, value int) {
+	if conf.IsExist(key) {
+		return true, conf.GetInt(key)
+	}
+	return false, value
+}
+
+func (conf *ConfigService) GetStringIfExist(key string) (exist bool, value string) {
+	if conf.IsExist(key) {
+		return true, conf.GetString(key)
+	}
+	return false, value
 }
 
 // Get 获取某个配置项

@@ -31,9 +31,6 @@ var modelGenCommand = &cobra.Command{
 
 		// 获取env环境
 		container := c.GetContainer()
-		logger := container.MustMake(contract.LogKey).(contract.Log)
-		logger.SetLevel(contract.ErrorLevel)
-
 		gormService := container.MustMake(contract.ORMKey).(contract.ORM)
 		db, err := gormService.GetDB(orm.WithConfigPath(database))
 		if err != nil {
