@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-// Container 是一个服务容器，提供绑定服务和获取服务的功能
+// Container 是一个服务容器，提供绑定服务（Bind）和获取服务的功能（Make）
 type Container interface {
 
 	// Bind 绑定一个服务提供者，如果关键字凭证已经存在，会进行替换操作，返回 error
@@ -111,12 +111,10 @@ func (container *GobContainer) newInstance(sp ServiceProvider, params []interfac
 	return ins, err
 }
 
-// Make 方式调用内部的 make 实现
 func (container *GobContainer) Make(key string) (interface{}, error) {
 	return container.make(key, nil, false)
 }
 
-// MustMake 方式调用内部的 make 实现
 func (container *GobContainer) MustMake(key string) interface{} {
 	serv, err := container.make(key, nil, false)
 	if err != nil {
@@ -125,7 +123,6 @@ func (container *GobContainer) MustMake(key string) interface{} {
 	return serv
 }
 
-// MakeNew 方式使用内部的 make 初始化
 func (container *GobContainer) MakeNew(key string, params []interface{}) (interface{}, error) {
 	return container.make(key, params, true)
 }
@@ -135,13 +132,13 @@ func (container *GobContainer) make(key string, params []interface{}, forceNew b
 	container.lock.RLock()
 	defer container.lock.RUnlock()
 	// 查询是否已经注册了这个服务提供者，如果没有注册，则返回错误
-	sp := container.findServiceProvider(key)
-	if sp == nil {
+	serviceProvider := container.findServiceProvider(key)
+	if serviceProvider == nil {
 		return nil, errors.New("contract " + key + " have not register")
 	}
 
 	if forceNew {
-		return container.newInstance(sp, params)
+		return container.newInstance(serviceProvider, params)
 	}
 
 	// 不需要强制重新实例化，如果容器中已经实例化了，那么就直接使用容器中的实例
@@ -150,7 +147,7 @@ func (container *GobContainer) make(key string, params []interface{}, forceNew b
 	}
 
 	// 容器中还未实例化，则进行一次实例化
-	inst, err := container.newInstance(sp, nil)
+	inst, err := container.newInstance(serviceProvider, nil)
 	if err != nil {
 		return nil, err
 	}

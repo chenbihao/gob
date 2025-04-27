@@ -5,13 +5,14 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
@@ -23,57 +24,59 @@ import (
 
 // ConfigService 是 Config 的具体实现
 type ConfigService struct {
-	c        framework.Container    // 容器
-	folder   string                 // 文件夹
-	keyDelim string                 // key 路径的分隔符，默认为点
-	lock     sync.RWMutex           // 配置文件读写锁
-	envMaps  map[string]string      // 所有的环境变量
-	confMaps map[string]interface{} // 配置文件结构，key为文件名
-	confRaws map[string][]byte      // 配置文件的原始信息
+	c        framework.Container // 容器
+	folder   string              // 文件夹
+	keyDelim string              // key 路径的分隔符，默认为点
+	lock     sync.RWMutex        // 配置文件读写锁
+	envMaps  map[string]string   // 所有的环境变量
+	confMaps map[string]any      // 配置文件结构，key为文件名
+	confRaws map[string][]byte   // 配置文件的原始信息
 }
 
 var _ contract.Config = (*ConfigService)(nil)
 
 // NewConfigService 初始化Config方法
-func NewConfigService(params ...interface{}) (interface{}, error) {
+func NewConfigService(params ...any) (any, error) {
 	container := params[0].(framework.Container)
-	envFolder := params[1].(string)
-	envMaps := params[2].(map[string]string)
+	appEnvFolder := params[1].(string)
+	allEnvMaps := params[2].(map[string]string)
 
-	appService := container.MustMake(contract.AppKey).(contract.App)
+	// appService := container.MustMake(contract.AppKey).(contract.App)
 
 	// 检查文件夹是否存在
-	if _, err := os.Stat(envFolder); os.IsNotExist(err) {
-		if appService.IsToolMode() {
-			err = nil
-			log.Println("纯工具模式，未能加载配置！")
-		} else {
-			return nil, errors.New("folder " + envFolder + " not exist: " + err.Error())
-		}
+	if _, err := os.Stat(appEnvFolder); os.IsNotExist(err) {
+		// todo 默认配置化
+		return nil, errors.New("folder " + appEnvFolder + " not exist: " + err.Error())
+		// if appService.IsToolMode() {
+		// 	err = nil
+		// 	log.Println("纯工具模式，未能加载配置！")
+		// } else {
+		// 	return nil, errors.New("folder " + envFolder + " not exist: " + err.Error())
+		// }
 	}
 
 	// 实例化
 	gobConf := &ConfigService{
 		c:        container,
-		folder:   envFolder,
+		folder:   appEnvFolder,
 		keyDelim: ".",
-		envMaps:  envMaps,
-		confMaps: map[string]interface{}{},
+		envMaps:  allEnvMaps,
+		confMaps: map[string]any{},
 		confRaws: map[string][]byte{},
 		lock:     sync.RWMutex{},
 	}
-	if appService.IsToolMode() {
-		return gobConf, nil
-	}
+	// if appService.IsToolMode() {
+	// 	return gobConf, nil
+	// }
 
 	// 读取每个文件
-	files, err := os.ReadDir(envFolder)
+	files, err := os.ReadDir(appEnvFolder)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	for _, file := range files {
 		fileName := file.Name()
-		if err := gobConf.loadConfigFile(envFolder, fileName); err != nil {
+		if err := gobConf.loadConfigFile(appEnvFolder, fileName); err != nil {
 			log.Println(err)
 			continue
 		}
@@ -84,7 +87,7 @@ func NewConfigService(params ...interface{}) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = watch.Add(envFolder); err != nil {
+	if err = watch.Add(appEnvFolder); err != nil {
 		return nil, err
 	}
 	go func() {
@@ -137,9 +140,9 @@ func (conf *ConfigService) loadConfigFile(folder string, file string) error {
 			return err
 		}
 		// 直接针对文本做环境变量的替换
-		bf = replace(bf, conf.envMaps)
+		bf = replaceEnvKey(bf, conf.envMaps)
 		// 解析对应的文件
-		c := map[string]interface{}{}
+		c := map[string]any{}
 		if err := yaml.Unmarshal(bf, &c); err != nil {
 			return err
 		}
@@ -172,8 +175,8 @@ func (conf *ConfigService) removeConfigFile(folder string, file string) error {
 	return nil
 }
 
-// replace 表示使用环境变量maps替换context中的env(xxx)的环境变量
-func replace(content []byte, maps map[string]string) []byte {
+// replaceEnvKey 表示使用环境变量maps替换context中的env(xxx)的环境变量
+func replaceEnvKey(content []byte, maps map[string]string) []byte {
 	if maps == nil {
 		return content
 	}
@@ -186,7 +189,7 @@ func replace(content []byte, maps map[string]string) []byte {
 }
 
 // 查找某个路径的配置项
-func searchMap(source map[string]interface{}, path []string) interface{} {
+func searchMap(source map[string]any, path []string) any {
 	if len(path) == 0 {
 		return source
 	}
@@ -199,12 +202,12 @@ func searchMap(source map[string]interface{}, path []string) interface{} {
 		}
 		// 判断下一个路径的类型
 		switch next.(type) {
-		case map[interface{}]interface{}:
+		case map[any]any:
 			// 如果是interface的map，使用cast进行下value转换
 			return searchMap(cast.ToStringMap(next), path[1:])
-		case map[string]interface{}:
+		case map[string]any:
 			// 如果是map[string]，直接循环调用
-			return searchMap(next.(map[string]interface{}), path[1:])
+			return searchMap(next.(map[string]any), path[1:])
 		default:
 			// 否则的话，返回nil
 			return nil
@@ -214,7 +217,7 @@ func searchMap(source map[string]interface{}, path []string) interface{} {
 }
 
 // 通过path获取某个元素
-func (conf *ConfigService) find(key string) interface{} {
+func (conf *ConfigService) find(key string) any {
 	conf.lock.RLock()
 	defer conf.lock.RUnlock()
 	return searchMap(conf.confMaps, strings.Split(key, conf.keyDelim))
@@ -240,7 +243,7 @@ func (conf *ConfigService) GetStringIfExist(key string) (exist bool, value strin
 }
 
 // Get 获取某个配置项
-func (conf *ConfigService) Get(key string) interface{} {
+func (conf *ConfigService) Get(key string) any {
 	return conf.find(key)
 }
 
@@ -280,7 +283,7 @@ func (conf *ConfigService) GetStringSlice(key string) []string {
 }
 
 // GetStringMap get map which key is string, value is interface
-func (conf *ConfigService) GetStringMap(key string) map[string]interface{} {
+func (conf *ConfigService) GetStringMap(key string) map[string]any {
 	return cast.ToStringMap(conf.find(key))
 }
 
@@ -295,7 +298,7 @@ func (conf *ConfigService) GetStringMapStringSlice(key string) map[string][]stri
 }
 
 // Load a config to a struct, val should be an pointer
-func (conf *ConfigService) Load(key string, val interface{}) error {
+func (conf *ConfigService) Load(key string, val any) error {
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "yaml",
 		Result:  val,

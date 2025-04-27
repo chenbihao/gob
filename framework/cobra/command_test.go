@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"reflect"
 	"strings"
@@ -370,9 +370,32 @@ func TestAliasPrefixMatching(t *testing.T) {
 // executable is `kubectl-plugin`, but we run it as `kubectl plugin`. The help
 // text should reflect the way we run the command.
 func TestPlugin(t *testing.T) {
+	cmd := &Command{
+		Use:     "kubectl-plugin",
+		Version: "1.0.0",
+		Args:    NoArgs,
+		Annotations: map[string]string{
+			CommandDisplayNameAnnotation: "kubectl plugin",
+		},
+		Run: emptyRun,
+	}
+
+	cmdHelp, err := executeCommand(cmd, "-h")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	checkStringContains(t, cmdHelp, "kubectl plugin [flags]")
+	checkStringContains(t, cmdHelp, "help for kubectl plugin")
+	checkStringContains(t, cmdHelp, "version for kubectl plugin")
+}
+
+// TestPluginWithSubCommands checks usage as plugin with sub commands.
+func TestPluginWithSubCommands(t *testing.T) {
 	rootCmd := &Command{
-		Use:  "plugin",
-		Args: NoArgs,
+		Use:     "kubectl-plugin",
+		Version: "1.0.0",
+		Args:    NoArgs,
 		Annotations: map[string]string{
 			CommandDisplayNameAnnotation: "kubectl plugin",
 		},
@@ -387,6 +410,9 @@ func TestPlugin(t *testing.T) {
 	}
 
 	checkStringContains(t, rootHelp, "kubectl plugin [command]")
+	checkStringContains(t, rootHelp, "help for kubectl plugin")
+	checkStringContains(t, rootHelp, "version for kubectl plugin")
+	checkStringContains(t, rootHelp, "kubectl plugin [command] --help")
 
 	childHelp, err := executeCommand(rootCmd, "sub", "-h")
 	if err != nil {
@@ -394,6 +420,15 @@ func TestPlugin(t *testing.T) {
 	}
 
 	checkStringContains(t, childHelp, "kubectl plugin sub [flags]")
+	checkStringContains(t, childHelp, "help for sub")
+
+	helpHelp, err := executeCommand(rootCmd, "help", "-h")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	checkStringContains(t, helpHelp, "kubectl plugin help [path to command]")
+	checkStringContains(t, helpHelp, "kubectl plugin help [command]")
 }
 
 // TestChildSameName checks the correct behaviour of cobra in cases,
@@ -983,6 +1018,49 @@ func TestSetHelpCommand(t *testing.T) {
 	}
 }
 
+func TestSetHelpTemplate(t *testing.T) {
+	rootCmd := &Command{Use: "root", Run: emptyRun}
+	childCmd := &Command{Use: "child", Run: emptyRun}
+	rootCmd.AddCommand(childCmd)
+
+	rootCmd.SetHelpTemplate("WORKS {{.UseLine}}")
+
+	// Call the help on the root command and check the new template is used
+	got, err := executeCommand(rootCmd, "--help")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	expected := "WORKS " + rootCmd.UseLine()
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+
+	// Call the help on the child command and check
+	// the new template is inherited from the parent
+	got, err = executeCommand(rootCmd, "child", "--help")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	expected = "WORKS " + childCmd.UseLine()
+	if got != expected {
+		t.Errorf("Expected %q, got %q", expected, got)
+	}
+
+	// Reset the root command help template and make sure
+	// it falls back to the default
+	rootCmd.SetHelpTemplate("")
+	got, err = executeCommand(rootCmd, "--help")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	if !strings.Contains(got, "Usage:") {
+		t.Errorf("Expected to contain %q, got %q", "Usage:", got)
+	}
+}
+
 func TestHelpFlagExecuted(t *testing.T) {
 	rootCmd := &Command{Use: "root", Long: "Long description", Run: emptyRun}
 
@@ -1010,7 +1088,7 @@ func TestHelpFlagExecutedOnChild(t *testing.T) {
 // TestHelpFlagInHelp checks,
 // if '--help' flag is shown in help for child (executing `parent help child`),
 // that has no other flags.
-// Related to https://github.com/spf13/cobra/issues/302.
+// Related to https://github.com/chenbihao/gob/framework/cobra/issues/302.
 func TestHelpFlagInHelp(t *testing.T) {
 	parentCmd := &Command{Use: "parent", Run: func(*Command, []string) {}}
 
@@ -1048,6 +1126,45 @@ func TestHelpExecutedOnNonRunnableChild(t *testing.T) {
 	checkStringContains(t, output, childCmd.Long)
 }
 
+func TestSetUsageTemplate(t *testing.T) {
+	rootCmd := &Command{Use: "root", Run: emptyRun}
+	childCmd := &Command{Use: "child", Run: emptyRun}
+	rootCmd.AddCommand(childCmd)
+
+	rootCmd.SetUsageTemplate("WORKS {{.UseLine}}")
+
+	// Trigger the usage on the root command and check the new template is used
+	got, err := executeCommand(rootCmd, "--invalid")
+	if err == nil {
+		t.Errorf("Expected error but did not get one")
+	}
+
+	expected := "WORKS " + rootCmd.UseLine()
+	checkStringContains(t, got, expected)
+
+	// Trigger the usage on the child command and check
+	// the new template is inherited from the parent
+	got, err = executeCommand(rootCmd, "child", "--invalid")
+	if err == nil {
+		t.Errorf("Expected error but did not get one")
+	}
+
+	expected = "WORKS " + childCmd.UseLine()
+	checkStringContains(t, got, expected)
+
+	// Reset the root command usage template and make sure
+	// it falls back to the default
+	rootCmd.SetUsageTemplate("")
+	got, err = executeCommand(rootCmd, "--invalid")
+	if err == nil {
+		t.Errorf("Expected error but did not get one")
+	}
+
+	if !strings.Contains(got, "Usage:") {
+		t.Errorf("Expected to contain %q, got %q", "Usage:", got)
+	}
+}
+
 func TestVersionFlagExecuted(t *testing.T) {
 	rootCmd := &Command{Use: "root", Version: "1.0.0", Run: emptyRun}
 
@@ -1057,6 +1174,24 @@ func TestVersionFlagExecuted(t *testing.T) {
 	}
 
 	checkStringContains(t, output, "root version 1.0.0")
+}
+
+func TestVersionFlagExecutedDiplayName(t *testing.T) {
+	rootCmd := &Command{
+		Use:     "kubectl-plugin",
+		Version: "1.0.0",
+		Annotations: map[string]string{
+			CommandDisplayNameAnnotation: "kubectl plugin",
+		},
+		Run: emptyRun,
+	}
+
+	output, err := executeCommand(rootCmd, "--version", "arg1")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	checkStringContains(t, output, "kubectl plugin version 1.0.0")
 }
 
 func TestVersionFlagExecutedWithNoName(t *testing.T) {
@@ -1650,7 +1785,7 @@ func testPersistentHooks(t *testing.T, expectedHookRunOrder []string) {
 	}
 }
 
-// Related to https://github.com/spf13/cobra/issues/521.
+// Related to https://github.com/chenbihao/gob/framework/cobra/issues/521.
 func TestGlobalNormFuncPropagation(t *testing.T) {
 	normFunc := func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		return pflag.NormalizedName(name)
@@ -1670,7 +1805,7 @@ func TestGlobalNormFuncPropagation(t *testing.T) {
 	}
 }
 
-// Related to https://github.com/spf13/cobra/issues/521.
+// Related to https://github.com/chenbihao/gob/framework/cobra/issues/521.
 func TestNormPassedOnLocal(t *testing.T) {
 	toUpper := func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		return pflag.NormalizedName(strings.ToUpper(name))
@@ -1684,7 +1819,7 @@ func TestNormPassedOnLocal(t *testing.T) {
 	}
 }
 
-// Related to https://github.com/spf13/cobra/issues/521.
+// Related to https://github.com/chenbihao/gob/framework/cobra/issues/521.
 func TestNormPassedOnInherited(t *testing.T) {
 	toUpper := func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		return pflag.NormalizedName(strings.ToUpper(name))
@@ -1712,7 +1847,7 @@ func TestNormPassedOnInherited(t *testing.T) {
 	}
 }
 
-// Related to https://github.com/spf13/cobra/issues/521.
+// Related to https://github.com/chenbihao/gob/framework/cobra/issues/521.
 func TestConsistentNormalizedName(t *testing.T) {
 	toUpper := func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		return pflag.NormalizedName(strings.ToUpper(name))
@@ -2061,12 +2196,12 @@ func TestCommandPrintRedirection(t *testing.T) {
 		t.Error(err)
 	}
 
-	gotErrBytes, err := ioutil.ReadAll(errBuff)
+	gotErrBytes, err := io.ReadAll(errBuff)
 	if err != nil {
 		t.Error(err)
 	}
 
-	gotOutBytes, err := ioutil.ReadAll(outBuff)
+	gotOutBytes, err := io.ReadAll(outBuff)
 	if err != nil {
 		t.Error(err)
 	}
@@ -2131,7 +2266,7 @@ Flags:
 
 // TestSortedFlags checks,
 // if cmd.LocalFlags() is unsorted when cmd.Flags().SortFlags set to false.
-// Related to https://github.com/spf13/cobra/issues/404.
+// Related to https://github.com/chenbihao/gob/framework/cobra/issues/404.
 func TestSortedFlags(t *testing.T) {
 	c := &Command{}
 	c.Flags().SortFlags = false
@@ -2157,7 +2292,7 @@ func TestSortedFlags(t *testing.T) {
 // TestMergeCommandLineToFlags checks,
 // if pflag.CommandLine is correctly merged to c.Flags() after first call
 // of c.mergePersistentFlags.
-// Related to https://github.com/spf13/cobra/issues/443.
+// Related to https://github.com/chenbihao/gob/framework/cobra/issues/443.
 func TestMergeCommandLineToFlags(t *testing.T) {
 	pflag.Bool("boolflag", false, "")
 	c := &Command{Use: "c", Run: emptyRun}
@@ -2171,7 +2306,7 @@ func TestMergeCommandLineToFlags(t *testing.T) {
 
 // TestUseDeprecatedFlags checks,
 // if cobra.Execute() prints a message, if a deprecated flag is used.
-// Related to https://github.com/spf13/cobra/issues/463.
+// Related to https://github.com/chenbihao/gob/framework/cobra/issues/463.
 func TestUseDeprecatedFlags(t *testing.T) {
 	c := &Command{Use: "c", Run: emptyRun}
 	c.Flags().BoolP("deprecated", "d", false, "deprecated flag")
@@ -2286,7 +2421,7 @@ func TestTraverseWithTwoSubcommands(t *testing.T) {
 }
 
 // TestUpdateName checks if c.Name() updates on changed c.Use.
-// Related to https://github.com/spf13/cobra/pull/422#discussion_r143918343.
+// Related to https://github.com/chenbihao/gob/framework/cobra/pull/422#discussion_r143918343.
 func TestUpdateName(t *testing.T) {
 	c := &Command{Use: "name xyz"}
 	originalName := c.Name()
@@ -2746,7 +2881,7 @@ func TestFind(t *testing.T) {
 
 func TestUnknownFlagShouldReturnSameErrorRegardlessOfArgPosition(t *testing.T) {
 	testCases := [][]string{
-		//{"--unknown", "--namespace", "foo", "child", "--bar"}, // FIXME: This test case fails, returning the error `unknown command "foo" for "root"` instead of the expected error `unknown flag: --unknown`
+		// {"--unknown", "--namespace", "foo", "child", "--bar"}, // FIXME: This test case fails, returning the error `unknown command "foo" for "root"` instead of the expected error `unknown flag: --unknown`
 		{"--namespace", "foo", "--unknown", "child", "--bar"},
 		{"--namespace", "foo", "child", "--unknown", "--bar"},
 		{"--namespace", "foo", "child", "--bar", "--unknown"},

@@ -14,9 +14,14 @@ type EnvProvider struct {
 
 var _ framework.ServiceProvider = (*EnvProvider)(nil)
 
-// Register 注册服务提供者
-func (provider *EnvProvider) Register(container framework.Container) framework.NewInstance {
-	return NewEnvService
+// Name 获取字符串凭证
+func (provider *EnvProvider) Name() string {
+	return contract.EnvKey
+}
+
+// IsDefer 是否延迟初始化
+func (provider *EnvProvider) IsDefer() bool {
+	return false
 }
 
 // Boot 启动调用
@@ -26,17 +31,12 @@ func (provider *EnvProvider) Boot(container framework.Container) error {
 	return nil
 }
 
-// IsDefer 是否延迟初始化
-func (provider *EnvProvider) IsDefer() bool {
-	return false
-}
-
 // Params 获取初始化参数
-func (provider *EnvProvider) Params(container framework.Container) []interface{} {
-	return []interface{}{provider.Folder}
+func (provider *EnvProvider) Params(container framework.Container) []any {
+	return []any{provider.Folder}
 }
 
-// Name 获取字符串凭证
-func (provider *EnvProvider) Name() string {
-	return contract.EnvKey
+// Register 注册服务提供者
+func (provider *EnvProvider) Register(container framework.Container) framework.NewInstance {
+	return NewEnvService
 }

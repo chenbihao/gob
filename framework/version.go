@@ -1,4 +1,4 @@
 package framework
 
 // Version gob的版本
-const Version = "0.1.17"
+const Version = "0.2.0"

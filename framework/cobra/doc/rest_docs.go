@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
+	"github.com/chenbihao/gob/framework/cobra"
 )
 
 func printOptionsReST(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
@@ -140,7 +140,7 @@ func GenReSTTree(cmd *cobra.Command, dir string) error {
 	return GenReSTTreeCustom(cmd, dir, emptyStr, defaultLinkHandler)
 }
 
-// GenReSTTreeCustom is the the same as GenReSTTree, but
+// GenReSTTreeCustom is the same as GenReSTTree, but
 // with custom filePrepender and linkHandler.
 func GenReSTTreeCustom(cmd *cobra.Command, dir string, filePrepender func(string) string, linkHandler func(string, string) string) error {
 	for _, c := range cmd.Commands() {

@@ -16,12 +16,11 @@ package doc
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/spf13/cobra"
+	"github.com/chenbihao/gob/framework/cobra"
 )
 
 func TestGenMdDoc(t *testing.T) {
@@ -94,7 +93,7 @@ func TestGenMdNoTag(t *testing.T) {
 
 func TestGenMdTree(t *testing.T) {
 	c := &cobra.Command{Use: "do [OPTIONS] arg1 arg2"}
-	tmpdir, err := ioutil.TempDir("", "test-gen-md-tree")
+	tmpdir, err := os.MkdirTemp("", "test-gen-md-tree")
 	if err != nil {
 		t.Fatalf("Failed to create tmpdir: %v", err)
 	}
@@ -110,7 +109,7 @@ func TestGenMdTree(t *testing.T) {
 }
 
 func BenchmarkGenMarkdownToFile(b *testing.B) {
-	file, err := ioutil.TempFile("", "")
+	file, err := os.CreateTemp("", "")
 	if err != nil {
 		b.Fatal(err)
 	}

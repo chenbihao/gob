@@ -6,11 +6,12 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/chenbihao/gob/framework/contract"
 	"io"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/chenbihao/gob/framework/contract"
 )
 
 // EnvService 是 Env 的具体实现
@@ -19,10 +20,10 @@ type EnvService struct {
 	maps   map[string]string // 保存所有的环境变量
 }
 
-// NewGobEnv 有一个参数，.env文件所在的目录
+// NewGobEnv 有一个参数，.env文件所在的目录 ，默认是baseFolder
 // example: NewGobEnv("/envfolder/") 会读取文件: /envfolder/.env
 // .env的文件格式 FOO_ENV=BAR
-func NewEnvService(params ...interface{}) (interface{}, error) {
+func NewEnvService(params ...any) (any, error) {
 	if len(params) != 1 {
 		return nil, errors.New("NewGobEnv param error")
 	}
