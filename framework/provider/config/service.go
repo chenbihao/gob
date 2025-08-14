@@ -4,175 +4,132 @@ package config
 
 import (
 	"bytes"
-	"fmt"
+	"github.com/knadh/koanf/v2"
 	"log"
-	"os"
 	"path/filepath"
-	"strings"
 	"sync"
-	"time"
-
-	"gopkg.in/yaml.v3"
 
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
-	"github.com/fsnotify/fsnotify"
-	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
-	"github.com/spf13/cast"
+
+	kdotenv "github.com/knadh/koanf/parsers/dotenv"
+	kyaml "github.com/knadh/koanf/parsers/yaml"
+
+	kenv "github.com/knadh/koanf/providers/env/v2"
+	kfile "github.com/knadh/koanf/providers/file"
+	krawbytes "github.com/knadh/koanf/providers/rawbytes"
 )
 
 // ConfigService 是 Config 的具体实现
 type ConfigService struct {
-	c        framework.Container // 容器
-	folder   string              // 文件夹
-	keyDelim string              // key 路径的分隔符，默认为点
-	lock     sync.RWMutex        // 配置文件读写锁
-	envMaps  map[string]string   // 所有的环境变量
-	confMaps map[string]any      // 配置文件结构，key为文件名
-	confRaws map[string][]byte   // 配置文件的原始信息
+	c          framework.Container     // 容器
+	lock       sync.RWMutex            // 配置文件读写锁
+	keyDelim   string                  // key 路径的分隔符，默认为点
+	folder     string                  // 文件夹
+	kEnv       *koanf.Koanf            // 所有的环境变量
+	kConfig    *koanf.Koanf            // 所有的配置
+	kSubConfig map[string]*koanf.Koanf // 所有的契约配置
 }
 
 var _ contract.Config = (*ConfigService)(nil)
 
+type ConfigMode string // 定义自定义类型作为枚举基础
+const (
+	Root      ConfigMode = "root"      // 读取根目录的 config.yaml
+	Folder               = "folder"    // 读取 config 目录下读取，支持配置分离
+	DeployEnv            = "deployEnv" // 读取 config/{deploy_env} 目录下读取，支持配置分离（对应的部署环境配置目录如dev/test/prod）
+)
+
+const (
+	EnvConfigMode = "configMode"
+	EnvDeployEnv  = "deployEnv"
+)
+
 // NewConfigService 初始化Config方法
 func NewConfigService(params ...any) (any, error) {
+
 	container := params[0].(framework.Container)
-	appEnvFolder := params[1].(string)
-	allEnvMaps := params[2].(map[string]string)
+	appService := container.MustMake(contract.AppKey).(contract.App)
 
-	// appService := container.MustMake(contract.AppKey).(contract.App)
+	delim := "."
 
-	// 检查文件夹是否存在
-	if _, err := os.Stat(appEnvFolder); os.IsNotExist(err) {
-		// todo 默认配置化
-		return nil, errors.New("folder " + appEnvFolder + " not exist: " + err.Error())
-		// if appService.IsToolMode() {
-		// 	err = nil
-		// 	log.Println("纯工具模式，未能加载配置！")
-		// } else {
-		// 	return nil, errors.New("folder " + envFolder + " not exist: " + err.Error())
-		// }
+	// 读取环境变量（先读取环境变量，后读取.env文件替换值）
+	var kEnv = koanf.New(delim)
+	_ = kEnv.Load(kenv.Provider(delim, kenv.Opt{}), nil)
+
+	var kEnvFile = koanf.New(delim)
+	_ = kEnvFile.Load(kfile.Provider(filepath.Join(appService.BaseFolder(), ".env")), kdotenv.Parser())
+	_ = kEnv.Merge(kEnvFile)
+
+	// 默认是极简模式，可选开启配置文件夹，可选开启部署配置分离模式（deploy_env：env/test/prod）
+	configMode := kEnv.Get(EnvConfigMode)
+	configFolder := appService.BaseFolder()
+	if configMode != nil {
+		switch configMode {
+		case Root:
+			configFolder = appService.BaseFolder()
+		case Folder:
+			configFolder = filepath.Join(appService.BaseFolder(), "config")
+		case DeployEnv:
+			deployEnv := kEnv.String(EnvDeployEnv)
+			if deployEnv == "" {
+				deployEnv = "dev"
+			}
+			configFolder = filepath.Join(appService.BaseFolder(), "config", deployEnv)
+		}
 	}
+
+	// 初始化 config.yaml
+	var k = koanf.New(delim)
+	kConfig := kfile.Provider(filepath.Join(configFolder, "config.yaml"))
+	replaceAndLoad(k, kConfig, kEnv)
+	// 监控文件夹文件
+	_ = kConfig.Watch(func(event interface{}, err error) {
+		if err != nil {
+			log.Printf("watch error: %v", err)
+			return
+		}
+		// Throw away the old config and load a fresh copy.
+		log.Println("config changed. Reloading ...")
+		k = koanf.New(delim)
+		replaceAndLoad(k, kConfig, kEnv)
+		k.Print()
+	})
+	// To stop a file watcher, call:
+	// f.Unwatch()
+
+	//var kApp = koanf.New(delim)
+	//kAppFile := kfile.Provider(appService.BaseFolder() + "/config/dev/app.yaml")
+	//kAppByte, _ := kAppFile.ReadBytes()
+	//_ = kApp.Load(krawbytes.Provider(kAppByte), kyaml.Parser())
+	//_ = k.MergeAt(kApp, "app")
+	//
+	//var kCache = koanf.New(delim)
+	//_ = kCache.Load(kfile.Provider(appService.BaseFolder()+"/config/dev/cache.yaml"), kyaml.Parser())
+	//_ = k.MergeAt(kCache, "cache")
+	//k.Print()
 
 	// 实例化
 	gobConf := &ConfigService{
 		c:        container,
-		folder:   appEnvFolder,
-		keyDelim: ".",
-		envMaps:  allEnvMaps,
-		confMaps: map[string]any{},
-		confRaws: map[string][]byte{},
 		lock:     sync.RWMutex{},
-	}
-	// if appService.IsToolMode() {
-	// 	return gobConf, nil
-	// }
-
-	// 读取每个文件
-	files, err := os.ReadDir(appEnvFolder)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	for _, file := range files {
-		fileName := file.Name()
-		if err := gobConf.loadConfigFile(appEnvFolder, fileName); err != nil {
-			log.Println(err)
-			continue
-		}
+		keyDelim: delim,
+		folder:   configFolder,
+		kEnv:     kEnv,
+		kConfig:  k,
+		//kSub:     make(map[string]*koanf.Koanf),
 	}
 
-	// 监控文件夹文件
-	watch, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-	if err = watch.Add(appEnvFolder); err != nil {
-		return nil, err
-	}
-	go func() {
-		defer func() {
-			if err := recover(); err != nil {
-				fmt.Println(err)
-			}
-		}()
-		for {
-			select {
-			case ev := <-watch.Events:
-				// 判断事件发生的类型 Create 创建 Write 写入 Remove 删除
-				path, _ := filepath.Abs(ev.Name)
-				index := strings.LastIndex(path, string(os.PathSeparator))
-				folder := path[:index]
-				fileName := path[index+1:]
-
-				if ev.Op&fsnotify.Create == fsnotify.Create {
-					log.Println("配置监听-创建文件 : ", ev.Name)
-					_ = gobConf.loadConfigFile(folder, fileName)
-				}
-				if ev.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("配置监听-写入文件 : ", ev.Name)
-					_ = gobConf.loadConfigFile(folder, fileName)
-				}
-				if ev.Op&fsnotify.Remove == fsnotify.Remove {
-					log.Println("配置监听-删除文件 : ", ev.Name)
-					_ = gobConf.removeConfigFile(folder, fileName)
-				}
-			case err := <-watch.Errors:
-				log.Println("error : ", err)
-				return
-			}
-		}
-	}()
 	return gobConf, nil
 }
 
-// 读取某个配置文件
-func (conf *ConfigService) loadConfigFile(folder string, file string) error {
-	conf.lock.Lock()
-	defer conf.lock.Unlock()
-	//  判断文件是否以yaml或者yml作为后缀
-	s := strings.Split(file, ".")
-	if len(s) == 2 && (s[1] == "yaml" || s[1] == "yml") {
-		name := s[0]
-		// 读取文件内容
-		bf, err := os.ReadFile(filepath.Join(folder, file))
-		if err != nil {
-			return err
-		}
-		// 直接针对文本做环境变量的替换
-		bf = replaceEnvKey(bf, conf.envMaps)
-		// 解析对应的文件
-		c := map[string]any{}
-		if err := yaml.Unmarshal(bf, &c); err != nil {
-			return err
-		}
-		conf.confMaps[name] = c
-		conf.confRaws[name] = bf
-
-		// 读取app.path中的信息，更新 app 对应的 folder
-		if name == "app" && conf.c.IsBind(contract.AppKey) {
-			if p, ok := c["path"]; ok {
-				appService := conf.c.MustMake(contract.AppKey).(contract.App)
-				appService.LoadAppConfig(cast.ToStringMapString(p))
-			}
-		}
-	}
-	return nil
-}
-
-// 删除文件的操作
-func (conf *ConfigService) removeConfigFile(folder string, file string) error {
-	conf.lock.Lock()
-	defer conf.lock.Unlock()
-	s := strings.Split(file, ".")
-	// 只有yaml或者yml后缀才执行
-	if len(s) == 2 && (s[1] == "yaml" || s[1] == "yml") {
-		name := s[0]
-		// 删除内存中对应的key
-		delete(conf.confRaws, name)
-		delete(conf.confMaps, name)
-	}
-	return nil
+// replaceAndLoad 替换环境变量maps并加载配置
+func replaceAndLoad(k *koanf.Koanf, kConfig *kfile.File, kEnv *koanf.Koanf) []byte {
+	// todo Such scenarios will need mutex locking.
+	kConfigByte, _ := kConfig.ReadBytes()
+	kConfigByte = replaceEnvKey(kConfigByte, kEnv.StringMap(""))
+	_ = k.Load(krawbytes.Provider(kConfigByte), kyaml.Parser())
+	return kConfigByte
 }
 
 // replaceEnvKey 表示使用环境变量maps替换context中的env(xxx)的环境变量
@@ -186,126 +143,4 @@ func replaceEnvKey(content []byte, maps map[string]string) []byte {
 		content = bytes.ReplaceAll(content, []byte(reKey), []byte(val))
 	}
 	return content
-}
-
-// 查找某个路径的配置项
-func searchMap(source map[string]any, path []string) any {
-	if len(path) == 0 {
-		return source
-	}
-	// 判断是否有下个路径
-	next, ok := source[path[0]]
-	if ok {
-		// 判断这个路径是否为1
-		if len(path) == 1 {
-			return next
-		}
-		// 判断下一个路径的类型
-		switch next.(type) {
-		case map[any]any:
-			// 如果是interface的map，使用cast进行下value转换
-			return searchMap(cast.ToStringMap(next), path[1:])
-		case map[string]any:
-			// 如果是map[string]，直接循环调用
-			return searchMap(next.(map[string]any), path[1:])
-		default:
-			// 否则的话，返回nil
-			return nil
-		}
-	}
-	return nil
-}
-
-// 通过path获取某个元素
-func (conf *ConfigService) find(key string) any {
-	conf.lock.RLock()
-	defer conf.lock.RUnlock()
-	return searchMap(conf.confMaps, strings.Split(key, conf.keyDelim))
-}
-
-// IsExist check setting is exist
-func (conf *ConfigService) IsExist(key string) bool {
-	return conf.find(key) != nil
-}
-
-func (conf *ConfigService) GetIntIfExist(key string) (exist bool, value int) {
-	if conf.IsExist(key) {
-		return true, conf.GetInt(key)
-	}
-	return false, value
-}
-
-func (conf *ConfigService) GetStringIfExist(key string) (exist bool, value string) {
-	if conf.IsExist(key) {
-		return true, conf.GetString(key)
-	}
-	return false, value
-}
-
-// Get 获取某个配置项
-func (conf *ConfigService) Get(key string) any {
-	return conf.find(key)
-}
-
-// GetBool 获取bool类型配置
-func (conf *ConfigService) GetBool(key string) bool {
-	return cast.ToBool(conf.find(key))
-}
-
-// GetInt 获取int类型配置
-func (conf *ConfigService) GetInt(key string) int {
-	return cast.ToInt(conf.find(key))
-}
-
-// GetFloat64 get float64
-func (conf *ConfigService) GetFloat64(key string) float64 {
-	return cast.ToFloat64(conf.find(key))
-}
-
-// GetTime get time type
-func (conf *ConfigService) GetTime(key string) time.Time {
-	return cast.ToTime(conf.find(key))
-}
-
-// GetString get string typen
-func (conf *ConfigService) GetString(key string) string {
-	return cast.ToString(conf.find(key))
-}
-
-// GetIntSlice get int slice type
-func (conf *ConfigService) GetIntSlice(key string) []int {
-	return cast.ToIntSlice(conf.find(key))
-}
-
-// GetStringSlice get string slice type
-func (conf *ConfigService) GetStringSlice(key string) []string {
-	return cast.ToStringSlice(conf.find(key))
-}
-
-// GetStringMap get map which key is string, value is interface
-func (conf *ConfigService) GetStringMap(key string) map[string]any {
-	return cast.ToStringMap(conf.find(key))
-}
-
-// GetStringMapString get map which key is string, value is string
-func (conf *ConfigService) GetStringMapString(key string) map[string]string {
-	return cast.ToStringMapString(conf.find(key))
-}
-
-// GetStringMapStringSlice get map which key is string, value is string slice
-func (conf *ConfigService) GetStringMapStringSlice(key string) map[string][]string {
-	return cast.ToStringMapStringSlice(conf.find(key))
-}
-
-// Load a config to a struct, val should be an pointer
-func (conf *ConfigService) Load(key string, val any) error {
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		TagName: "yaml",
-		Result:  val,
-	})
-	if err != nil {
-		return err
-	}
-
-	return decoder.Decode(conf.find(key))
 }

@@ -60,7 +60,7 @@ fish:
   $ %[1]s completion fish | source
 
   # To load completions for each session, execute once:
-  $ %[1]s completion fish > ~/.config/fish/completions/%[1]s.fish
+  $ %[1]s completion fish > ~/.config_old/fish/completions/%[1]s.fish
 
 PowerShell:
 

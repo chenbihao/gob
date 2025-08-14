@@ -23,7 +23,6 @@ type AppService struct {
 	argsMap   map[string]string // 参数加载(--key=value)
 	sysEnvMap map[string]string // 环境变量加载
 	configMap map[string]string // 配置加载
-
 }
 
 var _ contract.App = (*AppService)(nil)
@@ -37,7 +36,8 @@ func NewGobApp(params ...any) (interface{}, error) {
 	container := params[0].(framework.Container)
 	baseFolder := params[1].(string)
 
-	appID := uuid.New().String()
+	uid, _ := uuid.NewV7()
+	appID := uid.String()
 	configMap := map[string]string{}
 
 	// toolMode := false

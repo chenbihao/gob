@@ -3,8 +3,6 @@ package config
 // ServiceProvider 实现文件 provider.go
 
 import (
-	"path/filepath"
-
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
 )
@@ -32,13 +30,7 @@ func (provider *ConfigProvider) Boot(container framework.Container) error {
 
 // Params 定义要传递给实例化方法的参数
 func (provider *ConfigProvider) Params(container framework.Container) []interface{} {
-	appService := container.MustMake(contract.AppKey).(contract.App)
-	envService := container.MustMake(contract.EnvKey).(contract.Env)
-	appEnv := envService.AppEnv()
-	// 配置文件夹地址
-	configFolder := appService.ConfigFolder()
-	appEnvFolder := filepath.Join(configFolder, appEnv)
-	return []any{container, appEnvFolder, envService.All()}
+	return []any{container}
 }
 
 // Register 注册一个服务实例

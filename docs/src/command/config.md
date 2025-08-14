@@ -10,7 +10,7 @@ description:
 ## 前置需求：无
 ## 支持命令：
 ```sh
-./gob config get
+./gob config_old get
 ```
 ## 支持配置：无
 ## 支持环境变量：无

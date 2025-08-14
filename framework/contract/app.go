@@ -50,7 +50,7 @@ type App interface {
 
 	// // ConsoleFolderr 定义业务自己的命令行服务提供者地址
 	// CommandFolder() string
-	// // HttpFolderr 定义业务自己的 app 服务提供者地址
+	// // WailsFolder 定义业务自己的 app 服务提供者地址
 	// WailsFolder() string
 
 	// // HttpFolderr 定义业务自己的 web 服务提供者地址

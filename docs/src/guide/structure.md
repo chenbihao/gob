@@ -36,7 +36,7 @@ gob 希望所有使用这个框架的开发人员遵照统一的项目结构进�
 │          ├── contract.go  // 服务接口层
 │          ├── provider.go  // 服务提供方
 │          └── service.go   // 服务实现层
-├─config            // 配置文件
+├─config_old            // 配置文件
 │  ├─dev
 │      ├── app.yaml         // app主应用的配置
 │      ├── database.yaml    // 数据库相关配置

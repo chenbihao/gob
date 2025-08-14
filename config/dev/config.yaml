@@ -1,0 +1,4 @@
+test_new_conf: # 测试新config
+  aaa: 111
+  bbb: asd
+  env: env(testReplace)

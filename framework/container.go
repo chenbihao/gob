@@ -49,24 +49,20 @@ func NewGobContainer() *GobContainer {
 }
 
 // Bind 将服务容器和关键字做了绑定
-func (container *GobContainer) Bind(provider ServiceProvider) error {
+func (container *GobContainer) Bind(serviceProvider ServiceProvider) error {
 	// 写锁
 	container.lock.Lock()
 	// key 为关键字，value 为注册的 ServiceProvider
-	key := provider.Name()
-	container.providers[key] = provider
+	key := serviceProvider.Name()
+	container.providers[key] = serviceProvider
 	container.lock.Unlock()
 
-	// if provider is not defer
-	if !provider.IsDefer() {
-		if err := provider.Boot(container); err != nil {
-			return err
-		}
-		// 实例化方法
-		params := provider.Params(container)
-		instance, err := provider.Register(container)(params...)
+	// if serviceProvider is not defer
+	if !serviceProvider.IsDefer() {
+		// 进行一次实例化
+		instance, err := container.newInstance(serviceProvider, nil)
 		if err != nil {
-			fmt.Println("bind service provider ", key, " error: ", err)
+			fmt.Println("bind service serviceProvider ", key, " error: ", err)
 			return errors.New(err.Error())
 		}
 		container.instances[key] = instance
@@ -95,20 +91,20 @@ func (container *GobContainer) findServiceProvider(key string) ServiceProvider {
 	return nil
 }
 
-func (container *GobContainer) newInstance(sp ServiceProvider, params []interface{}) (interface{}, error) {
+func (container *GobContainer) newInstance(serviceProvider ServiceProvider, params []interface{}) (interface{}, error) {
 	// force new a
-	if err := sp.Boot(container); err != nil {
+	if err := serviceProvider.Boot(container); err != nil {
 		return nil, err
 	}
 	if params == nil {
-		params = sp.Params(container)
+		params = serviceProvider.Params(container)
 	}
-	method := sp.Register(container)
-	ins, err := method(params...)
+	method := serviceProvider.Register(container)
+	instance, err := method(params...)
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}
-	return ins, err
+	return instance, err
 }
 
 func (container *GobContainer) Make(key string) (interface{}, error) {
@@ -149,9 +145,9 @@ func (container *GobContainer) make(key string, params []interface{}, forceNew b
 	// 容器中还未实例化，则进行一次实例化
 	inst, err := container.newInstance(serviceProvider, nil)
 	if err != nil {
+		fmt.Println("newInstance ", key, " error: ", err)
 		return nil, err
 	}
-
 	container.instances[key] = inst
 	return inst, nil
 }

@@ -293,8 +293,8 @@ func TestConfigActiveHelp(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	// Test active help config for a flag
-	activeHelpCfg = "a config for a flag"
+	// Test active help config_old for a flag
+	activeHelpCfg = "a config_old for a flag"
 	// Set the variable that the completions scripts will be setting
 	os.Setenv(activeHelpEnvVar(rootCmd.Name()), activeHelpCfg)
 

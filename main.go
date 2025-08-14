@@ -1,15 +1,12 @@
 package main
 
 import (
-	"fmt"
-
+	"bytes"
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/cobra"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/provider/app"
 	"github.com/chenbihao/gob/framework/provider/config"
-	"github.com/chenbihao/gob/framework/provider/env"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -17,32 +14,38 @@ func main() {
 	// 初始化服务容器
 	container := framework.NewGobContainer()
 
-	container.Bind(&app.AppProvider{})
-	container.Bind(&env.EnvProvider{})
-	container.Bind(&config.ConfigProvider{})
+	_ = container.Bind(&app.AppProvider{})
+	_ = container.Bind(&config.ConfigProvider{})
 
 	appService := container.MustMake(contract.AppKey).(contract.App)
-	configService := container.MustMake(contract.ConfigKey).(contract.Config)
+	_ = container.MustMake(contract.ConfigKey).(contract.Config)
 
-	// todo debug
 	println("AppID：" + appService.AppID())
 	println("BaseFolder：" + appService.BaseFolder())
-	println("configService.GetString：" + configService.GetString("app.dev.backend.port"))
 
-	viper1 := viper.New()
-	viper1.AddConfigPath(appService.BaseFolder() + "/config/dev/app.yaml")
+	//<-make(chan struct{})
 
-	fmt.Printf("viper：%+v \n", viper1.AllKeys())
-	fmt.Printf("viper：%s \n", viper1.GetString("dev.backend.port"))
-
-	// // 将 HTTP 引擎初始化,并且作为服务提供者绑定到服务容器中
-	// if engine, err := http.NewHttpEngine(container); err == nil {
-	// 	// 绑定 Kernel 服务提供者
-	// 	_ = container.Bind(&kernel.KernelProvider{HttpEngine: engine})
-	// }
+	//// 将 HTTP 引擎初始化,并且作为服务提供者绑定到服务容器中
+	//if engine, err := http.NewHttpEngine(container); err == nil {
+	//	// 绑定 Kernel 服务提供者
+	//	_ = container.Bind(&kernel.KernelProvider{HttpEngine: engine})
+	//}
 
 	// 运行root命令
-	_ = RunRootCommand(container)
+	//_ = RunRootCommand(container)
+}
+
+// replaceEnvKey 表示使用环境变量maps替换context中的env(xxx)的环境变量
+func replaceEnvKey(content []byte, maps map[string]string) []byte {
+	if maps == nil {
+		return content
+	}
+	// 直接使用ReplaceAll替换。这个性能可能不是最优，但是配置文件加载，频率是比较低的，可以接受
+	for key, val := range maps {
+		reKey := "env(" + key + ")"
+		content = bytes.ReplaceAll(content, []byte(reKey), []byte(val))
+	}
+	return content
 }
 
 // RunRootCommand  初始化根Command并运行

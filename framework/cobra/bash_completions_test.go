@@ -125,8 +125,8 @@ func TestBashCompletions(t *testing.T) {
 
 	echoCmd.Flags().String("filename", "", "Enter a filename")
 	assertNoErr(t, echoCmd.MarkFlagFilename("filename", "json", "yaml", "yml"))
-	echoCmd.Flags().String("config", "", "config to use (located in /config/PROFILE/)")
-	assertNoErr(t, echoCmd.Flags().SetAnnotation("config", BashCompSubdirsInDir, []string{"config"}))
+	echoCmd.Flags().String("config_old", "", "config_old to use (located in /config_old/PROFILE/)")
+	assertNoErr(t, echoCmd.Flags().SetAnnotation("config_old", BashCompSubdirsInDir, []string{"config_old"}))
 
 	printCmd := &Command{
 		Use:   "print [string to print]",
@@ -200,7 +200,7 @@ func TestBashCompletions(t *testing.T) {
 	// check for subdirs_in_dir flags
 	check(t, output, fmt.Sprintf(`flags_completion+=("__%s_handle_subdirs_in_dir_flag themes")`, rootCmd.Name()))
 	// check for subdirs_in_dir flags in a subcommand
-	checkRegex(t, output, fmt.Sprintf(`_root_echo\(\)\n{[^}]*flags_completion\+=\("__%s_handle_subdirs_in_dir_flag config"\)`, rootCmd.Name()))
+	checkRegex(t, output, fmt.Sprintf(`_root_echo\(\)\n{[^}]*flags_completion\+=\("__%s_handle_subdirs_in_dir_flag config_old"\)`, rootCmd.Name()))
 
 	// check two word flags
 	check(t, output, `two_word_flags+=("--two")`)

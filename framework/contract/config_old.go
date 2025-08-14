@@ -1,19 +1,24 @@
----
-lang: zh-CN
-title: gob:config_old
-description:
----
-# gob:config
+package contract
 
+import "time"
+
+/*
 ## 服务介绍：
 提供基础的配置文件获取方法
 ## 支持命令：
-[app](../command/config)
-## 支持配置：无
+[config_old](../command/config_old)
+## 支持配置：
+[config_old](../config_old/config_old)
+*/
 
-## 提供方法：
-```go 
-type Config interface {
+// ConfigKey 是配置服务字符串凭证
+const OldConfigKey = "gob:config_old"
+
+// Config 定义了配置文件服务，读取配置文件，支持点分割的路径读取
+// 例如: .Get("app.name") 表示从 app 文件中读取 name 属性
+// 建议使用 yaml 属性, https://yaml.org/spec/1.2/spec.html
+type OldConfig interface {
+
 	// IsExist 检查一个属性是否存在
 	IsExist(key string) bool
 	// GetIntIfExist 如果存在的话，获取一个 int 属性
@@ -45,4 +50,3 @@ type Config interface {
 	// Load 加载配置到某个对象
 	Load(key string, val interface{}) error
 }
-```

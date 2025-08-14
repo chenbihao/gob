@@ -1,0 +1,314 @@
+package config_old
+
+// 实现具体的服务实例 service.go
+
+import (
+	"bytes"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
+
+	"gopkg.in/yaml.v3"
+
+	"github.com/chenbihao/gob/framework"
+	"github.com/chenbihao/gob/framework/contract"
+	"github.com/fsnotify/fsnotify"
+	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
+	"github.com/spf13/cast"
+)
+
+// OldConfigService 是 Config 的具体实现
+type OldConfigService struct {
+	c        framework.Container // 容器
+	folder   string              // 文件夹
+	keyDelim string              // key 路径的分隔符，默认为点
+	lock     sync.RWMutex        // 配置文件读写锁
+	envMaps  map[string]string   // 所有的环境变量
+	confMaps map[string]any      // 配置文件结构，key为文件名
+	confRaws map[string][]byte   // 配置文件的原始信息
+}
+
+var _ contract.OldConfig = (*OldConfigService)(nil)
+
+// NewConfigService 初始化Config方法
+func NewConfigService(params ...any) (any, error) {
+
+	// todo new config_old logic
+
+	container := params[0].(framework.Container)
+	appEnvFolder := params[1].(string)
+	// allEnvMaps := params[2].(map[string]string)
+
+	// appService := container.MustMake(contract.AppKey).(contract.App)
+
+	// 检查文件夹是否存在
+	if _, err := os.Stat(appEnvFolder); os.IsNotExist(err) {
+		// todo 默认配置化
+		return nil, errors.New("folder " + appEnvFolder + " not exist: " + err.Error())
+		// if appService.IsToolMode() {
+		// 	err = nil
+		// 	log.Println("纯工具模式，未能加载配置！")
+		// } else {
+		// 	return nil, errors.New("folder " + envFolder + " not exist: " + err.Error())
+		// }
+	}
+
+	// 实例化
+	gobConf := &OldConfigService{
+		c:        container,
+		folder:   appEnvFolder,
+		keyDelim: ".",
+		//envMaps:  allEnvMaps,
+		confMaps: map[string]any{},
+		confRaws: map[string][]byte{},
+		lock:     sync.RWMutex{},
+	}
+	// if appService.IsToolMode() {
+	// 	return gobConf, nil
+	// }
+
+	// 读取每个文件
+	files, err := os.ReadDir(appEnvFolder)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	for _, file := range files {
+		fileName := file.Name()
+		if err := gobConf.loadConfigFile(appEnvFolder, fileName); err != nil {
+			log.Println(err)
+			continue
+		}
+	}
+
+	// 监控文件夹文件
+	watch, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+	if err = watch.Add(appEnvFolder); err != nil {
+		return nil, err
+	}
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Println(err)
+			}
+		}()
+		for {
+			select {
+			case ev := <-watch.Events:
+				// 判断事件发生的类型 Create 创建 Write 写入 Remove 删除
+				path, _ := filepath.Abs(ev.Name)
+				index := strings.LastIndex(path, string(os.PathSeparator))
+				folder := path[:index]
+				fileName := path[index+1:]
+
+				if ev.Op&fsnotify.Create == fsnotify.Create {
+					log.Println("配置监听-创建文件 : ", ev.Name)
+					_ = gobConf.loadConfigFile(folder, fileName)
+				}
+				if ev.Op&fsnotify.Write == fsnotify.Write {
+					log.Println("配置监听-写入文件 : ", ev.Name)
+					_ = gobConf.loadConfigFile(folder, fileName)
+				}
+				if ev.Op&fsnotify.Remove == fsnotify.Remove {
+					log.Println("配置监听-删除文件 : ", ev.Name)
+					_ = gobConf.removeConfigFile(folder, fileName)
+				}
+			case err := <-watch.Errors:
+				log.Println("error : ", err)
+				return
+			}
+		}
+	}()
+	return gobConf, nil
+}
+
+// 读取某个配置文件
+func (conf *OldConfigService) loadConfigFile(folder string, file string) error {
+	conf.lock.Lock()
+	defer conf.lock.Unlock()
+	//  判断文件是否以yaml或者yml作为后缀
+	s := strings.Split(file, ".")
+	if len(s) == 2 && (s[1] == "yaml" || s[1] == "yml") {
+		name := s[0]
+		// 读取文件内容
+		bf, err := os.ReadFile(filepath.Join(folder, file))
+		if err != nil {
+			return err
+		}
+		// 直接针对文本做环境变量的替换
+		bf = replaceEnvKey(bf, conf.envMaps)
+		// 解析对应的文件
+		c := map[string]any{}
+		if err := yaml.Unmarshal(bf, &c); err != nil {
+			return err
+		}
+		conf.confMaps[name] = c
+		conf.confRaws[name] = bf
+
+		// 读取app.path中的信息，更新 app 对应的 folder
+		if name == "app" && conf.c.IsBind(contract.AppKey) {
+			if p, ok := c["path"]; ok {
+				appService := conf.c.MustMake(contract.AppKey).(contract.App)
+				appService.LoadAppConfig(cast.ToStringMapString(p))
+			}
+		}
+	}
+	return nil
+}
+
+// 删除文件的操作
+func (conf *OldConfigService) removeConfigFile(folder string, file string) error {
+	conf.lock.Lock()
+	defer conf.lock.Unlock()
+	s := strings.Split(file, ".")
+	// 只有yaml或者yml后缀才执行
+	if len(s) == 2 && (s[1] == "yaml" || s[1] == "yml") {
+		name := s[0]
+		// 删除内存中对应的key
+		delete(conf.confRaws, name)
+		delete(conf.confMaps, name)
+	}
+	return nil
+}
+
+// replaceEnvKey 表示使用环境变量maps替换context中的env(xxx)的环境变量
+func replaceEnvKey(content []byte, maps map[string]string) []byte {
+	if maps == nil {
+		return content
+	}
+	// 直接使用ReplaceAll替换。这个性能可能不是最优，但是配置文件加载，频率是比较低的，可以接受
+	for key, val := range maps {
+		reKey := "env(" + key + ")"
+		content = bytes.ReplaceAll(content, []byte(reKey), []byte(val))
+	}
+	return content
+}
+
+// 查找某个路径的配置项
+func searchMap(source map[string]any, path []string) any {
+	if len(path) == 0 {
+		return source
+	}
+	// 判断是否有下个路径
+	next, ok := source[path[0]]
+	if ok {
+		// 判断这个路径是否为1
+		if len(path) == 1 {
+			return next
+		}
+		// 判断下一个路径的类型
+		switch next.(type) {
+		case map[any]any:
+			// 如果是interface的map，使用cast进行下value转换
+			return searchMap(cast.ToStringMap(next), path[1:])
+		case map[string]any:
+			// 如果是map[string]，直接循环调用
+			return searchMap(next.(map[string]any), path[1:])
+		default:
+			// 否则的话，返回nil
+			return nil
+		}
+	}
+	return nil
+}
+
+// 通过path获取某个元素
+func (conf *OldConfigService) find(key string) any {
+	conf.lock.RLock()
+	defer conf.lock.RUnlock()
+	return searchMap(conf.confMaps, strings.Split(key, conf.keyDelim))
+}
+
+// IsExist check setting is exist
+func (conf *OldConfigService) IsExist(key string) bool {
+	return conf.find(key) != nil
+}
+
+func (conf *OldConfigService) GetIntIfExist(key string) (exist bool, value int) {
+	if conf.IsExist(key) {
+		return true, conf.GetInt(key)
+	}
+	return false, value
+}
+
+func (conf *OldConfigService) GetStringIfExist(key string) (exist bool, value string) {
+	if conf.IsExist(key) {
+		return true, conf.GetString(key)
+	}
+	return false, value
+}
+
+// Get 获取某个配置项
+func (conf *OldConfigService) Get(key string) any {
+	return conf.find(key)
+}
+
+// GetBool 获取bool类型配置
+func (conf *OldConfigService) GetBool(key string) bool {
+	return cast.ToBool(conf.find(key))
+}
+
+// GetInt 获取int类型配置
+func (conf *OldConfigService) GetInt(key string) int {
+	return cast.ToInt(conf.find(key))
+}
+
+// GetFloat64 get float64
+func (conf *OldConfigService) GetFloat64(key string) float64 {
+	return cast.ToFloat64(conf.find(key))
+}
+
+// GetTime get time type
+func (conf *OldConfigService) GetTime(key string) time.Time {
+	return cast.ToTime(conf.find(key))
+}
+
+// GetString get string typen
+func (conf *OldConfigService) GetString(key string) string {
+	return cast.ToString(conf.find(key))
+}
+
+// GetIntSlice get int slice type
+func (conf *OldConfigService) GetIntSlice(key string) []int {
+	return cast.ToIntSlice(conf.find(key))
+}
+
+// GetStringSlice get string slice type
+func (conf *OldConfigService) GetStringSlice(key string) []string {
+	return cast.ToStringSlice(conf.find(key))
+}
+
+// GetStringMap get map which key is string, value is interface
+func (conf *OldConfigService) GetStringMap(key string) map[string]any {
+	return cast.ToStringMap(conf.find(key))
+}
+
+// GetStringMapString get map which key is string, value is string
+func (conf *OldConfigService) GetStringMapString(key string) map[string]string {
+	return cast.ToStringMapString(conf.find(key))
+}
+
+// GetStringMapStringSlice get map which key is string, value is string slice
+func (conf *OldConfigService) GetStringMapStringSlice(key string) map[string][]string {
+	return cast.ToStringMapStringSlice(conf.find(key))
+}
+
+// Load a config_old to a struct, val should be an pointer
+func (conf *OldConfigService) Load(key string, val any) error {
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		TagName: "yaml",
+		Result:  val,
+	})
+	if err != nil {
+		return err
+	}
+
+	return decoder.Decode(conf.find(key))
+}

@@ -46,7 +46,7 @@ type App interface {
 	// ProviderFolder 定义业务自己的通用服务提供者地址
 	ProviderFolder() string
 
-	// ---------------- config 目录下
+	// ---------------- config_old 目录下
 
 	// ---------------- storage 目录下
 

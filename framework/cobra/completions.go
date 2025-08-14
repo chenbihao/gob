@@ -868,7 +868,7 @@ To load completions in your current shell session:
 
 To load completions for every new session, execute once:
 
-	%[1]s completion fish > ~/.config/fish/completions/%[1]s.fish
+	%[1]s completion fish > ~/.config_old/fish/completions/%[1]s.fish
 
 You will need to start a new shell for this setup to take effect.
 `, c.Root().Name()),
