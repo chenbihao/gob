@@ -25,10 +25,12 @@ description:
 
 - 框架定义 App
 - 命令行框架 Cobra v1.9.1
+- GUI 框架 wailsApp
+- AI 友好型
 
 ## Todo:
 
-### 改变清单：
+### 重构计划概览：
 
 - [ ] 配置：  [koanf](https://github.com/knadh/koanf) 模块化且支持pflag
 - [ ] 日志：      `log/slog`
@@ -36,16 +38,6 @@ description:
 - [ ] 命令行交互：`bubbletea`   替换掉 `survey`
 - [ ] 新增：
   - `samber/lo` Go 1.18+ 泛型的实用程序库
-
-
-### 引擎重构
-
-考虑：
-
-- [ ] 解耦应用层与框架层，废弃httpEngine这种形式
-  - [ ] 把engine抽象出来，并且用工厂分别实现：gin、wails、console
-  - [ ] 框架的 install 命令也得区分开来
-
 
 ### 配置重构
 
@@ -72,6 +64,15 @@ description:
 - [ ] 读写锁
 
 - git 引用框架时指定版本
+
+
+### 引擎重构
+
+考虑：
+
+- [ ] 解耦应用层与框架层，废弃httpEngine这种形式
+  - [ ] 把engine抽象出来，并且用工厂分别实现：gin、wails、console
+  - [ ] 框架的 install 中的 new 命令也得区分开来
 
 
 ### 挂载与蓝图
