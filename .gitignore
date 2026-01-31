@@ -13,4 +13,8 @@ gen
 /storage/runtime/*
 /deploy/20*
 
+# build
 gob.exe
+
+# AI
+CLAUDE.md
