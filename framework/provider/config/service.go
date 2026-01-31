@@ -4,6 +4,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/knadh/koanf/v2"
 	"log"
 	"path/filepath"
@@ -18,32 +19,37 @@ import (
 	kenv "github.com/knadh/koanf/providers/env/v2"
 	kfile "github.com/knadh/koanf/providers/file"
 	krawbytes "github.com/knadh/koanf/providers/rawbytes"
+	kstructs "github.com/knadh/koanf/providers/structs"
 )
 
 // ConfigService 是 Config 的具体实现
 type ConfigService struct {
-	c          framework.Container     // 容器
-	lock       sync.RWMutex            // 配置文件读写锁
-	keyDelim   string                  // key 路径的分隔符，默认为点
-	folder     string                  // 文件夹
-	kEnv       *koanf.Koanf            // 所有的环境变量
-	kConfig    *koanf.Koanf            // 所有的配置
-	kSubConfig map[string]*koanf.Koanf // 所有的契约配置
+	c          framework.Container       // 容器
+	lock       sync.RWMutex              // 配置文件读写锁
+	keyDelim   string                    // key 路径的分隔符，默认为点
+	folder     string                    // 文件夹
+	kEnv       *koanf.Koanf              // 所有的环境变量
+	kEnvStruct *contract.ConfigEnvStruct // gob 环境变量结构体
+	kConfig    *koanf.Koanf              // 所有的配置
+	kSubConfig map[string]*koanf.Koanf   // 所有的契约配置
 }
 
 var _ contract.Config = (*ConfigService)(nil)
 
-type ConfigMode string // 定义自定义类型作为枚举基础
-const (
-	Root      ConfigMode = "root"      // 读取根目录的 config.yaml
-	Folder               = "folder"    // 读取 config 目录下读取，支持配置分离
-	DeployEnv            = "deployEnv" // 读取 config/{deploy_env} 目录下读取，支持配置分离（对应的部署环境配置目录如dev/test/prod）
-)
+func (c *ConfigService) GetEnv() *koanf.Koanf {
+	return c.kEnv
+}
 
-const (
-	EnvConfigMode = "configMode"
-	EnvDeployEnv  = "deployEnv"
-)
+func (c *ConfigService) GetEnvStruct() *contract.ConfigEnvStruct {
+	return c.kEnvStruct
+}
+
+func (c *ConfigService) GetConfig() *koanf.Koanf {
+	return c.kConfig
+}
+
+var delim = "."
+var tagName = "conf"
 
 // NewConfigService 初始化Config方法
 func NewConfigService(params ...any) (any, error) {
@@ -51,52 +57,38 @@ func NewConfigService(params ...any) (any, error) {
 	container := params[0].(framework.Container)
 	appService := container.MustMake(contract.AppKey).(contract.App)
 
-	delim := "."
-
-	// 读取环境变量（先读取环境变量，后读取.env文件替换值）
+	// 读取环境变量（用于替换值）
 	var kEnv = koanf.New(delim)
-	_ = kEnv.Load(kenv.Provider(delim, kenv.Opt{}), nil)
+	// 读默认值
+	_ = kEnv.Load(kstructs.Provider(contract.DefaultConfigEnvStruct, tagName), nil)
+	// 读.env文件
+	_ = kEnv.Load(kfile.Provider(filepath.Join(appService.BaseFolder(), ".env")), kdotenv.Parser())
+	// 读环境变量
+	var kSysEnv = koanf.New(delim)
+	_ = kSysEnv.Load(kenv.Provider(delim, kenv.Opt{}), nil)
+	_ = kEnv.Merge(kSysEnv)
 
-	var kEnvFile = koanf.New(delim)
-	_ = kEnvFile.Load(kfile.Provider(filepath.Join(appService.BaseFolder(), ".env")), kdotenv.Parser())
-	_ = kEnv.Merge(kEnvFile)
+	var envConfig = contract.ConfigEnvStruct{}
+	_ = kEnv.UnmarshalWithConf("", &envConfig, koanf.UnmarshalConf{Tag: tagName})
 
 	// 默认是极简模式，可选开启配置文件夹，可选开启部署配置分离模式（deploy_env：env/test/prod）
-	configMode := kEnv.Get(EnvConfigMode)
 	configFolder := appService.BaseFolder()
-	if configMode != nil {
-		switch configMode {
-		case Root:
-			configFolder = appService.BaseFolder()
-		case Folder:
-			configFolder = filepath.Join(appService.BaseFolder(), "config")
-		case DeployEnv:
-			deployEnv := kEnv.String(EnvDeployEnv)
-			if deployEnv == "" {
-				deployEnv = "dev"
-			}
-			configFolder = filepath.Join(appService.BaseFolder(), "config", deployEnv)
+	if envConfig.ConfigMode != "" {
+		switch envConfig.ConfigMode {
+		case contract.ConfigModeRoot:
+			configFolder = filepath.Join(appService.BaseFolder(), envConfig.ConfigFolder) // 这个是全部配置都在一个文件中
+		case contract.ConfigModeFolder:
+			configFolder = filepath.Join(appService.BaseFolder(), envConfig.ConfigFolder) // 这个是可配置独立的配置文件
+		case contract.ConfigModeDeploy:
+			configFolder = filepath.Join(appService.BaseFolder(), envConfig.ConfigFolder, string(envConfig.AppEnv))
 		}
 	}
+	fmt.Println("configFolder:", configFolder)
 
 	// 初始化 config.yaml
 	var k = koanf.New(delim)
-	kConfig := kfile.Provider(filepath.Join(configFolder, "config.yaml"))
-	replaceAndLoad(k, kConfig, kEnv)
-	// 监控文件夹文件
-	_ = kConfig.Watch(func(event interface{}, err error) {
-		if err != nil {
-			log.Printf("watch error: %v", err)
-			return
-		}
-		// Throw away the old config and load a fresh copy.
-		log.Println("config changed. Reloading ...")
-		k = koanf.New(delim)
-		replaceAndLoad(k, kConfig, kEnv)
-		k.Print()
-	})
-	// To stop a file watcher, call:
-	// f.Unwatch()
+	configFileName := "config"
+	k = Load(configFolder, configFileName, k, kSysEnv)
 
 	//var kApp = koanf.New(delim)
 	//kAppFile := kfile.Provider(appService.BaseFolder() + "/config/dev/app.yaml")
@@ -111,16 +103,39 @@ func NewConfigService(params ...any) (any, error) {
 
 	// 实例化
 	gobConf := &ConfigService{
-		c:        container,
-		lock:     sync.RWMutex{},
-		keyDelim: delim,
-		folder:   configFolder,
-		kEnv:     kEnv,
-		kConfig:  k,
+		c:          container,
+		lock:       sync.RWMutex{},
+		keyDelim:   delim,
+		folder:     configFolder,
+		kEnv:       kEnv,
+		kEnvStruct: &envConfig,
+		kConfig:    k,
 		//kSub:     make(map[string]*koanf.Koanf),
 	}
 
+	// todo 打印输出已选配置
+
 	return gobConf, nil
+}
+
+func Load(configFolder string, configFileName string, k *koanf.Koanf, kSysEnv *koanf.Koanf) *koanf.Koanf {
+	kConfig := kfile.Provider(filepath.Join(configFolder, configFileName+".yaml"))
+	replaceAndLoad(k, kConfig, kSysEnv)
+	// 监控文件夹文件
+	_ = kConfig.Watch(func(event interface{}, err error) {
+		if err != nil {
+			log.Printf("watch error: %v", err)
+			return
+		}
+		// Throw away the old config and load a fresh copy.
+		log.Println("config changed. Reloading ...")
+		k = koanf.New(delim)
+		replaceAndLoad(k, kConfig, kSysEnv)
+		k.Print()
+	})
+	// To stop a file watcher, call:
+	// f.Unwatch()
+	return k
 }
 
 // replaceAndLoad 替换环境变量maps并加载配置

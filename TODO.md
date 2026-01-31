@@ -8,7 +8,7 @@ description:
 
 ## 新版设计
 
-移除默认web框架，默认是启动命令框架，自主选择接入 web/wailsApp 等
+移除默认web框架，默认是启动命令框架，自主选择接入 web/wailsApp/交互命令行 等
 
 框架本体：快速开发框架，通过运行gob命令，快速生成项目骨架，快速开发功能
 
@@ -37,6 +37,16 @@ description:
 - [ ] 新增：
   - `samber/lo` Go 1.18+ 泛型的实用程序库
 
+
+### 引擎重构
+
+考虑：
+
+- [ ] 解耦应用层与框架层，废弃httpEngine这种形式
+  - [ ] 把engine抽象出来，并且用工厂分别实现：gin、wails、console
+  - [ ] 框架的 install 命令也得区分开来
+
+
 ### 配置重构
 
 - [x] 移除原config逻辑：
@@ -56,9 +66,13 @@ description:
   - 可选开启配置文件夹
   - 可选开启ENV（deploy_env：env/test/prod）
 
-- [ ] 配置结构化
+- [x] 配置结构化
 - [ ] 其他子配置单独管理，开放挂载配置入参，挂载则刷新配置
+  - key 从契约中截断获取
 - [ ] 读写锁
+
+- git 引用框架时指定版本
+
 
 ### 挂载与蓝图
 
@@ -154,16 +168,3 @@ description:
     - [ ] gspt 库（`CGO_ENABLED=1`）
 
 - [ ] 业务单测的构建
-
-## 归档
-
-### 梳理相关
-
-- [X] 梳理三方库引入
-    - fsnotify、go-daemon、goconvey、swaggo、cast
-    - survey/v2、go-git/v5、go-github/v62、go-redis/v9、cron/v3、gorm + gen
-    - gotree、uuid、xid、ratelimit、mapstructure
-    - kr/pretty、jennifer/jen
-    - 预计移除：jianfengye/collection
-    - 预计移除：file-rotatelogs、natefinch/lumberjack
-    - 预计新增：samber/lo

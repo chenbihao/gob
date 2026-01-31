@@ -1,12 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/cobra"
 	"github.com/chenbihao/gob/framework/contract"
 	"github.com/chenbihao/gob/framework/provider/app"
 	"github.com/chenbihao/gob/framework/provider/config"
+	"github.com/chenbihao/gob/framework/provider/id"
 )
 
 func main() {
@@ -16,6 +16,7 @@ func main() {
 
 	_ = container.Bind(&app.AppProvider{})
 	_ = container.Bind(&config.ConfigProvider{})
+	_ = container.Bind(&id.IDProvider{})
 
 	appService := container.MustMake(contract.AppKey).(contract.App)
 	_ = container.MustMake(contract.ConfigKey).(contract.Config)
@@ -23,7 +24,7 @@ func main() {
 	println("AppID：" + appService.AppID())
 	println("BaseFolder：" + appService.BaseFolder())
 
-	//<-make(chan struct{})
+	<-make(chan struct{})
 
 	//// 将 HTTP 引擎初始化,并且作为服务提供者绑定到服务容器中
 	//if engine, err := http.NewHttpEngine(container); err == nil {
@@ -33,19 +34,6 @@ func main() {
 
 	// 运行root命令
 	//_ = RunRootCommand(container)
-}
-
-// replaceEnvKey 表示使用环境变量maps替换context中的env(xxx)的环境变量
-func replaceEnvKey(content []byte, maps map[string]string) []byte {
-	if maps == nil {
-		return content
-	}
-	// 直接使用ReplaceAll替换。这个性能可能不是最优，但是配置文件加载，频率是比较低的，可以接受
-	for key, val := range maps {
-		reKey := "env(" + key + ")"
-		content = bytes.ReplaceAll(content, []byte(reKey), []byte(val))
-	}
-	return content
 }
 
 // RunRootCommand  初始化根Command并运行

@@ -33,7 +33,7 @@ func (provider *OldConfigProvider) Params(container framework.Container) []inter
 	appService := container.MustMake(contract.AppKey).(contract.App)
 	//envService := container.MustMake(contract.EnvKey).(contract.Env)
 	//appEnv := envService.AppEnv()
-	//configFolder := appService.ConfigFolder()
+	//configFolder := appService.Folder()
 	//appEnvFolder := filepath.Join(configFolder, appEnv)
 	return []any{container, appService.ConfigFolder()}
 }
