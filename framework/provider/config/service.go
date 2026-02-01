@@ -5,12 +5,13 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"github.com/knadh/koanf/v2"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/knadh/koanf/v2"
 
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
@@ -63,16 +64,29 @@ func NewConfigService(params ...any) (any, error) {
 	// 读取环境变量（用于替换值）
 	var kEnv = koanf.New(delim)
 	// 读默认值
-	_ = kEnv.Load(kstructs.Provider(contract.DefaultConfigEnvStruct, tagName), nil)
+	if err := kEnv.Load(kstructs.Provider(contract.DefaultConfigEnvStruct, tagName), nil); err != nil {
+		log.Printf("load default env values error: %v", err)
+	}
 	// 读.env文件
-	_ = kEnv.Load(kfile.Provider(filepath.Join(appService.BaseFolder(), ".env")), kdotenv.Parser())
+	envFilePath := filepath.Join(appService.BaseFolder(), ".env")
+	if _, err := os.Stat(envFilePath); err == nil {
+		if err := kEnv.Load(kfile.Provider(envFilePath), kdotenv.Parser()); err != nil {
+			log.Printf("load .env file error: %v", err)
+		}
+	}
 	// 读环境变量
 	var kSysEnv = koanf.New(delim)
-	_ = kSysEnv.Load(kenv.Provider(delim, kenv.Opt{}), nil)
-	_ = kEnv.Merge(kSysEnv)
+	if err := kSysEnv.Load(kenv.Provider(delim, kenv.Opt{}), nil); err != nil {
+		log.Printf("load system env error: %v", err)
+	}
+	if err := kEnv.Merge(kSysEnv); err != nil {
+		log.Printf("merge env error: %v", err)
+	}
 
 	var envConfig = contract.ConfigEnvStruct{}
-	_ = kEnv.UnmarshalWithConf("", &envConfig, koanf.UnmarshalConf{Tag: tagName})
+	if err := kEnv.UnmarshalWithConf("", &envConfig, koanf.UnmarshalConf{Tag: tagName}); err != nil {
+		log.Printf("unmarshal env config error: %v", err)
+	}
 
 	// 默认是极简模式，可选开启配置文件夹，可选开启部署配置分离模式（deploy_env：env/test/prod）
 	configFolder := appService.BaseFolder()
@@ -86,25 +100,9 @@ func NewConfigService(params ...any) (any, error) {
 			configFolder = filepath.Join(appService.BaseFolder(), envConfig.ConfigFolder, string(envConfig.AppEnv))
 		}
 	}
-	fmt.Println("configFolder:", configFolder)
 
-	// 初始化 config.yaml
-	var k = koanf.New(delim)
+	// 先创建 ConfigService 实例，kConfig 在 Load 中初始化
 	configFileName := "config"
-	k = Load(configFolder, configFileName, k, kSysEnv)
-
-	//var kApp = koanf.New(delim)
-	//kAppFile := kfile.Provider(appService.BaseFolder() + "/config/dev/app.yaml")
-	//kAppByte, _ := kAppFile.ReadBytes()
-	//_ = kApp.Load(krawbytes.Provider(kAppByte), kyaml.Parser())
-	//_ = k.MergeAt(kApp, "app")
-	//
-	//var kCache = koanf.New(delim)
-	//_ = kCache.Load(kfile.Provider(appService.BaseFolder()+"/config/dev/cache.yaml"), kyaml.Parser())
-	//_ = k.MergeAt(kCache, "cache")
-	//k.Print()
-
-	// 实例化
 	gobConf := &ConfigService{
 		c:          container,
 		lock:       sync.RWMutex{},
@@ -112,41 +110,60 @@ func NewConfigService(params ...any) (any, error) {
 		folder:     configFolder,
 		kEnv:       kEnv,
 		kEnvStruct: &envConfig,
-		kConfig:    k,
 		kSubConfig: make(map[string]*koanf.Koanf),
 	}
 
-	// todo 打印输出已选配置
+	// 初始化 config.yaml，传入 ConfigService 以支持热重载时更新 kConfig
+	Load(configFolder, configFileName, gobConf, kSysEnv)
+
+	// 打印输出已选配置
+	log.Printf("Config initialized - Mode: %s, Folder: %s", envConfig.ConfigMode, configFolder)
 
 	return gobConf, nil
 }
 
-func Load(configFolder string, configFileName string, k *koanf.Koanf, kSysEnv *koanf.Koanf) *koanf.Koanf {
-	kConfig := kfile.Provider(filepath.Join(configFolder, configFileName+".yaml"))
-	replaceAndLoad(k, kConfig, kSysEnv)
+func Load(configFolder string, configFileName string, c *ConfigService, kSysEnv *koanf.Koanf) *koanf.Koanf {
+	// 先初始化 kConfig，避免 nil 指针
+	if c.kConfig == nil {
+		c.kConfig = koanf.New(delim)
+	}
+
+	configFilePath := filepath.Join(configFolder, configFileName+".yaml")
+
+	// 尝试从文件加载配置
+	kConfig := kfile.Provider(configFilePath)
+	replaceAndLoad(c.kConfig, kConfig, kSysEnv)
+
 	// 监控文件夹文件
 	_ = kConfig.Watch(func(event interface{}, err error) {
 		if err != nil {
 			log.Printf("watch error: %v", err)
 			return
 		}
-		// Throw away the old config and load a fresh copy.
 		log.Println("config changed. Reloading ...")
-		k = koanf.New(delim)
-		replaceAndLoad(k, kConfig, kSysEnv)
-		k.Print()
+		c.lock.Lock()
+		defer c.lock.Unlock()
+		// 使用新的 Koanf 实例替换旧的
+		c.kConfig = koanf.New(delim)
+		replaceAndLoad(c.kConfig, kConfig, kSysEnv)
+		c.kConfig.Print()
 	})
-	// To stop a file watcher, call:
-	// f.Unwatch()
-	return k
+
+	return c.kConfig
 }
 
 // replaceAndLoad 替换环境变量maps并加载配置
 func replaceAndLoad(k *koanf.Koanf, kConfig *kfile.File, kEnv *koanf.Koanf) []byte {
-	// todo Such scenarios will need mutex locking.
-	kConfigByte, _ := kConfig.ReadBytes()
+	kConfigByte, err := kConfig.ReadBytes()
+	if err != nil {
+		log.Printf("read config bytes error: %v", err)
+		return nil
+	}
 	kConfigByte = replaceEnvKey(kConfigByte, kEnv.StringMap(""))
-	_ = k.Load(krawbytes.Provider(kConfigByte), kyaml.Parser())
+	if err := k.Load(krawbytes.Provider(kConfigByte), kyaml.Parser()); err != nil {
+		log.Printf("load config error: %v", err)
+		return nil
+	}
 	return kConfigByte
 }
 
@@ -219,6 +236,19 @@ func (c *ConfigService) RegisterSubConfig(config framework.ServiceConfig) error 
 		}
 	}
 
+	// 5. 将配置反序列化为结构体并验证
+	configStruct := config.ConfigStruct()
+	if configStruct != nil {
+		if err := k.UnmarshalWithConf("", configStruct, koanf.UnmarshalConf{Tag: "koanf"}); err != nil {
+			return fmt.Errorf("unmarshal config struct for %s: %w", key, err)
+		}
+
+		// 调用 Validate 方法验证配置
+		if err := config.Validate(configStruct); err != nil {
+			return fmt.Errorf("validate config for %s: %w", key, err)
+		}
+	}
+
 	c.kSubConfig[key] = k
 	return nil
 }
@@ -230,8 +260,23 @@ func fileExists(path string) bool {
 }
 
 // GetSubConfig 获取子配置
+// 支持两种格式：
+//   - 模块名："app"
+//   - 契约key："gob:app"
+//
+// 返回对应的子配置 Koanf 实例，如果不存在返回 nil
 func (c *ConfigService) GetSubConfig(key string) *koanf.Koanf {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
+
+	// 如果 key 包含冒号，提取模块名
+	// 例如："gob:app" -> "app"
+	if strings.Contains(key, ":") {
+		parts := strings.SplitN(key, ":", 2)
+		if len(parts) == 2 && parts[1] != "" {
+			key = parts[1]
+		}
+	}
+
 	return c.kSubConfig[key]
 }

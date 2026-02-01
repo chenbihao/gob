@@ -14,6 +14,9 @@
 | GetSubConfig 方法 | ✅ 已完成 | `framework/provider/config/service.go:232-237` |
 | 并发保护（读写锁） | ✅ 已完成 | `framework/provider/config/service.go` |
 | 配置优先级机制 | ✅ 已完成 | 支持 4 个优先级层级 |
+| 热重载并发安全 | ✅ 已修复 | Watch 回调使用锁保护 |
+| 错误处理完善 | ✅ 已完成 | 移除错误忽略，添加日志 |
+| 删除冗余便捷方法 | ✅ 已完成 | 利用 koanf 原生方法 |
 | AppConfig 实现 | ✅ 已完成 | `framework/provider/app/config.go` |
 | AppProvider 集成 | ✅ 已完成 | `framework/provider/app/provider.go:29-41` |
 | 单元测试覆盖 | ✅ 已完成 | 9 个测试用例通过 |
@@ -45,6 +48,9 @@ type Config interface {
     GetSubConfig(key string) *koanf.Koanf    // 子配置获取
 }
 ```
+
+> **说明**：Config 接口返回 `*koanf.Koanf`，利用 koanf 原生方法获取配置值。
+> Koanf 提供的方法：`String()`、`StringWithDefault()`、`Int64()`、`Int()`、`Bool()`、`BoolWithDefault()` 等
 
 ### ConfigService 结构
 
@@ -124,19 +130,37 @@ func (provider *AppProvider) Boot(container framework.Container) error {
 }
 ```
 
-### 使用子配置
+### 使用配置
 
 ```go
-// 在服务中获取子配置
+// 获取配置服务
 config := container.MustMake(contract.ConfigKey).(contract.Config)
-subConfig := config.GetSubConfig("app")
 
+// 主配置 - 使用 koanf 方法
+name := config.GetConfig().String("app.name")
+port := config.GetConfig().Int64("app.port")
+debug := config.GetConfig().Bool("app.debug")
+version := config.GetConfig().StringWithDefault("app.version", "1.0.0")
+
+// 子配置 - 先获取子配置，再使用 koanf 方法
+subConfig := config.GetSubConfig("app")
 if subConfig != nil {
     debug := subConfig.Bool("debug")
     version := subConfig.String("version")
-    // ...
+    port := subConfig.Int64("port")
 }
 ```
+
+**常用 koanf 方法**：
+- `String(key) string` - 获取字符串，不存在返回空字符串
+- `StringWithDefault(key, def) string` - 获取字符串，带默认值
+- `Int(key) int` - 获取整数，不存在返回 0
+- `Int64(key) int64` - 获取 64 位整数
+- `Int64WithDefault(key, def) int64` - 获取整数，带默认值
+- `Bool(key) bool` - 获取布尔值，不存在返回 false
+- `BoolWithDefault(key, def) bool` - 获取布尔值，带默认值
+- `Get(key) interface{}` - 获取任意类型值
+- `Exists(key) bool` - 检查键是否存在
 
 ---
 
@@ -176,8 +200,8 @@ debug: false  # 生产环境配置
 | 文件 | 修改内容 |
 |------|----------|
 | `framework/config.go` | ServiceConfig 接口定义 |
-| `framework/contract/config.go` | 添加 GetSubConfig 到 Config 接口 |
-| `framework/provider/config/service.go` | 子配置完整实现（kSubConfig、RegisterSubConfig、GetSubConfig） |
+| `framework/contract/config.go` | Config 接口定义（利用 koanf 原生方法） |
+| `framework/provider/config/service.go` | 子配置完整实现、热重载并发安全、错误处理完善 |
 | `framework/provider/app/config.go` | AppConfig 实现 ServiceConfig |
 | `framework/provider/app/provider.go` | Boot 方法注册子配置 |
 | `framework/provider/config/service_test.go` | 9 个单元测试用例 |
