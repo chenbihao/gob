@@ -41,11 +41,13 @@ type GobContainer struct {
 
 // NewGobContainer 创建一个服务容器
 func NewGobContainer() *GobContainer {
-	return &GobContainer{
+
+	c := GobContainer{
 		providers: map[string]ServiceProvider{},
 		instances: map[string]interface{}{},
 		lock:      sync.RWMutex{},
 	}
+	return &c
 }
 
 // Bind 将服务容器和关键字做了绑定

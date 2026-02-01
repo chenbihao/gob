@@ -5,6 +5,7 @@ package app
 import (
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
+	"github.com/chenbihao/gob/framework/provider/config"
 )
 
 // AppProvider 服务提供者具体实现方法
@@ -26,6 +27,16 @@ func (provider *AppProvider) IsDefer() bool {
 
 // Boot 启动调用
 func (provider *AppProvider) Boot(container framework.Container) error {
+	// 注册 AppConfig 到 ConfigService
+	// 使用 Make 而不是 MustMake，避免在 Config 服务未注册时 panic
+	configService, err := container.Make(contract.ConfigKey)
+	if err == nil {
+		if configSvc, ok := configService.(*config.ConfigService); ok {
+			if err := configSvc.RegisterSubConfig(&AppConfig{}); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

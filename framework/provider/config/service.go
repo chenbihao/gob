@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"github.com/knadh/koanf/v2"
 	"log"
+	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/chenbihao/gob/framework"
@@ -15,6 +17,7 @@ import (
 
 	kdotenv "github.com/knadh/koanf/parsers/dotenv"
 	kyaml "github.com/knadh/koanf/parsers/yaml"
+	kconfmap "github.com/knadh/koanf/providers/confmap"
 
 	kenv "github.com/knadh/koanf/providers/env/v2"
 	kfile "github.com/knadh/koanf/providers/file"
@@ -110,7 +113,7 @@ func NewConfigService(params ...any) (any, error) {
 		kEnv:       kEnv,
 		kEnvStruct: &envConfig,
 		kConfig:    k,
-		//kSub:     make(map[string]*koanf.Koanf),
+		kSubConfig: make(map[string]*koanf.Koanf),
 	}
 
 	// todo 打印输出已选配置
@@ -158,4 +161,77 @@ func replaceEnvKey(content []byte, maps map[string]string) []byte {
 		content = bytes.ReplaceAll(content, []byte(reKey), []byte(val))
 	}
 	return content
+}
+
+// RegisterSubConfig 注册一个 ServiceConfig
+// 优先级：环境变量 > 子配置文件 > 主配置文件 > 代码默认值
+func (c *ConfigService) RegisterSubConfig(config framework.ServiceConfig) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	key := config.ConfigName()
+	if _, exists := c.kSubConfig[key]; exists {
+		return fmt.Errorf("sub config %s already registered", key)
+	}
+
+	// 创建独立的 Koanf 实例
+	k := koanf.New(delim)
+
+	// 1. 加载默认值（最低优先级）
+	if defaults := config.Defaults(); len(defaults) > 0 {
+		if err := k.Load(kconfmap.Provider(defaults, delim), nil); err != nil {
+			return fmt.Errorf("load defaults for %s: %w", key, err)
+		}
+	}
+
+	// 2. 从主配置加载（中等优先级，会覆盖默认值）
+	mainConfig := c.kConfig.Get(key)
+	if mainConfig != nil {
+		// 将 mainConfig 转换为 map[string]interface{}
+		if mainMap, ok := mainConfig.(map[string]interface{}); ok {
+			if err := k.Load(kconfmap.Provider(mainMap, delim), nil); err != nil {
+				return fmt.Errorf("load main config for %s: %w", key, err)
+			}
+		}
+	}
+
+	// 3. 从子配置文件加载（高优先级，会覆盖主配置）
+	// 仅在 folder 或 deploy 模式下生效
+	if c.kEnvStruct.ConfigMode == contract.ConfigModeFolder || c.kEnvStruct.ConfigMode == contract.ConfigModeDeploy {
+		subConfigFile := filepath.Join(c.folder, key+".yaml")
+		if fileExists(subConfigFile) {
+			if err := k.Load(kfile.Provider(subConfigFile), kyaml.Parser()); err != nil {
+				return fmt.Errorf("load sub config file for %s: %w", key, err)
+			}
+		}
+	}
+
+	// 4. 从环境变量加载（最高优先级）
+	// 读取 APP_{KEY}_{FIELD} 格式的环境变量（如 APP_DEBUG, APP_VERSION）
+	envPrefix := strings.ToUpper(key) + "_"
+	for _, envPair := range os.Environ() {
+		if strings.HasPrefix(envPair, envPrefix) {
+			parts := strings.SplitN(envPair, "=", 2)
+			if len(parts) == 2 {
+				fieldKey := strings.ToLower(parts[0][len(envPrefix):])
+				k.Set(fieldKey, parts[1])
+			}
+		}
+	}
+
+	c.kSubConfig[key] = k
+	return nil
+}
+
+// fileExists 检查文件是否存在
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+// GetSubConfig 获取子配置
+func (c *ConfigService) GetSubConfig(key string) *koanf.Koanf {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	return c.kSubConfig[key]
 }

@@ -24,6 +24,7 @@ type Config interface {
 	GetEnv() *koanf.Koanf
 	GetEnvStruct() *ConfigEnvStruct
 	GetConfig() *koanf.Koanf
+	GetSubConfig(key string) *koanf.Koanf
 }
 
 type ConfigEnvStruct struct {

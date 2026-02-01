@@ -69,9 +69,9 @@ func (app *AppService) Version() string {
 
 // BaseFolder 表示基础目录，可以代表开发场景的目录，也可以代表运行时候的目录
 func (app *AppService) BaseFolder() string {
-	//if app.baseFolder != "" {
-	//	return app.baseFolder
-	//}
+	if app.baseFolder != "" {
+		return app.baseFolder
+	}
 	//baseFolder := app.getConfigBySequence("base_folder", "BASE_FOLDER", "app.path.base_folder")
 	//if baseFolder != "" {
 	//	return baseFolder
