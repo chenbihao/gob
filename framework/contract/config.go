@@ -1,8 +1,9 @@
 package contract
 
 import (
-	"github.com/knadh/koanf/v2"
 	"path/filepath"
+
+	"github.com/knadh/koanf/v2"
 )
 
 /*
@@ -30,6 +31,12 @@ type Config interface {
 	GetEnvStruct() *ConfigEnvStruct
 	GetConfig() *koanf.Koanf
 	GetSubConfig(key string) *koanf.Koanf
+}
+
+// SubConfigRegistry 子配置注册接口，避免循环依赖
+// 框架内部服务提供者实现此接口以注册其配置
+type SubConfigRegistry interface {
+	RegisterSubConfigBySubConfigRegistry(config interface{}) error
 }
 
 type ConfigEnvStruct struct {

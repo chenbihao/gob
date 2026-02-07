@@ -39,6 +39,7 @@ type ConfigService struct {
 }
 
 var _ contract.Config = (*ConfigService)(nil)
+var _ contract.SubConfigRegistry = (*ConfigService)(nil)
 
 func (c *ConfigService) GetEnv() *koanf.Koanf {
 	return c.kEnv
@@ -279,4 +280,13 @@ func (c *ConfigService) GetSubConfig(key string) *koanf.Koanf {
 	}
 
 	return c.kSubConfig[key]
+}
+
+// RegisterSubConfigBySubConfigRegistry 通过 SubConfigRegistry 接口注册子配置
+// 这是避免循环依赖的内部方法，实际调用 RegisterSubConfig
+func (c *ConfigService) RegisterSubConfigBySubConfigRegistry(cfg interface{}) error {
+	if serviceConfig, ok := cfg.(framework.ServiceConfig); ok {
+		return c.RegisterSubConfig(serviceConfig)
+	}
+	return fmt.Errorf("config must implement framework.ServiceConfig interface")
 }

@@ -1,11 +1,20 @@
 package util
 
 import (
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+)
+
+// 文件和目录权限常量
+const (
+	DirPerm  os.FileMode = 0755 // 目录权限：rwxr-xr-x
+	FilePerm os.FileMode = 0644 // 文件权限：rw-r--r--
 )
 
 // 判断所给路径文件/文件夹是否存在
@@ -78,19 +87,37 @@ func SubDir(folder string) ([]string, error) {
 // DownloadFile will download a url to a local file. It's efficient because it will
 // write as it downloads and not load the whole file into memory.
 func DownloadFile(filepath string, url string) error {
+	// Create HTTP client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
 	// Get the data
-	resp, err := http.Get(url)
+	resp, err := client.Get(url)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Printf("warning: failed to close response body: %v", err)
+		}
+	}()
+
+	// Check response status code
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("download failed with status code: %d", resp.StatusCode)
+	}
 
 	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		if err := out.Close(); err != nil {
+			log.Printf("warning: failed to close file: %v", err)
+		}
+	}()
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
@@ -99,22 +126,29 @@ func DownloadFile(filepath string, url string) error {
 
 // CopyFolder 将一个目录复制到另外一个目录中
 func CopyFolder(source, destination string) error {
-	var err = filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
-		var relPath = strings.Replace(path, source, "", 1)
-		if relPath == "" {
+	return filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		// 使用 filepath.Rel 计算相对路径，避免字符串替换的问题
+		relPath, err := filepath.Rel(source, path)
+		if err != nil {
+			return err
+		}
+		if relPath == "." {
+			// 跳过根目录
 			return nil
 		}
 		if info.IsDir() {
-			return os.Mkdir(filepath.Join(destination, relPath), 0755)
+			return os.Mkdir(filepath.Join(destination, relPath), DirPerm)
 		} else {
-			var data, err1 = os.ReadFile(filepath.Join(source, relPath))
-			if err1 != nil {
-				return err1
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return err
 			}
-			return os.WriteFile(filepath.Join(destination, relPath), data, 0777)
+			return os.WriteFile(filepath.Join(destination, relPath), data, FilePerm)
 		}
 	})
-	return err
 }
 
 // CopyFile 将一个目录复制到另外一个目录中

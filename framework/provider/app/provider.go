@@ -3,9 +3,11 @@ package app
 // ServiceProvider 实现文件 provider.go
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/chenbihao/gob/framework"
 	"github.com/chenbihao/gob/framework/contract"
-	"github.com/chenbihao/gob/framework/provider/config"
 )
 
 // AppProvider 服务提供者具体实现方法
@@ -30,12 +32,19 @@ func (provider *AppProvider) Boot(container framework.Container) error {
 	// 注册 AppConfig 到 ConfigService
 	// 使用 Make 而不是 MustMake，避免在 Config 服务未注册时 panic
 	configService, err := container.Make(contract.ConfigKey)
-	if err == nil {
-		if configSvc, ok := configService.(*config.ConfigService); ok {
-			if err := configSvc.RegisterSubConfig(&AppConfig{}); err != nil {
-				return err
-			}
+	if err != nil {
+		// Config 服务不可用，使用默认值初始化 App
+		return nil
+	}
+
+	// 使用 SubConfigRegistry 接口注册配置，避免循环依赖和封装违反
+	if subConfigRegistry, ok := configService.(contract.SubConfigRegistry); ok {
+		if err := subConfigRegistry.RegisterSubConfigBySubConfigRegistry(&AppConfig{}); err != nil {
+			return fmt.Errorf("failed to register app config: %w", err)
 		}
+	} else {
+		// 如果不支持子配置注册，记录警告但不阻止启动
+		log.Printf("warning: config service does not support sub-config registration")
 	}
 	return nil
 }

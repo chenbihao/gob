@@ -529,3 +529,27 @@ func TestBootContainerAccess(t *testing.T) {
 		t.Error("Boot should receive the container parameter")
 	}
 }
+
+// TestMake_ServiceNotRegistered 测试获取未注册的服务
+func TestMake_ServiceNotRegistered(t *testing.T) {
+	container := NewGobContainer()
+	_, err := container.Make("non-existent-service")
+	if err == nil {
+		t.Error("expected error for non-existent service")
+	}
+	if err != nil && err.Error() == "" {
+		t.Error("error message should not be empty")
+	}
+}
+
+// TestMake_ServiceNotRegistered_Panic 测试 MustMake 未注册的服务会 panic
+func TestMake_ServiceNotRegistered_Panic(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("expected panic for non-existent service")
+		}
+	}()
+
+	container := NewGobContainer()
+	container.MustMake("non-existent-service")
+}

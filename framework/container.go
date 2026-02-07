@@ -156,6 +156,8 @@ func (container *GobContainer) make(key string, params []interface{}, forceNew b
 
 // NameList 列出容器中所有服务提供者的字符串凭证
 func (container *GobContainer) NameList() []string {
+	container.lock.RLock()
+	defer container.lock.RUnlock()
 	var ret []string
 	for _, provider := range container.providers {
 		name := provider.Name()
