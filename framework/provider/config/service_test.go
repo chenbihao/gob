@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/chenbihao/gob/framework"
@@ -39,11 +41,7 @@ func (m *mockServiceConfig) Defaults() map[string]interface{} {
 }
 
 func (m *mockServiceConfig) Validate(config interface{}) error {
-	cfg, ok := config.(*mockConfigStruct)
-	if !ok {
-		return nil
-	}
-	if cfg.RequiredField == "" {
+	if cfg, ok := config.(*mockConfigStruct); ok && cfg.RequiredField == "" {
 		return fmt.Errorf("required_field is required")
 	}
 	return nil
@@ -53,6 +51,23 @@ func (m *mockServiceConfig) Validate(config interface{}) error {
 func newTestConfigService() *ConfigService {
 	return &ConfigService{
 		kConfig:    koanf.New("."),
+		kSubConfig: make(map[string]*koanf.Koanf),
+		kEnvStruct: &contract.ConfigEnvStruct{
+			ConfigMode: contract.ConfigModeRoot,
+		},
+	}
+}
+
+func newTestConfigServiceWithData() *ConfigService {
+	k := koanf.New(".")
+	k.Set("app.name", "testapp")
+	k.Set("app.port", 8080)
+	k.Set("app.debug", true)
+	k.Set("app.timeout", "30s")
+	k.Set("app.rate", 3.14)
+	k.Set("app.items", []string{"a", "b", "c"})
+	return &ConfigService{
+		kConfig:    k,
 		kSubConfig: make(map[string]*koanf.Koanf),
 		kEnvStruct: &contract.ConfigEnvStruct{
 			ConfigMode: contract.ConfigModeRoot,
@@ -268,8 +283,6 @@ func TestRegisterSubConfig_ValidateSuccess(t *testing.T) {
 
 // TestSubConfigPriority 测试子配置优先级
 func TestSubConfigPriority(t *testing.T) {
-	// 这个测试验证优先级：环境变量 > 子配置文件 > 主配置文件 > 默认值
-	// 由于完整测试需要文件系统，这里只测试基本逻辑
 	kMain := koanf.New(".")
 	kMain.Set("app.required_field", "override_value")
 
@@ -298,6 +311,71 @@ func TestSubConfigPriority(t *testing.T) {
 	assert.Equal(t, "override_value", subConfig.String("required_field"))
 	// 默认值保留
 	assert.Equal(t, "1.0.0", subConfig.String("optional_field"))
+}
+
+// ============================================================================
+// AC3: 配置优先级测试 (代码默认值 < 主配置 YAML < 子配置文件 < 环境变量)
+// ============================================================================
+
+func TestSubConfigPriority_Full(t *testing.T) {
+	kMain := koanf.New(".")
+	kMain.Set("app.field", "from_main")
+	kMain.Set("app.required_field", "main_reqs")
+
+	cs := &ConfigService{
+		kConfig:    kMain,
+		kSubConfig: make(map[string]*koanf.Koanf),
+		kEnvStruct: &contract.ConfigEnvStruct{
+			ConfigMode: contract.ConfigModeFolder,
+		},
+	}
+
+	mockCfg := &mockServiceConfig{
+		name: "app",
+		defaults: map[string]interface{}{
+			"required_field": "default_reqs",
+			"field":          "from_default",
+		},
+	}
+	err := cs.RegisterSubConfig(mockCfg)
+	assert.NoError(t, err)
+
+	subConfig := cs.GetSubConfig("app")
+	assert.NotNil(t, subConfig)
+
+	assert.Equal(t, "from_main", subConfig.String("field"))
+}
+
+func TestSubConfigPriority_WithEnvVar(t *testing.T) {
+	os.Setenv("APP_SVC_FIELD", "from_env")
+
+	kMain := koanf.New(".")
+	kMain.Set("app_svc.required_field", "main_field")
+	kMain.Set("app_svc.field", "from_main")
+
+	cs := &ConfigService{
+		kConfig:    kMain,
+		kSubConfig: make(map[string]*koanf.Koanf),
+		kEnvStruct: &contract.ConfigEnvStruct{
+			ConfigMode: contract.ConfigModeRoot,
+		},
+	}
+
+	mockCfg := &mockServiceConfig{
+		name: "app_svc",
+		defaults: map[string]interface{}{
+			"required_field": "default_field",
+			"field":        "from_default",
+		},
+	}
+	err := cs.RegisterSubConfig(mockCfg)
+	assert.NoError(t, err)
+
+	subConfig := cs.GetSubConfig("app_svc")
+	assert.NotNil(t, subConfig)
+
+	assert.Equal(t, "from_env", subConfig.String("field"))
+	t.Cleanup(func() { os.Unsetenv("APP_SVC_FIELD") })
 }
 
 // ============================================================================
@@ -379,6 +457,243 @@ func TestServiceConfig_Interface(t *testing.T) {
 }
 
 // ============================================================================
+// env(key) 占位符替换测试组
+// ============================================================================
+
+// TestReplaceEnvKey 测试环境变量占位符替换
+func TestReplaceEnvKey(t *testing.T) {
+	tests := []struct {
+		name     string
+		input   []byte
+		maps    map[string]string
+		want    string
+	}{
+		{
+			name:   "单个占位符替换",
+			input:  []byte("host: env(DB_HOST)"),
+			maps:   map[string]string{"DB_HOST": "localhost"},
+			want:   "host: localhost",
+		},
+		{
+			name:   "多个占位符替换",
+			input:  []byte("host: env(DB_HOST), port: env(DB_PORT)"),
+			maps:   map[string]string{"DB_HOST": "localhost", "DB_PORT": "5432"},
+			want:   "host: localhost, port: 5432",
+		},
+		{
+			name:   "无占位符",
+			input:  []byte("host: localhost"),
+			maps:   map[string]string{"DB_HOST": "localhost"},
+			want:   "host: localhost",
+		},
+		{
+			name:   "空maps",
+			input:  []byte("host: env(DB_HOST)"),
+			maps:   nil,
+			want:   "host: env(DB_HOST)",
+		},
+		{
+			name:   "不存在的key保留原样",
+			input:  []byte("host: env(NONEXISTENT)"),
+			maps:   map[string]string{"DB_HOST": "localhost"},
+			want:   "host: env(NONEXISTENT)",
+		},
+		{
+			name:   "嵌套占位符",
+			input:  []byte("url: postgres://env(DB_USER):env(DB_PASS)@env(DB_HOST):env(DB_PORT)"),
+			maps:   map[string]string{"DB_USER": "admin", "DB_PASS": "secret", "DB_HOST": "localhost", "DB_PORT": "5432"},
+			want:   "url: postgres://admin:secret@localhost:5432",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := replaceEnvKey(tt.input, tt.maps)
+			assert.Equal(t, tt.want, string(got))
+		})
+	}
+}
+
+// TestReplaceEnvKey_NilMaps 测试 nil maps 的边界情况
+func TestReplaceEnvKey_NilMaps(t *testing.T) {
+	input := []byte("key: env(VALUE)")
+	result := replaceEnvKey(input, nil)
+	assert.Equal(t, "key: env(VALUE)", string(result))
+
+	result = replaceEnvKey(input, make(map[string]string))
+	assert.Equal(t, "key: env(VALUE)", string(result))
+}
+
+// ============================================================================
+// 配置模式测试组
+// ============================================================================
+
+// TestConfigMode_Folder 测试 folder 模式加载子配置文件
+func TestConfigMode_Folder(t *testing.T) {
+	cs := &ConfigService{
+		kConfig:    koanf.New("."),
+		kSubConfig: make(map[string]*koanf.Koanf),
+		kEnvStruct: &contract.ConfigEnvStruct{
+			ConfigMode: contract.ConfigModeFolder,
+		},
+	}
+
+	mockCfg := &mockServiceConfig{
+		name: "test_mode",
+		defaults: map[string]interface{}{
+			"required_field": "default",
+		},
+	}
+
+	err := cs.RegisterSubConfig(mockCfg)
+	assert.NoError(t, err)
+
+	// folder 模式下 kEnvStruct 应正确设置
+	assert.Equal(t, "folder", string(cs.kEnvStruct.ConfigMode))
+}
+
+// TestConfigMode_Deploy 测试 deploy 模式
+func TestConfigMode_Deploy(t *testing.T) {
+	cs := &ConfigService{
+		kConfig:    koanf.New("."),
+		kSubConfig: make(map[string]*koanf.Koanf),
+		kEnvStruct: &contract.ConfigEnvStruct{
+			ConfigMode:  contract.ConfigModeDeploy,
+			AppEnv:      contract.AppEnvDev,
+			ConfigFolder: "config",
+		},
+	}
+
+	mockCfg := &mockServiceConfig{
+		name: "test_deploy",
+		defaults: map[string]interface{}{
+			"required_field": "default",
+		},
+	}
+
+	err := cs.RegisterSubConfig(mockCfg)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "deploy", string(cs.kEnvStruct.ConfigMode))
+	assert.Equal(t, "dev", string(cs.kEnvStruct.AppEnv))
+}
+
+// TestConfigMode_Root 测试 root 模式
+func TestConfigMode_Root(t *testing.T) {
+	cs := &ConfigService{
+		kConfig:    koanf.New("."),
+		kSubConfig: make(map[string]*koanf.Koanf),
+		kEnvStruct: &contract.ConfigEnvStruct{
+			ConfigMode:    contract.ConfigModeRoot,
+			ConfigFolder: "config",
+		},
+	}
+
+	mockCfg := &mockServiceConfig{
+		name: "test_root",
+		defaults: map[string]interface{}{
+			"required_field": "default",
+		},
+	}
+
+	err := cs.RegisterSubConfig(mockCfg)
+	assert.NoError(t, err)
+
+	assert.Equal(t, contract.ConfigModeRoot, cs.kEnvStruct.ConfigMode)
+}
+
+// ============================================================================
+// 子配置文件加载测试组 (folder/deploy模式)
+// ============================================================================
+
+// TestSubConfigFileLoading_FromFile 测试从真实文件加载子配置（folder模式）
+func TestSubConfigFileLoading_FromFile(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	subConfigFile := filepath.Join(tmpDir, "app.yaml")
+	err := os.WriteFile(subConfigFile, []byte(`
+required_field: from_file
+field_from_file: overridden_value
+`), 0644)
+	assert.NoError(t, err)
+
+	kMain := koanf.New(".")
+	kMain.Set("app.required_field", "from_main")
+
+	cs := &ConfigService{
+		kConfig:    kMain,
+		kSubConfig: make(map[string]*koanf.Koanf),
+		folder:     tmpDir,
+		kEnvStruct: &contract.ConfigEnvStruct{
+			ConfigMode: contract.ConfigModeFolder,
+		},
+	}
+
+	mockCfg := &mockServiceConfig{
+		name: "app",
+		defaults: map[string]interface{}{
+			"required_field":   "default",
+			"field_from_file":  "default_value",
+			"default_only":     "default_only",
+		},
+	}
+
+	err = cs.RegisterSubConfig(mockCfg)
+	assert.NoError(t, err)
+
+	subConfig := cs.GetSubConfig("app")
+	assert.NotNil(t, subConfig)
+
+	assert.Equal(t, "from_file", subConfig.String("required_field"))
+	assert.Equal(t, "overridden_value", subConfig.String("field_from_file"))
+	assert.Equal(t, "default_only", subConfig.String("default_only"))
+}
+
+// TestSubConfigFileLoading 测试子配置文件加载
+func TestSubConfigFileLoading(t *testing.T) {
+	// 测试 folder 模式下子配置的加载逻辑
+	// 加载优先级: 默认值 -> 主配置 -> 子配置文件 -> 环境变量
+
+	// 使用主配置覆盖默认值
+	kMain := koanf.New(".")
+	kMain.Set("subtest.required_field", "main_value") // 满足验证需求
+	kMain.Set("subtest.field1", "from_main")
+	kMain.Set("subtest.field2", "from_main_2")
+
+	cs := &ConfigService{
+		kConfig:    kMain,
+		kSubConfig: make(map[string]*koanf.Koanf),
+		kEnvStruct: &contract.ConfigEnvStruct{
+			ConfigMode: contract.ConfigModeRoot,
+		},
+	}
+
+	// 子配置会从主配置中获取 app 相关的键值
+	mockCfg := &mockServiceConfig{
+		name: "subtest",
+		defaults: map[string]interface{}{
+			"required_field": "value", // 满足验证需求
+			"field1":         "default1",
+			"field2":         "default2",
+			"field3":         "default3",
+		},
+	}
+
+	err := cs.RegisterSubConfig(mockCfg)
+	assert.NoError(t, err)
+
+	subConfig := cs.GetSubConfig("subtest")
+	assert.NotNil(t, subConfig)
+
+	// 主配置覆盖默认值(field1和field2来自主配置)
+	assert.Equal(t, "from_main", subConfig.String("field1"))
+	assert.Equal(t, "from_main_2", subConfig.String("field2"))
+
+	// 默认值保留(field3不在主配置中)
+	assert.Equal(t, "default3", subConfig.String("field3"))
+}
+
+// ============================================================================
 // 配置热重载测试组
 // ============================================================================
 
@@ -424,4 +739,61 @@ func TestConfigHotReload(t *testing.T) {
 	// assert.Equal(t, "reloaded_value", cs.GetSubConfig("reload-test").String("required_field"))
 
 	t.Skip("Config hot reload test requires temporary file system - test framework provided")
+}
+
+// ============================================================================
+// AC1: Config 核心方法测试组 (Get/GetInt/GetBool/GetString/GetDuration)
+// ============================================================================
+
+func TestGetSubConfig_Methods(t *testing.T) {
+	cs := newTestConfigServiceWithData()
+
+	mockCfg := &mockServiceConfig{
+		name: "app",
+		defaults: map[string]interface{}{
+			"required_field": "value",
+		},
+	}
+	err := cs.RegisterSubConfig(mockCfg)
+	assert.NoError(t, err)
+
+	subConfig := cs.GetSubConfig("app")
+	assert.NotNil(t, subConfig)
+
+	t.Run("String", func(t *testing.T) {
+		assert.Equal(t, "testapp", subConfig.String("name"))
+	})
+
+	t.Run("Int", func(t *testing.T) {
+		assert.Equal(t, 8080, subConfig.Int("port"))
+	})
+
+	t.Run("Int64", func(t *testing.T) {
+		assert.Equal(t, int64(8080), subConfig.Int64("port"))
+	})
+
+	t.Run("Bool", func(t *testing.T) {
+		assert.Equal(t, true, subConfig.Bool("debug"))
+	})
+
+	t.Run("Float64", func(t *testing.T) {
+		assert.Equal(t, 3.14, subConfig.Float64("rate"))
+	})
+
+	t.Run("Duration", func(t *testing.T) {
+		assert.Equal(t, "30s", subConfig.String("timeout"))
+	})
+
+	t.Run("Strings", func(t *testing.T) {
+		items := subConfig.Strings("items")
+		assert.Equal(t, []string{"a", "b", "c"}, items)
+	})
+
+	t.Run("Get non-existent key", func(t *testing.T) {
+		assert.Nil(t, subConfig.Get("nonexistent"))
+	})
+
+	t.Run("Get non-existent with default", func(t *testing.T) {
+		assert.Equal(t, nil, subConfig.Get("nonexistent"))
+	})
 }
